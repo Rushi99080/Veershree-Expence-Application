@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Site Reading Book</title>
+<meta name="theme-color" content="#141A1F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Reading Book">
+<link rel="manifest" href="manifest-sup.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141A1F;
+  --ink-2:#39454F;
+  --steel:#6B7A87;
+  --line:#D6DDE3;
+  --line-2:#EBEFF2;
+  --bg:#EDF1F4;
+  --surface:#FFFFFF;
+  --hivis:#F5B301;
+  --hivis-dk:#C08D00;
+  --paid:#15784B;
+  --paid-bg:#E3F3EA;
+  --due:#C0392B;
+  --due-bg:#FBE9E7;
+  --rent:#2C5F8A;
+  --r:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:15px;line-height:1.45;
+  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Barlow Condensed','Barlow',sans-serif;margin:0;font-weight:700;letter-spacing:.01em}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+button,input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
+button{cursor:pointer}
+a{color:var(--rent)}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 0;
+}
+.tb-row{display:flex;align-items:center;gap:8px;padding-bottom:8px}
+.brand{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;letter-spacing:.02em;line-height:1;flex:0 0 auto}
+.brand span{display:block;font-size:10.5px;font-family:'Barlow',sans-serif;font-weight:500;color:#93A3AF;letter-spacing:.08em;margin-top:2px}
+.sitepick{
+  flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;justify-content:flex-end;
+  background:#222C34;border:1px solid #33414B;border-radius:8px;padding:7px 10px;color:#fff;
+}
+.sitepick b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.sitepick i{font-style:normal;color:var(--hivis);font-size:11px}
+.lockbtn{flex:0 0 auto;background:#222C34;border:1px solid #33414B;color:var(--hivis);border-radius:8px;padding:8px 9px;font-size:10px;font-weight:700;letter-spacing:.06em}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding-bottom:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto;background:none;border:0;color:#93A3AF;padding:9px 11px 10px;
+  font-size:13.5px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;
+}
+.tab.on{color:#fff;border-bottom-color:var(--hivis)}
+
+/* ---------- layout ---------- */
+main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.card>h3{
+  padding:10px 12px;font-size:15px;border-bottom:1px solid var(--line-2);
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.card>h3 small{font-family:'Barlow',sans-serif;font-weight:500;font-size:12px;color:var(--steel)}
+.pad{padding:12px}
+.muted{color:var(--steel);font-size:13px}
+.tiny{font-size:12px;color:var(--steel)}
+.right{text-align:right}
+.center{text-align:center}
+.mt{margin-top:12px}
+
+/* ---------- hero totals ---------- */
+.hero{background:var(--ink);color:#fff;border-radius:var(--r);padding:14px;margin-bottom:12px}
+.hero .lbl{font-size:11px;letter-spacing:.1em;color:#93A3AF;font-weight:600}
+.hero .big{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;line-height:1.05;margin-top:2px}
+.hero .big small{font-size:20px;color:var(--hivis);margin-right:4px;font-weight:600}
+.hsplit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#33414B;border-radius:8px;overflow:hidden;margin-top:12px}
+.hsplit div{background:#1C242B;padding:9px 10px}
+.hsplit .k{font-size:10.5px;color:#93A3AF;font-weight:600;letter-spacing:.04em}
+.hsplit .v{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;margin-top:1px}
+.pendbar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;background:var(--hivis);color:#241C00;border-radius:8px;padding:9px 12px}
+.pendbar b{font-family:'Barlow Condensed',sans-serif;font-size:22px}
+
+/* ---------- kpi grid ---------- */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px}
+.kpi .k{font-size:11px;color:var(--steel);font-weight:600;letter-spacing:.03em}
+.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1}
+.kpi.g .v{color:var(--paid)} .kpi.r .v{color:var(--due)} .kpi.b .v{color:var(--rent)}
+.k3{grid-template-columns:1fr 1fr 1fr}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{
+  text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--steel);
+  padding:7px 10px;border-bottom:1px solid var(--line);background:#F7F9FA;white-space:nowrap;
+}
+td{padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
+.nowrap{white-space:nowrap}
+
+/* ---------- log rows ---------- */
+.row{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.row:last-child{border-bottom:0}
+.row .main{flex:1;min-width:0}
+.row .ttl{font-weight:600;font-size:14.5px;word-break:break-word}
+.row .sub{font-size:12px;color:var(--steel);margin-top:2px}
+.row .amt{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.03em}
+.pill.p{background:var(--paid-bg);color:var(--paid)}
+.pill.u{background:var(--due-bg);color:var(--due)}
+.pill.n{background:#EEF2F5;color:var(--ink-2)}
+.rowbtn{background:none;border:0;padding:6px 2px 0;color:var(--steel);font-size:12px;font-weight:600}
+
+/* ---------- forms ---------- */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.03em;margin-bottom:3px}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--hivis);outline-offset:-1px;border-color:var(--hivis)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;
+  padding:12px;border-radius:9px;border:0;background:var(--hivis);color:#241C00;font-weight:700;font-size:15px;
+}
+.btn:active{background:var(--hivis-dk)}
+.btn.sec{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.dk{background:var(--ink);color:#fff}
+.btn.dgr{background:#fff;border:1px solid #E7B7B1;color:var(--due)}
+.btn.sm{width:auto;padding:8px 12px;font-size:13.5px}
+.btnrow{display:flex;gap:8px;margin-top:4px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{flex:1;border:0;background:#fff;padding:10px 6px;font-size:13.5px;font-weight:600;color:var(--steel)}
+.seg button.on{background:var(--ink);color:#fff}
+.seg.pu button.on[data-v="Paid"]{background:var(--paid)}
+.seg.pu button.on[data-v="Unpaid"]{background:var(--due)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid var(--line-2);scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ---------- bottom nav ---------- */
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(6,1fr);
+  background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+}
+.nav button{background:none;border:0;padding:8px 2px 9px;color:var(--steel);font-size:10.5px;font-weight:600;line-height:1.2}
+.nav button svg{display:block;margin:0 auto 2px;width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{color:var(--ink)}
+.nav button.on svg{stroke:var(--hivis-dk)}
+
+/* ---------- sheet / modal ---------- */
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(15,20,25,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{
+  background:var(--bg);width:100%;max-width:820px;max-height:92vh;overflow-y:auto;
+  border-radius:16px 16px 0 0;padding:14px 12px calc(20px + env(safe-area-inset-bottom));
+}
+.sheet h3{font-size:18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.x{background:none;border:0;font-size:22px;line-height:1;color:var(--steel);padding:0 4px}
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:90;
+  background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;font-weight:600;
+  box-shadow:0 6px 20px rgba(15,20,25,.3);
+}
+.empty{padding:26px 16px;text-align:center;color:var(--steel);font-size:13.5px}
+.warn{background:#FFF8E1;border:1px solid #F0D48A;color:#6B5300;padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:12px}
+.bar{height:5px;background:var(--line-2);border-radius:99px;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:var(--rent)}
+.lockwrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 18px;background:var(--ink)}
+.lock{width:100%;max-width:380px;color:#fff}
+.lock .lg{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;line-height:1.1}
+.lock .sm2{color:#93A3AF;font-size:13px;margin-top:6px;line-height:1.6}
+.lock input{width:100%;padding:14px;border-radius:10px;border:1px solid #33414B;background:#1C242B;color:#fff;font-size:18px;letter-spacing:.25em;text-align:center;margin-top:14px}
+.lock input::placeholder{letter-spacing:normal;color:#5C6B77}
+.lock .btn{margin-top:12px}
+.lock .err{background:#3A1D1A;border:1px solid #6B2C24;color:#FFB4A8;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-top:12px}
+.lock .skip{display:block;text-align:center;color:#93A3AF;font-size:12.5px;margin-top:16px;text-decoration:underline}
+.lockbtn{flex:0 0 auto;background:#222C34;border:1px solid #33414B;border-radius:8px;color:#93A3AF;padding:7px 9px;font-size:15px;line-height:1}
+.robar{background:var(--rent);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:5px 12px;text-align:center}
+/* fakt baghnyachya mode madhe: badal karnyache buttons lapavaayche,
+   pan entries chya rows disaylach havyat */
+body.ro button[data-act$="Add"],body.ro button[data-act="xlAllDone"],body.ro button[data-act="xlReset"],
+body.ro button[data-act="impJson"],body.ro button[data-act="snapList"],body.ro button[data-act="snapBack"],
+body.ro button[data-act="xlCopy"],body.ro button[data-act="siteEdit"],body.ro .rowbtn{display:none !important}
+/* English var, Hindi khali */
+label i,h3 i,.kpi .k i,.hsplit .k i,.btn i,.chip i,.empty i,.tab i,.row .ttl i{
+  display:block;font-style:normal;font-weight:500;font-size:10.5px;color:var(--steel);letter-spacing:0;margin-top:1px;line-height:1.3}
+h3 i{font-family:'Barlow',sans-serif;font-weight:500}
+.hero .lbl i,.hsplit .k i{color:#7C8B98}
+.btn i{color:rgba(36,28,0,.62);font-size:10px}
+.btn.dk i,.btn.sec i,.btn.dgr i{color:var(--steel)}
+.tab i{font-size:9.5px;color:#6B7A87}
+.seg button i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--steel)}
+.seg button.on i{color:rgba(255,255,255,.7)}
+@media (min-width:640px){ .kpis{grid-template-columns:repeat(4,1fr)} .k3{grid-template-columns:repeat(3,1fr)} }
+@media (prefers-reduced-motion:no-preference){ .sheet .box{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px)}} }
+
+body{padding-bottom:24px}</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+<script>
+/* ============================================================
+   SITE READING BOOK  —  supervisor data entry app
+   Machine hour readings + diesel purchases
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => {
+  if (typeof v === 'string') v = v.replace(/[,\s\u20B9]/g, '');
+  const n = parseFloat(v);
+  return isFinite(n) ? n : 0;
+};
+const has = v => v !== '' && v != null && !(typeof v === 'number' && isNaN(v));
+const today = () => new Date().toISOString().slice(0, 10);
+const shiftDay = (d, n) => { const t = new Date(d + 'T12:00:00'); t.setDate(t.getDate() + n); return t.toISOString().slice(0, 10); };
+const dec = (v, d = 1) => { const n = num(v); return (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('en-IN'); };
+const money = v => '\u20B9' + Math.round(num(v)).toLocaleString('en-IN');
+const fmtDate = d => { if (!d) return '—'; const p = String(d).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0].slice(2) : d; };
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const dayName = d => { try { return DAYS[new Date(d + 'T12:00:00').getDay()]; } catch (e) { return ''; } };
+
+function toast(msg) {
+  const t = $('#toast');
+  t.innerHTML = '<div class="toast">' + esc(msg) + '</div>';
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.innerHTML = '', 2200);
+}
+
+/* ---------- storage ---------- */
+const IDB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      const rq = indexedDB.open('vsup', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+      rq.onsuccess = () => { this.db = rq.result; res(this.db); };
+      rq.onerror = () => rej(rq.error);
+    });
+  },
+  async tx(m) { const db = await this.open(); return db.transaction('kv', m).objectStore('kv'); },
+  async get(k) { const s = await this.tx('readonly'); return new Promise((res, rej) => { const r = s.get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async set(k, v) { const s = await this.tx('readwrite'); return new Promise((res, rej) => { const r = s.put(v, k); r.onsuccess = () => res(1); r.onerror = () => rej(r.error); }); }
+};
+const SUP_VERSION = 'v7 · 06-09-2026';
+const KEY = 'vsup:db:v1';
+let STORAGE_OK = true;
+
+let DB = { site: '', supervisor: '', machines: [], pumps: [], people: [], days: {}, diesel: [], sent: {}, auth: null };
+let ME = null;                                   /* logged in supervisor */
+
+async function sha(txt) {
+  try {
+    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(txt)));
+    return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+  } catch (e) {
+    let h = 5381; const t = String(txt);
+    for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0;
+    return 'f' + h.toString(16);
+  }
+}
+const norm = s => String(s || '').trim().toLowerCase();
+const hasLogin = () => !!(DB.auth && DB.auth.users && DB.auth.users.length);
+async function checkLogin(id, pw) {
+  if (!hasLogin()) return null;
+  const h = await sha(pw + ':' + (DB.auth.salt || 'vsup'));
+  return DB.auth.users.find(u => norm(u.userId) === norm(id) && u.hash === h) || null;
+}
+function loadSession() { try { ME = JSON.parse(localStorage.getItem('vsup:me') || 'null'); } catch (e) { } }
+function saveSession() { try { if (ME) localStorage.setItem('vsup:me', JSON.stringify(ME)); else localStorage.removeItem('vsup:me'); } catch (e) { } }
+let TAB = 'machine';
+let DAY = today();
+let UI = {};
+
+async function loadDB() {
+  let v = null;
+  try { v = await IDB.get(KEY); } catch (e) { STORAGE_OK = false; }
+  if (v == null) { try { v = localStorage.getItem(KEY); } catch (e) { } }
+  if (v) { try { DB = JSON.parse(v); } catch (e) { } }
+  ['machines', 'pumps', 'people', 'diesel'].forEach(k => { if (!Array.isArray(DB[k])) DB[k] = []; });
+  if (!DB.days) DB.days = {};
+  if (!DB.sent) DB.sent = {};
+  loadSession();
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { }
+}
+
+async function snapshot(json) {
+  try {
+    await IDB.set('snap:' + today(), json);
+    const keys = await new Promise(res => { IDB.tx('readonly').then(st => { const r = st.getAllKeys(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]); }); });
+    const snaps = keys.filter(k => String(k).startsWith('snap:')).sort();
+    while (snaps.length > 21) {
+      const k = snaps.shift();
+      const st = await IDB.tx('readwrite'); st.delete(k);
+    }
+  } catch (e) { }
+}
+
+let saveT = null;
+function save() {
+  clearTimeout(saveT);
+  return new Promise(res => {
+    saveT = setTimeout(async () => {
+      const snapNeeded = DB.lastSnap !== today();
+      if (snapNeeded) DB.lastSnap = today();          /* stringify chya aadhi */
+      const json = JSON.stringify(DB);
+      try { await IDB.set(KEY, json); STORAGE_OK = true; } catch (e) { STORAGE_OK = false; }
+      try { localStorage.setItem(KEY, json); } catch (e) { }
+      if (snapNeeded) await snapshot(json);
+      res();
+    }, 100);
+  });
+}
+
+/* ---------- machines ---------- */
+const TYPES = ['Poclain', 'JCB', 'Hiwa', 'Tractor', 'Bulldozer', 'Roller'];
+const DAILY_TYPES = ['Hiwa'];                  /* no hour meter — counted per day */
+const isDaily = t => DAILY_TYPES.indexOf(t) >= 0;
+
+const dayRows = d => (DB.days[d] && DB.days[d].rows) || {};
+const rowOf = (d, no) => dayRows(d)[no] || {};
+
+function lastOut(no, beforeDay) {
+  const ds = Object.keys(DB.days).filter(d => d < beforeDay).sort().reverse();
+  for (const d of ds) {
+    const r = dayRows(d)[no];
+    if (r && has(r.out)) return { v: num(r.out), day: d };
+  }
+  return null;
+}
+const hoursOf = r => (has(r.in) && has(r.out)) ? num(r.out) - num(r.in) : 0;
+const filled = r => !!(r && (has(r.in) || has(r.out) || has(r.diesel) || r.worked || (r.remark || '').trim()));
+const machineCount = d => Object.values(dayRows(d)).filter(filled).length;
+const dieselOn = d => DB.diesel.filter(x => x.date === d);
+const dayHasData = d => machineCount(d) > 0 || dieselOn(d).length > 0;
+
+function totals(days) {
+  let hrs = 0, dsl = 0, entries = 0, litres = 0, amount = 0, bills = 0;
+  days.forEach(d => {
+    Object.values(dayRows(d)).forEach(r => { if (!filled(r)) return; entries++; hrs += hoursOf(r); dsl += num(r.diesel); });
+    dieselOn(d).forEach(x => { bills++; litres += num(x.litres); amount += num(x.amount); });
+  });
+  return { hrs, dsl, entries, litres, amount, bills };
+}
+
+/* ---------- sent tracking ---------- */
+const isSent = d => !!DB.sent[d];
+const allDays = () => [...new Set(Object.keys(DB.days).concat(DB.diesel.map(x => x.date)))].filter(d => d && dayHasData(d)).sort().reverse();
+const unsentDays = () => allDays().filter(d => !isSent(d)).sort();
+function markSent(days) { days.forEach(d => DB.sent[d] = today()); }
+function sendDays() {
+  const scope = UI.scope || 'unsent';
+  return scope === 'unsent' ? unsentDays() : scope === 'day' ? [DAY].filter(dayHasData) : allDays().slice().sort();
+}
+const touched = d => { if (DB.sent[d]) delete DB.sent[d]; };
+
+/* ---------- rows for export ---------- */
+function machineRows(days) {
+  const out = [];
+  days.slice().sort().forEach(d => {
+    DB.machines.forEach(m => {
+      const r = rowOf(d, m.no);
+      if (!filled(r)) return;
+      out.push({
+        date: d, machineNo: m.no, type: m.type,
+        inR: isDaily(m.type) ? '' : (has(r.in) ? num(r.in) : ''),
+        outR: isDaily(m.type) ? '' : (has(r.out) ? num(r.out) : ''),
+        diesel: has(r.diesel) ? num(r.diesel) : '',
+        remark: (r.remark || '') + (isDaily(m.type) && r.worked ? (r.remark ? ' | ' : '') + 'worked' : '')
+      });
+    });
+  });
+  return out;
+}
+function dieselRows(days) {
+  const set = new Set(days);
+  return DB.diesel.filter(x => set.has(x.date)).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).map(x => ({
+    date: x.date, vendor: x.vendor || '', litres: has(x.litres) ? num(x.litres) : '', bill: x.bill || '',
+    amount: has(x.amount) ? num(x.amount) : '', status: x.status || 'Unpaid', paidBy: x.paidBy || '', remark: x.remark || ''
+  }));
+}
+
+/* ============================================================
+   VIEWS  (English)
+   ============================================================ */
+function loginView() {
+  const err = UI.err ? `<div style="background:#3A1D1A;border:1px solid #6B2C24;color:#FFB4A8;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-top:12px">${esc(UI.err)}</div>` : '';
+  const box = c => `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink);padding:24px 18px calc(24px + env(safe-area-inset-bottom))"><div style="width:100%;max-width:360px">${c}</div></div>`;
+  const head = (t, s2x) => `<div style="text-align:center;margin-bottom:20px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:700;color:#fff;letter-spacing:.02em">${t}</div>
+      <div style="font-size:11px;color:#93A3AF;letter-spacing:.12em;font-weight:600;margin-top:3px">${s2x}</div></div>`;
+  const inp = (id, en, mr, type) => `<div style="margin-bottom:10px">
+      <div style="font-size:11px;color:#93A3AF;font-weight:700;letter-spacing:.04em;margin-bottom:4px">${en}<span style="color:#6B7A87;font-weight:500"> · ${mr}</span></div>
+      <input id="${id}" type="${type || 'text'}" autocapitalize="none" autocorrect="off" style="width:100%;padding:13px;border-radius:10px;border:1px solid #33414B;background:#1C242B;color:#fff;font-size:16px"></div>`;
+
+  if (!hasLogin()) {
+    $('#app').innerHTML = box(head('READING BOOK', 'FIRST TIME SETUP') + `
+      <div style="color:#93A3AF;font-size:12.5px;line-height:1.6;margin-bottom:16px">Set your login once. After this the app stays open — you only need it again if you log out.<br><span style="color:#6B7A87">एकदाच लॉगिन तयार करा. लॉग आऊट केल्यावरच पुन्हा लागेल.</span></div>
+      ${inp('l_name', 'YOUR NAME', 'तुमचे नाव')}
+      ${inp('l_id', 'LOGIN ID', 'लॉगिन आयडी')}
+      ${inp('l_pw', 'PASSWORD', 'पासवर्ड', 'password')}
+      ${inp('l_pw2', 'REPEAT PASSWORD', 'पासवर्ड पुन्हा', 'password')}
+      ${err}
+      <button class="btn" style="margin-top:14px" data-act="mkLogin">Create login<i>लॉगिन तयार करा</i></button>`);
+    return;
+  }
+  $('#app').innerHTML = box(head('READING BOOK', esc((DB.site || 'SITE').toUpperCase())) + `
+    ${inp('l_id', 'LOGIN ID', 'लॉगिन आयडी')}
+    ${inp('l_pw', 'PASSWORD', 'पासवर्ड', 'password')}
+    ${err}
+    <button class="btn" style="margin-top:14px" data-act="doLogin">Log in<i>लॉग इन</i></button>`);
+}
+
+function render() {
+  if (!ME) return loginView();
+  if (!DB.machines.length && !DB.pumps.length && TAB !== 'setup') TAB = 'setup';
+  const nav = [['machine', 'Machine<i>मशीन</i>'], ['diesel', 'Diesel<i>डिझेल</i>'], ['history', 'History<i>इतिहास</i>'], ['send', 'Send<i>पाठवा</i>'], ['setup', 'Setup<i>सेटअप</i>']];
+  const pend = unsentDays().length;
+  $('#app').innerHTML = `
+  <div class="topbar">
+    <div class="tb-row">
+      <div class="brand">READING BOOK<span>${esc(DB.site || 'SET UP YOUR SITE')}</span></div>
+      ${pend ? `<button class="sitepick" data-act="tab" data-v="send" style="flex:0 0 auto"><b>${pend} day${pend > 1 ? 's' : ''} to send</b></button>` : ''}
+      <button class="lockbtn" data-act="logout" title="Log out">EXIT</button>
+    </div>
+    <div class="tabs">${nav.map(([k, l]) => `<button class="tab ${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}</div>
+  </div>
+  <main>${STORAGE_OK ? '' : '<div class="warn">This phone is not saving data. Send your entries to the office as soon as you finish.</div>'}
+    ${TAB === 'machine' ? machineView() : TAB === 'diesel' ? dieselView() : TAB === 'history' ? historyView() : TAB === 'send' ? sendView() : setupView()}
+  </main>`;
+  window.scrollTo(0, 0);
+}
+
+function dayBar(extra) {
+  return `<div class="card"><div class="pad" style="padding-bottom:10px">
+    <div class="field" style="margin-bottom:8px"><label>Date<i>तारीख</i></label><input type="date" id="f_day" value="${DAY}" data-act="setDay"></div>
+    <div class="btnrow">
+      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="-1">&#8592; Previous<i>मागचा</i></button>
+      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="today">Today<i>आज</i></button>
+      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="1">Next<i>पुढचा</i> &#8594;</button>
+    </div>
+    <div class="tiny" style="margin-top:8px">${dayName(DAY)}, ${fmtDate(DAY)}${extra ? ' &middot; ' + extra : ''}${isSent(DAY) ? ' &middot; <b style="color:var(--paid)">sent</b>' : ''}</div>
+  </div></div>`;
+}
+
+/* ---------------- MACHINE READING ---------------- */
+function machineView() {
+  const hourly = DB.machines.filter(m => !isDaily(m.type));
+  const daily = DB.machines.filter(m => isDaily(m.type));
+  const t = totals([DAY]);
+  return `
+  ${dayBar(machineCount(DAY) + ' of ' + DB.machines.length + ' machines filled')}
+  <div class="kpis k3">
+    <div class="kpi"><div class="k">MACHINES<i>मशीन</i></div><div class="v num">${machineCount(DAY)}</div></div>
+    <div class="kpi b"><div class="k">TOTAL HOURS<i>एकूण तास</i></div><div class="v num">${dec(t.hrs)}</div></div>
+    <div class="kpi"><div class="k">DIESEL USED (L)<i>वापरलेले डिझेल</i></div><div class="v num">${dec(t.dsl)}</div></div>
+  </div>
+  ${hourly.length ? `<div class="card"><h3>Hour meter machines<i>अवर मीटर मशीन</i><small>In &rarr; Out</small></h3>${hourly.map(machineCard).join('')}</div>` : ''}
+  ${daily.length ? `<div class="card"><h3>Hiwa / per day<i>हिवा / प्रति दिवस</i><small>worked or not</small></h3>${daily.map(machineCard).join('')}</div>` : ''}
+  ${DB.machines.length ? `<div class="btnrow" style="margin-bottom:10px"><button class="btn" style="flex:1" data-act="tab" data-v="send">Send to office<i>ऑफिसला पाठवा</i></button></div>`
+      : '<div class="card"><div class="empty">Add your machines in Setup first.</div></div>'}`;
+}
+
+function machineCard(m) {
+  const r = rowOf(DAY, m.no);
+  const prev = lastOut(m.no, DAY);
+  const inVal = has(r.in) ? r.in : (prev ? prev.v : '');
+  const hrs = (has(inVal) && has(r.out)) ? num(r.out) - num(inVal) : '';
+  const bad = hrs !== '' && hrs < 0;
+  if (isDaily(m.type)) {
+    return `<div class="row" style="display:block">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
+        <div class="seg" style="width:180px"><button type="button" class="${r.worked ? 'on' : ''}" data-act="worked" data-v="${esc(m.no)}" data-w="1">Worked<i>काम केले</i></button><button type="button" class="${r.worked ? '' : 'on'}" data-act="worked" data-v="${esc(m.no)}" data-w="0">No work<i>काम नाही</i></button></div>
+      </div>
+      ${r.worked ? `<div class="f2" style="margin-top:8px">
+        <div class="field" style="margin:0"><label>Diesel filled (L)<i>भरलेले डिझेल</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.diesel) ? r.diesel : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="diesel"></div>
+        <div class="field" style="margin:0"><label>Remark<i>शेरा</i></label><input value="${esc(r.remark || '')}" data-act="fld" data-v="${esc(m.no)}" data-f="remark"></div>
+      </div>` : ''}
+    </div>`;
+  }
+  return `<div class="row" style="display:block">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+      <div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
+      <div class="amt" style="color:${bad ? 'var(--due)' : 'var(--rent)'}">${hrs === '' ? '—' : dec(hrs, 1)}<span class="tiny" style="font-weight:500"> hr</span></div>
+    </div>
+    ${prev ? `<div class="tiny" style="margin-top:2px">Last out reading ${fmtDate(prev.day)}: ${dec(prev.v, 1)}</div>` : ''}
+    <div class="f3" style="margin-top:8px">
+      <div class="field" style="margin:0"><label>In reading<i>सुरुवात रीडिंग</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.in) ? r.in : (prev ? prev.v : '')}" data-act="fld" data-v="${esc(m.no)}" data-f="in"></div>
+      <div class="field" style="margin:0"><label>Out reading<i>शेवट रीडिंग</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.out) ? r.out : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="out"></div>
+      <div class="field" style="margin:0"><label>Diesel (L)<i>डिझेल लिटर</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.diesel) ? r.diesel : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="diesel"></div>
+    </div>
+    ${bad ? '<div class="tiny" style="color:var(--due);margin-top:6px">Out reading is lower than In reading — please check.</div>' : ''}
+    <div class="field" style="margin:8px 0 0"><label>Remark<i>शेरा</i></label><input value="${esc(r.remark || '')}" placeholder="breakdown, location, operator" data-act="fld" data-v="${esc(m.no)}" data-f="remark"></div>
+  </div>`;
+}
+
+/* ---------------- DIESEL PURCHASE ---------------- */
+function dieselView() {
+  const rows = DB.diesel.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const shown = rows.slice(0, UI.dMore || 40);
+  const t = totals(allDays());
+  const ed = UI.dEdit ? DB.diesel.find(x => x.id === UI.dEdit) : null;
+  const f = ed || UI.dNew || {};
+  const rate = (num(f.litres) && num(f.amount)) ? num(f.amount) / num(f.litres) : '';
+  return `
+  <div class="kpis k3">
+    <div class="kpi"><div class="k">TOTAL LITRES<i>एकूण लिटर</i></div><div class="v num">${dec(t.litres)}</div></div>
+    <div class="kpi"><div class="k">TOTAL AMOUNT<i>एकूण रक्कम</i></div><div class="v num">${money(t.amount)}</div></div>
+    <div class="kpi"><div class="k">BILLS<i>बिल</i></div><div class="v num">${t.bills}</div></div>
+  </div>
+
+  <div class="card"><h3>${ed ? 'Edit diesel entry<i>डिझेल एंट्री बदला</i>' : 'New diesel entry<i>नवीन डिझेल एंट्री</i>'}${ed ? '<small>' + fmtDate(ed.date) + '</small>' : ''}</h3><div class="pad">
+    <div class="f2">
+      <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="d_date" value="${f.date || DAY}"></div>
+      <div class="field"><label>Pump / vendor<i>डिझेल पंप</i></label><select id="d_vendor">${['— select —'].concat(DB.pumps).map(p => `<option ${p === f.vendor ? 'selected' : ''} value="${p === '— select —' ? '' : esc(p)}">${esc(p)}</option>`).join('')}</select></div>
+    </div>
+    <div class="f3">
+      <div class="field"><label>Litres<i>लिटर</i></label><input type="number" inputmode="decimal" step="0.01" id="d_litres" value="${has(f.litres) ? f.litres : ''}" data-act="dCalc"></div>
+      <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="d_amount" value="${has(f.amount) ? f.amount : ''}" data-act="dCalc"></div>
+      <div class="field"><label>Rate / L<i>रेट प्रति लिटर</i></label><input id="d_rate" value="${rate === '' ? '' : dec(rate, 2)}" readonly style="background:#F2F5F7;font-weight:700"></div>
+    </div>
+    <div class="field"><label>Payment status<i>पेमेंट स्थिती</i></label><div class="seg pu" id="d_st">
+      <button type="button" data-seg="d_st" data-v="Paid" class="${f.status === 'Paid' ? 'on' : ''}">Paid</button>
+      <button type="button" data-seg="d_st" data-v="Unpaid" class="${f.status === 'Paid' ? '' : 'on'}">Unpaid</button>
+    </div></div>
+    <div class="f2">
+      <div class="field"><label>Paid by<i>कोणी दिले</i></label><select id="d_by">${['— select —'].concat(DB.people).map(p => `<option ${p === f.paidBy ? 'selected' : ''} value="${p === '— select —' ? '' : esc(p)}">${esc(p)}</option>`).join('')}</select></div>
+      <div class="field"><label>Bill no<i>बिल नंबर</i></label><input id="d_bill" value="${esc(f.bill || '')}"></div>
+    </div>
+    <div class="field"><label>Remark<i>शेरा</i></label><input id="d_remark" value="${esc(f.remark || '')}"></div>
+    <div class="btnrow">
+      <button class="btn" style="flex:1" data-act="dSave">${ed ? 'Update entry<i>अपडेट</i>' : 'Add entry<i>जोडा</i>'}</button>
+      ${ed ? '<button class="btn dgr sm" style="flex:0 0 40%" data-act="dDelete">Delete</button>' : ''}
+    </div>
+    ${ed ? '<div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="dCancel">Cancel</button></div>' : ''}
+    ${DB.pumps.length ? '' : '<div class="tiny" style="margin-top:8px">Add your diesel pumps in Setup so they appear in this list.</div>'}
+  </div></div>
+
+  <div class="card"><h3>Diesel entries<i>डिझेल एंट्री</i><small>${rows.length}</small></h3>
+    ${shown.length ? shown.map(x => `<div class="row" data-act="dOpen" data-v="${x.id}">
+      <div class="main"><div class="ttl">${esc(x.vendor || 'no vendor')} <span class="pill ${x.status === 'Paid' ? 'p' : 'u'}">${esc(x.status || 'Unpaid')}</span></div>
+      <div class="sub">${fmtDate(x.date)} &middot; ${dec(x.litres)} L${num(x.litres) ? ' @ ' + dec(num(x.amount) / num(x.litres), 2) : ''}${x.paidBy ? ' &middot; ' + esc(x.paidBy) : ''}${x.bill ? ' &middot; bill ' + esc(x.bill) : ''}</div></div>
+      <div class="amt">${money(x.amount)}</div></div>`).join('') : '<div class="empty">No diesel entries yet.</div>'}
+    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="dMore">Show ${rows.length - shown.length} more</button></div>` : ''}
+  </div>`;
+}
+
+/* ---------------- HISTORY ---------------- */
+function historyView() {
+  const days = allDays();
+  const t = totals(days);
+  return `
+  <div class="kpis">
+    <div class="kpi"><div class="k">DAYS<i>दिवस</i></div><div class="v num">${days.length}</div></div>
+    <div class="kpi b"><div class="k">HOURS<i>तास</i></div><div class="v num">${dec(t.hrs)}</div></div>
+    <div class="kpi"><div class="k">DIESEL BILLS<i>डिझेल बिल</i></div><div class="v num">${t.bills}</div></div>
+    <div class="kpi"><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(t.litres)}</div></div>
+  </div>
+  <div class="card"><h3>Days entered<i>भरलेले दिवस</i><small>${days.length}</small></h3>
+    ${days.length ? days.map(d => {
+      const x = totals([d]);
+      return `<div class="row" data-act="openDay" data-v="${d}">
+        <div class="main"><div class="ttl">${fmtDate(d)} <span class="tiny">${dayName(d)}</span> ${isSent(d) ? '<span class="pill p">sent</span>' : '<span class="pill u">not sent</span>'}</div>
+        <div class="sub">${x.entries} machines &middot; ${dec(x.hrs)} hr${x.bills ? ' &middot; ' + x.bills + ' diesel bill' + (x.bills > 1 ? 's' : '') + ' ' + money(x.amount) : ''}</div></div>
+        <div class="amt tiny" style="font-weight:600">open</div>
+      </div>`;
+    }).join('') : '<div class="empty">Nothing entered yet.</div>'}
+  </div>`;
+}
+
+/* ---------------- SEND ---------------- */
+function sendView() {
+  const scope = UI.scope || 'unsent';
+  const days = sendDays();
+  const t = totals(days);
+  return `
+  <div class="card">
+    <div class="chips">
+      <button class="chip ${scope === 'unsent' ? 'on' : ''}" data-act="scope" data-v="unsent">Not sent (${unsentDays().length})</button>
+      <button class="chip ${scope === 'day' ? 'on' : ''}" data-act="scope" data-v="day">Only ${fmtDate(DAY)}</button>
+      <button class="chip ${scope === 'all' ? 'on' : ''}" data-act="scope" data-v="all">Everything</button>
+    </div>
+    <div class="pad">
+      <div class="tiny" style="margin-bottom:10px">${days.length} day${days.length === 1 ? '' : 's'} &middot; ${t.entries} machine entries &middot; ${dec(t.hrs)} hr &middot; ${t.bills} diesel bill${t.bills === 1 ? '' : 's'} ${money(t.amount)}</div>
+      ${days.length ? `
+      <button class="btn" data-act="sendJson">Send data file to office<i>डेटा फाइल पाठवा</i></button>
+      <div class="btnrow" style="margin-top:8px">
+        <button class="btn dk sm" style="flex:1" data-act="sendXlsx">Excel file<i>एक्सेल फाइल</i></button>
+        <button class="btn sec sm" style="flex:1" data-act="sendWa">WhatsApp message<i>व्हॉट्सअ‍ॅप मेसेज</i></button>
+      </div>
+      <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="markSent">Mark as sent<i>पाठवले म्हणून मार्क करा</i></button></div>
+      ` : '<div class="empty">Nothing to send.</div>'}
+    </div>
+  </div>
+  <div class="card"><h3>Which one to send<i>काय पाठवायचे</i></h3><div class="pad tiny" style="line-height:1.8">
+    <b>Data file</b> &mdash; a small .json file. The office app reads it directly, nothing has to be typed again. <b>Send this one.</b><br>
+    <b>Excel file<i>एक्सेल फाइल</i></b> &mdash; a normal .xlsx sheet with a Machine Log and a Diesel Purchase sheet.<br>
+    <b>WhatsApp message<i>व्हॉट्सअ‍ॅप मेसेज</i></b> &mdash; plain text, quick to read on the phone.
+  </div></div>
+  ${days.length ? `<div class="card"><h3>Preview<i>झलक</i></h3><div class="pad">
+    <textarea id="f_blk" rows="10" style="width:100%;font-size:12.5px;padding:10px;border:1px solid var(--line);border-radius:8px">${esc(waText(days))}</textarea>
+  </div></div>` : ''}`;
+}
+
+/* ---------------- SETUP ---------------- */
+function listBlock(title, key, items, ph) {
+  return `<div class="card"><h3>${title}<small>${items.length}</small></h3>
+    ${items.map((v, i) => `<div class="row"><div class="main"><div class="ttl">${esc(v)}</div></div><button class="rowbtn" data-act="listDel" data-k="${key}" data-v="${i}">Remove</button></div>`).join('') || '<div class="empty">Nothing added yet.</div>'}
+    <div class="pad"><div class="f2" style="align-items:end">
+      <div class="field" style="margin:0"><label>Add new<i>नवीन जोडा</i></label><input id="l_${key}" placeholder="${ph}"></div>
+      <div class="field" style="margin:0"><label>&nbsp;</label><button class="btn sm" style="width:100%" data-act="listAdd" data-k="${key}">Add</button></div>
+    </div></div>
+  </div>`;
+}
+
+function setupView() {
+  return `
+  <div class="card"><h3>Site details<i>साइट माहिती</i></h3><div class="pad">
+    <div class="f2">
+      <div class="field"><label>Site name<i>साइटचे नाव</i></label><input value="${esc(DB.site || '')}" placeholder="Veershree Industrial Park" data-act="siteName"></div>
+      <div class="field"><label>Your name<i>तुमचे नाव</i></label><input value="${esc(DB.supervisor || '')}" placeholder="supervisor name" data-act="supName"></div>
+    </div>
+    <div class="tiny">These appear on every file and message you send.</div>
+  </div></div>
+
+  <div class="card"><h3>Machines<i>मशीन</i><small>${DB.machines.length}</small></h3>
+    ${DB.machines.map((m, i) => `<div class="row"><div class="main"><div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
+      <div class="sub">${isDaily(m.type) ? 'per day — no hour meter' : 'hour meter reading'}</div></div>
+      <button class="rowbtn" data-act="mDel" data-v="${i}">Remove</button></div>`).join('') || '<div class="empty">No machines yet.</div>'}
+    <div class="pad">
+      <div class="f3">
+        <div class="field" style="margin:0"><label>Machine no<i>मशीन नंबर</i></label><input id="f_no" placeholder="PC-01"></div>
+        <div class="field" style="margin:0"><label>Type<i>प्रकार</i></label><select id="f_type">${TYPES.map(t => `<option>${t}</option>`).join('')}</select></div>
+        <div class="field" style="margin:0"><label>&nbsp;</label><button class="btn sm" style="width:100%" data-act="mAdd">Add</button></div>
+      </div>
+      <div class="tiny" style="margin-top:10px">Use the same machine numbers the office uses. Hiwa is counted per day, so it only asks worked / not worked and diesel.</div>
+    </div>
+  </div>
+
+  ${listBlock('Diesel pumps<i>डिझेल पंप</i>', 'pumps', DB.pumps, 'HP Petroleum')}
+  ${listBlock('Names for paid by<i>कोणी दिले</i>', 'people', DB.people, 'Rushi')}
+
+  <div class="card"><h3>Your data<i>तुमचा डेटा</i></h3><div class="pad">
+    <div class="tiny" style="line-height:1.8;margin-bottom:10px">Everything is stored on this phone in two places, and one snapshot per day is kept for 21 days. Still, send your entries to the office every evening.<br><span style="color:var(--steel)">डेटा या फोनमध्ये दोन ठिकाणी सेव्ह होतो. रोज संध्याकाळी ऑफिसला पाठवा.</span></div>
+    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="bkDown">Download backup<i>बॅकअप घ्या</i></button><button class="btn sec sm" style="flex:1" data-act="bkUp">Import backup<i>बॅकअप इम्पोर्ट</i></button></div>
+    <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="logout">Log out<i>लॉग आऊट</i></button></div>
+  </div></div>`;
+}
+
+/* ---------------- WhatsApp text ---------------- */
+function waText(days) {
+  const L = [];
+  L.push('*' + (DB.site || 'SITE') + ' — DAILY REPORT*');
+  if (DB.supervisor) L.push('Supervisor: ' + DB.supervisor);
+  days.forEach(d => {
+    L.push('');
+    L.push('*' + fmtDate(d) + ' (' + dayName(d) + ')*');
+    let any = false;
+    DB.machines.forEach(m => {
+      const r = rowOf(d, m.no);
+      if (!filled(r)) return;
+      any = true;
+      if (isDaily(m.type)) {
+        L.push(m.no + ' - ' + (r.worked ? 'worked' : 'no work') + (has(r.diesel) ? ', diesel ' + dec(r.diesel) + ' L' : '') + (r.remark ? ' (' + r.remark + ')' : ''));
+      } else {
+        L.push(m.no + ' - ' + (has(r.in) ? dec(r.in, 1) : '?') + ' to ' + (has(r.out) ? dec(r.out, 1) : '?') + ' = ' + dec(hoursOf(r), 1) + ' hr' + (has(r.diesel) ? ', diesel ' + dec(r.diesel) + ' L' : '') + (r.remark ? ' (' + r.remark + ')' : ''));
+      }
+    });
+    const dl = dieselOn(d);
+    if (dl.length) {
+      L.push('Diesel purchase:');
+      dl.forEach(x => L.push('  ' + (x.vendor || '-') + ' ' + dec(x.litres) + ' L - ' + money(x.amount) + ' (' + (x.status || 'Unpaid') + (x.paidBy ? ', ' + x.paidBy : '') + ')'));
+      any = true;
+    }
+    if (!any) L.push('(nothing recorded)');
+    const x = totals([d]);
+    L.push('Total: ' + dec(x.hrs) + ' hr, ' + dec(x.dsl) + ' L used' + (x.bills ? ', ' + dec(x.litres) + ' L purchased ' + money(x.amount) : ''));
+  });
+  return L.join('\n');
+}
+
+/* ---------- zip (store, no compression) ---------- */
+const CRC_T = (() => { const t = new Int32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c; } return t; })();
+function crc32(b) { let c = -1; for (let i = 0; i < b.length; i++) c = (c >>> 8) ^ CRC_T[(c ^ b[i]) & 0xFF]; return (c ^ -1) >>> 0; }
+const ENC = new TextEncoder();
+
+function zipStore(files) {
+  const parts = [], central = [];
+  let off = 0;
+  files.forEach(f => {
+    const name = ENC.encode(f.name), data = f.data, crc = crc32(data);
+    const lh = new Uint8Array(30 + name.length), dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true);
+    dv.setUint16(8, 0, true); dv.setUint16(10, 0, true); dv.setUint16(12, 0x2821, true);
+    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+    dv.setUint16(26, name.length, true); dv.setUint16(28, 0, true);
+    lh.set(name, 30);
+    parts.push(lh, data);
+    const ch = new Uint8Array(46 + name.length), cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0, true); cv.setUint16(10, 0, true); cv.setUint16(12, 0, true); cv.setUint16(14, 0x2821, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, name.length, true); cv.setUint32(42, off, true);
+    ch.set(name, 46);
+    central.push(ch);
+    off += lh.length + data.length;
+  });
+  const cdSize = central.reduce((a, c) => a + c.length, 0);
+  const end = new Uint8Array(22), ev = new DataView(end.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
+  ev.setUint32(12, cdSize, true); ev.setUint32(16, off, true);
+  const all = parts.concat(central, [end]);
+  const total = all.reduce((a, p) => a + p.length, 0);
+  const out = new Uint8Array(total);
+  let p = 0; all.forEach(x => { out.set(x, p); p += x.length; });
+  return out;
+}
+
+/* ---------- xml helpers ---------- */
+const X = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function colL(n) { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = (n - m - 1) / 26; } return s; }
+function serial(d) { const p = String(d).split('-'); if (p.length !== 3) return null; return Math.round(Date.UTC(+p[0], +p[1] - 1, +p[2]) / 86400000) + 25569; }
+
+/* cell builders */
+const SY = { title: 1, head: 2, col: 3, txt: 4, date: 5, money: 6, dec1: 7, dec2: 8, bold: 9, tot: 10, kpiL: 11, kpiV: 12, int: 13, note: 14, sub: 15 };
+const T = (v, s) => ({ t: 's', v, s: s == null ? SY.txt : s });
+const N_ = (v, s) => ({ t: 'n', v, s: s == null ? SY.money : s });
+const D_ = (v, s) => { const x = serial(v); return x == null ? T(v, s == null ? SY.date : s) : { t: 'n', v: x, s: s == null ? SY.date : s }; };
+const F_ = (f, s) => ({ t: 'f', f, s: s == null ? SY.money : s });
+const E_ = null;
+
+function sheetXml(sh) {
+  let x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
+  x += '<sheetViews><sheetView workbookViewId="0" showGridLines="0"';
+  x += (sh.tabSelected ? ' tabSelected="1"' : '') + '>';
+  if (sh.freeze) x += `<pane ySplit="${sh.freeze}" topLeftCell="A${sh.freeze + 1}" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft"/>`;
+  x += '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="16"/>';
+  if (sh.cols && sh.cols.length) {
+    x += '<cols>' + sh.cols.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('') + '</cols>';
+  }
+  x += '<sheetData>';
+  sh.rows.forEach((row, ri) => {
+    if (!row) return;
+    const r = ri + 1;
+    const cells = row.map((c, ci) => {
+      if (c == null) return '';
+      const ref = colL(ci + 1) + r;
+      const s = c.s ? ` s="${c.s}"` : '';
+      if (c.t === 'f') return `<c r="${ref}"${s}><f>${X(c.f)}</f></c>`;
+      if (c.t === 'n') return `<c r="${ref}"${s}><v>${c.v}</v></c>`;
+      if (c.v === '' || c.v == null) return `<c r="${ref}"${s}/>`;
+      return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${X(c.v)}</t></is></c>`;
+    }).join('');
+    if (!cells) return;
+    const ht = sh.heights && sh.heights[r] ? ` ht="${sh.heights[r]}" customHeight="1"` : '';
+    x += `<row r="${r}"${ht}>${cells}</row>`;
+  });
+  x += '</sheetData>';
+  if (sh.merges && sh.merges.length) x += `<mergeCells count="${sh.merges.length}">` + sh.merges.map(m => `<mergeCell ref="${m}"/>`).join('') + '</mergeCells>';
+  if (sh.dv && sh.dv.length) x += `<dataValidations count="${sh.dv.length}">` + sh.dv.map(d => `<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" sqref="${d.sq}"><formula1>${X(d.f)}</formula1></dataValidation>`).join('') + '</dataValidations>';
+  x += '<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/></worksheet>';
+  return x;
+}
+
+const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="4"><numFmt numFmtId="164" formatCode="#,##0"/><numFmt numFmtId="165" formatCode="dd\\-mmm\\-yyyy"/><numFmt numFmtId="166" formatCode="0.0"/><numFmt numFmtId="167" formatCode="#,##0.00"/></numFmts>
+<fonts count="8">
+<font><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><b/><sz val="14"/><color rgb="FF14181C"/><name val="Calibri"/></font>
+<font><sz val="9"/><color rgb="FF6B7A87"/><name val="Calibri"/></font>
+<font><i/><sz val="9"/><color rgb="FF6B7A87"/><name val="Calibri"/></font>
+</fonts>
+<fills count="6">
+<fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF14181C"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF39454F"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFF2F5F7"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFF5B301"/><bgColor indexed="64"/></patternFill></fill>
+</fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FFD6DDE3"/></left><right style="thin"><color rgb="FFD6DDE3"/></right><top style="thin"><color rgb="FFD6DDE3"/></top><bottom style="thin"><color rgb="FFD6DDE3"/></bottom><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="16">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf>
+<xf numFmtId="0" fontId="3" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf>
+<xf numFmtId="0" fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="166" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="167" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="1" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="164" fontId="1" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>
+<xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="164" fontId="5" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/>
+<xf numFmtId="1" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="7" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+
+const SUMR = (col, a, b) => b >= a ? `SUM($${col}$${a}:$${col}$${b})` : '0';
+
+/* ---------- workbook: Machine Log + Diesel Purchase ---------- */
+function supSheets(mRows, dRows) {
+  const sheets = [];
+  const head = (name, cols) => [[T((DB.site || 'Site') + '  \u2014  ' + name + (DB.supervisor ? '  (' + DB.supervisor + ')' : ''), SY.title)], cols.map(c => T(c, SY.col))];
+
+  const M = head('Machine Log', ['Date', 'Machine No', 'Machine Type', 'In Reading', 'Out Reading', 'Total Hr', 'Diesel Filled (L)', 'Remark']);
+  mRows.forEach((r, i) => {
+    const n = i + 3;
+    M[n - 1] = [D_(r.date), T(r.machineNo), T(r.type),
+      has(r.inR) ? N_(num(r.inR), SY.dec1) : T('', SY.txt),
+      has(r.outR) ? N_(num(r.outR), SY.dec1) : T('', SY.txt),
+      F_(`IF(OR($D${n}="",$E${n}=""),"",$E${n}-$D${n})`, SY.dec1),
+      has(r.diesel) ? N_(num(r.diesel), SY.dec1) : T('', SY.txt),
+      T(r.remark)];
+  });
+  let tr = mRows.length + 3;
+  M[tr - 1] = [T('TOTAL', SY.bold), T('', SY.bold), T('', SY.bold), T('', SY.bold), T('', SY.bold),
+    F_(SUMR('F', 3, tr - 1), SY.tot), F_(SUMR('G', 3, tr - 1), SY.tot), T('', SY.bold)];
+  sheets.push({ name: 'Machine Log', tabSelected: true, freeze: 2, cols: [13, 13, 14, 12, 12, 10, 14, 30], rows: M, merges: ['A1:H1'], heights: { 1: 26, 2: 28 } });
+
+  const D2 = head('Diesel Purchase', ['Date', 'Diesel Vendor', 'Diesel (L)', 'Bill No', 'Amount (Rs)', 'Status', 'Paid By', 'Rate / L', 'Remark']);
+  dRows.forEach((r, i) => {
+    const n = i + 3;
+    D2[n - 1] = [D_(r.date), T(r.vendor),
+      has(r.litres) ? N_(num(r.litres), SY.dec2) : T('', SY.txt),
+      T(r.bill),
+      has(r.amount) ? N_(num(r.amount)) : T('', SY.txt),
+      T(r.status), T(r.paidBy),
+      F_(`IF(OR($C${n}="",$E${n}=""),"",$E${n}/$C${n})`, SY.dec2),
+      T(r.remark)];
+  });
+  tr = dRows.length + 3;
+  D2[tr - 1] = [T('TOTAL', SY.bold), T('', SY.bold), F_(SUMR('C', 3, tr - 1), SY.tot), T('', SY.bold),
+    F_(SUMR('E', 3, tr - 1), SY.tot), T('', SY.bold), T('', SY.bold), T('', SY.bold), T('', SY.bold)];
+  sheets.push({ name: 'Diesel Purchase', freeze: 2, cols: [13, 20, 11, 12, 14, 10, 13, 10, 26], rows: D2, merges: ['A1:I1'], heights: { 1: 26, 2: 28 } });
+  return sheets;
+}
+
+function xlsxBytes(mRows, dRows) {
+  const sheets = supSheets(mRows, dRows);
+  const files = [];
+  const ct = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>',
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>',
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'];
+  sheets.forEach((sh, i) => ct.push(`<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`));
+  ct.push('</Types>');
+  files.push({ name: '[Content_Types].xml', data: ENC.encode(ct.join('')) });
+  files.push({ name: '_rels/.rels', data: ENC.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>') });
+  files.push({ name: 'xl/workbook.xml', data: ENC.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' + sheets.map((sh, i) => `<sheet name="${X(sh.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('') + '</sheets><calcPr calcId="171027" fullCalcOnLoad="1"/></workbook>') });
+  files.push({ name: 'xl/_rels/workbook.xml.rels', data: ENC.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + sheets.map((sh, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('') + `<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`) });
+  files.push({ name: 'xl/styles.xml', data: ENC.encode(STYLES_XML) });
+  sheets.forEach((sh, i) => files.push({ name: `xl/worksheets/sheet${i + 1}.xml`, data: ENC.encode(sheetXml(sh)) }));
+  return zipStore(files);
+}
+
+function download(name, data, type) {
+  const blob = new Blob([data], { type: type || 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+}
+const fileTag = () => (DB.site || 'site').replace(/[^\w]+/g, '_') + '_' + today();
+const segVal = id => { const e = document.querySelector('#' + id + ' button.on'); return e ? e.dataset.v : ''; };
+const gv = id => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.addEventListener('click', async e => {
+  const seg = e.target.closest('[data-seg]');
+  if (seg) { document.querySelectorAll('#' + seg.dataset.seg + ' button').forEach(b => b.classList.remove('on')); seg.classList.add('on'); return; }
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act, v = el.dataset.v;
+
+  if (a === 'mkLogin') {
+    const name = gv('l_name'), id = gv('l_id'), pw = gv('l_pw'), pw2 = gv('l_pw2');
+    if (!id) { UI.err = 'Enter a login ID'; return render(); }
+    if (pw.length < 4) { UI.err = 'Password must be at least 4 characters'; return render(); }
+    if (pw !== pw2) { UI.err = 'The two passwords do not match'; return render(); }
+    const st = uid() + uid();
+    DB.auth = { salt: st, users: [{ userId: id, name: name || id, hash: await sha(pw + ':' + st) }] };
+    if (!DB.supervisor) DB.supervisor = name || id;
+    ME = { userId: id, name: name || id }; saveSession(); UI.err = '';
+    await save(); render(); toast('Login created'); return;
+  }
+  if (a === 'doLogin') {
+    const u = await checkLogin(gv('l_id'), gv('l_pw'));
+    if (!u) { UI.err = 'Wrong login ID or password'; return render(); }
+    ME = { userId: u.userId, name: u.name }; saveSession(); UI.err = '';
+    render(); return;
+  }
+  if (a === 'logout') {
+    if (!confirm('Log out? You will need your login ID and password again.')) return;
+    ME = null; saveSession(); UI = {}; render(); return;
+  }
+  if (a === 'bkDown') {
+    download('reading-book-backup-' + today() + '.json', JSON.stringify(DB), 'application/json');
+    toast('Backup downloaded'); return;
+  }
+  if (a === 'bkUp') {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = () => {
+      const f = inp.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = async () => {
+        let d;
+        try { d = JSON.parse(rd.result); } catch (e) { return alert('This file could not be read.'); }
+        if (!d || !d.days || !d.machines) return alert('This is not a Reading Book backup file.');
+        if (!confirm('Replace everything on this phone with the data in this file?')) return;
+        DB = d;
+        ['machines', 'pumps', 'people', 'diesel'].forEach(k => { if (!Array.isArray(DB[k])) DB[k] = []; });
+        if (!DB.days) DB.days = {}; if (!DB.sent) DB.sent = {};
+        await save(); render(); toast('Backup imported');
+      };
+      rd.readAsText(f);
+    };
+    inp.click(); return;
+  }
+  if (a === 'tab') { TAB = v; UI.dEdit = null; render(); return; }
+  if (a === 'scope') { UI.scope = v; render(); return; }
+  if (a === 'dayShift') { DAY = v === 'today' ? today() : shiftDay(DAY, +v); render(); return; }
+  if (a === 'openDay') { DAY = v; TAB = 'machine'; render(); return; }
+  if (a === 'dMore') { UI.dMore = (UI.dMore || 40) + 60; render(); return; }
+
+  if (a === 'worked') {
+    DB.days[DAY] = DB.days[DAY] || { rows: {} };
+    const r = DB.days[DAY].rows[v] = DB.days[DAY].rows[v] || {};
+    r.worked = el.dataset.w === '1';
+    touched(DAY); await save(); render(); return;
+  }
+
+  /* ---- diesel ---- */
+  if (a === 'dOpen') { UI.dEdit = v; TAB = 'diesel'; render(); window.scrollTo(0, 0); return; }
+  if (a === 'dCancel') { UI.dEdit = null; UI.dNew = null; render(); return; }
+  if (a === 'dSave') {
+    const o = {
+      date: gv('d_date') || DAY, vendor: gv('d_vendor'),
+      litres: gv('d_litres') === '' ? '' : num(gv('d_litres')),
+      amount: gv('d_amount') === '' ? '' : num(gv('d_amount')),
+      bill: gv('d_bill'), status: segVal('d_st') || 'Unpaid',
+      paidBy: gv('d_by'), remark: gv('d_remark')
+    };
+    if (!o.vendor) return toast('Select the pump');
+    if (o.amount === '' && o.litres === '') return toast('Enter litres or amount');
+    if (o.status !== 'Paid') o.paidBy = '';
+    if (UI.dEdit) {
+      const r = DB.diesel.find(x => x.id === UI.dEdit);
+      const old = r.date; Object.assign(r, o); touched(old);
+    } else DB.diesel.push({ id: uid(), ...o });
+    touched(o.date);
+    UI.dEdit = null; UI.dNew = null;
+    await save(); render(); toast('Saved'); return;
+  }
+  if (a === 'dDelete') {
+    const r = DB.diesel.find(x => x.id === UI.dEdit);
+    if (!r || !confirm('Delete this diesel entry?')) return;
+    touched(r.date);
+    DB.diesel = DB.diesel.filter(x => x.id !== UI.dEdit);
+    UI.dEdit = null; await save(); render(); toast('Deleted'); return;
+  }
+
+  /* ---- setup ---- */
+  if (a === 'mAdd') {
+    const no = gv('f_no'), type = gv('f_type');
+    if (!no) return toast('Enter machine number');
+    if (DB.machines.some(m => m.no.toLowerCase() === no.toLowerCase())) return toast('Already in the list');
+    DB.machines.push({ no, type });
+    await save(); render(); toast(no + ' added'); return;
+  }
+  if (a === 'mDel') {
+    const m = DB.machines[+v];
+    if (!confirm('Remove ' + m.no + '? Entries already filled will stay.')) return;
+    DB.machines.splice(+v, 1); await save(); render(); return;
+  }
+  if (a === 'listAdd') {
+    const k = el.dataset.k, val2 = gv('l_' + k);
+    if (!val2) return toast('Type a name first');
+    if (DB[k].includes(val2)) return toast('Already in the list');
+    DB[k].push(val2); await save(); render(); return;
+  }
+  if (a === 'listDel') { DB[el.dataset.k].splice(+v, 1); await save(); render(); return; }
+
+  /* ---- send ---- */
+  if (a === 'sendWa') { window.open('https://wa.me/?text=' + encodeURIComponent(waText(sendDays())), '_blank'); return; }
+  if (a === 'sendXlsx') {
+    const days = sendDays(), m = machineRows(days), d = dieselRows(days);
+    if (!m.length && !d.length) return toast('Nothing to send');
+    download('Site_Report_' + fileTag() + '.xlsx', xlsxBytes(m, d), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    toast('Excel file ready'); return;
+  }
+  if (a === 'sendJson') {
+    const days = sendDays();
+    const pack = {
+      type: 'sup-log', v: 2, site: DB.site || '', supervisor: DB.supervisor || '', made: today(),
+      machineRows: machineRows(days), dieselRows: dieselRows(days)
+    };
+    if (!pack.machineRows.length && !pack.dieselRows.length) return toast('Nothing to send');
+    download('site-data-' + fileTag() + '.json', JSON.stringify(pack), 'application/json');
+    toast('Data file ready — send it to the office'); return;
+  }
+  if (a === 'markSent') {
+    const days = sendDays();
+    if (!days.length) return;
+    if (!confirm('Mark ' + days.length + ' day(s) as sent?')) return;
+    markSent(days); await save(); UI.scope = 'unsent'; render(); toast('Marked as sent'); return;
+  }
+});
+
+/* ---- typing ---- */
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act;
+  if (a === 'siteName') { DB.site = el.value; save(); return; }
+  if (a === 'supName') { DB.supervisor = el.value; save(); return; }
+  if (a === 'dCalc') {
+    const l = num(gv('d_litres')), am = num(gv('d_amount'));
+    const box = document.getElementById('d_rate');
+    if (box) box.value = l ? dec(am / l, 2) : '';
+    return;
+  }
+  if (a === 'fld') {
+    DB.days[DAY] = DB.days[DAY] || { rows: {} };
+    const r = DB.days[DAY].rows[el.dataset.v] = DB.days[DAY].rows[el.dataset.v] || {};
+    const f = el.dataset.f;
+    r[f] = el.value === '' ? '' : (f === 'remark' ? el.value : num(el.value));
+    touched(DAY); save();
+    if (f === 'in' || f === 'out') {
+      const card = el.closest('.row'), amt = card && card.querySelector('.amt');
+      if (amt) {
+        const iv = card.querySelector('[data-f="in"]').value, ov = card.querySelector('[data-f="out"]').value;
+        const h = (iv !== '' && ov !== '') ? num(ov) - num(iv) : '';
+        amt.innerHTML = (h === '' ? '—' : dec(h, 1)) + '<span class="tiny" style="font-weight:500"> hr</span>';
+        amt.style.color = (h !== '' && h < 0) ? 'var(--due)' : 'var(--rent)';
+      }
+    }
+  }
+});
+
+document.addEventListener('change', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  if (el.dataset.act === 'setDay') { DAY = el.value; render(); }
+});
+
+(async () => { await loadDB(); render(); })();
+
+</script>
+</body>
+</html>
