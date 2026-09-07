@@ -216,12 +216,26 @@ h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 @media (min-width:640px){ .kpis{grid-template-columns:repeat(4,1fr)} .k3{grid-template-columns:repeat(3,1fr)} }
 @media (prefers-reduced-motion:no-preference){ .sheet .box{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px)}} }
 
-body{padding-bottom:24px}</style>
+body{padding-bottom:24px}
+</style>
 </head>
 <body>
 <div id="app"></div>
 <div id="toast"></div>
 <script>
+/* juna service worker ani cache saaf */
+(function(){ try {
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations)
+    navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ try{ r.unregister(); }catch(e){} }); }).catch(function(){});
+  if (window.caches && caches.keys) caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }).catch(function(){});
+} catch(e){} })();
+window.onerror = function (msg, src, line) {
+  try {
+    document.getElementById('app').innerHTML =
+      '<div style="padding:24px;font-family:system-ui"><div style="font-weight:700;font-size:18px;margin-bottom:8px">App madhe error</div>' +
+      '<div style="font-size:13px;color:#555;line-height:1.6">' + String(msg) + '<br>line ' + line + '</div></div>';
+  } catch (e) { }
+};
 /* ============================================================
    SITE READING BOOK  —  supervisor data entry app
    Machine hour readings + diesel purchases
