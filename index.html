@@ -419,7 +419,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v16 · 08-09-2026';
+const APP_VERSION = 'v17 · 08-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -651,8 +651,9 @@ function seedSite() {
    ============================================================ */
 
 /* machine type lookup — Machine Log column D */
-function machineType(s, no) { const m = s.machines.find(x => x.no === no); return m ? m.type : ''; }
-function machineOf(s, no) { return s.machines.find(x => x.no === no) || null; }
+const sameNo = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+function machineOf(s, no) { return (s.machines || []).find(x => sameNo(x.no, no)) || null; }
+function machineType(s, no) { const m = machineOf(s, no); return m ? m.type : ''; }
 
 /* hours = Out Reading - In Reading  (Machine Log column G) */
 function hoursOf(r) { return (has(r.inR) && has(r.outR)) ? num(r.outR) - num(r.inR) : 0; }
@@ -720,6 +721,82 @@ function supLink() {
     const u = location.href.split('#')[0].split('?')[0];
     return u.replace(/[^\/]*$/, '') + 'supervisor.html';
   } catch (e) { return 'supervisor.html'; }
+}
+
+/* ---------- machine no che variants shodhun ek karnyasathi ---------- */
+/* PC.o5 / PC.05 / Pc5 / 05 -> ekach; Hiwa che number vegle rahtat */
+function mKey(no) {
+  const t = String(no || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/O/g, '0');
+  const digits = t.replace(/[^0-9]/g, '');
+  let letters = t.replace(/[0-9]/g, '');
+  if (!letters) letters = 'PC';                             /* fakt aakda = PC dharaycha */
+  return letters + (digits ? String(parseInt(digits, 10)) : '');
+}
+
+function machineGroups(s) {
+  const cnt = {};
+  (s.machineLog || []).forEach(r => {
+    if (!r.machineNo) return;
+    cnt[r.machineNo] = cnt[r.machineNo] || { no: r.machineNo, n: 0, type: machineType(s, r.machineNo) || '' };
+    cnt[r.machineNo].n++;
+  });
+  (s.machines || []).forEach(m => {
+    if (!cnt[m.no]) cnt[m.no] = { no: m.no, n: 0, type: m.type || '' };
+    else if (!cnt[m.no].type) cnt[m.no].type = m.type || '';
+  });
+  const g = {};
+  Object.values(cnt).forEach(x => { const k = mKey(x.no); (g[k] = g[k] || []).push(x); });
+  const out = [];
+  Object.keys(g).forEach(k => {
+    /* ekach key pan vegla type (Poclain vs Hiwa) asel tar vegle thevaayche */
+    const byType = {};
+    g[k].forEach(x => { const t = x.type || '?'; (byType[t] = byType[t] || []).push(x); });
+    const known = Object.keys(byType).filter(t => t !== '?');
+    if (known.length > 1) {
+      known.forEach(t => {
+        const items = byType[t].concat(byType['?'] || []);
+        if (items.length > 1) out.push({ key: k + '|' + t, items, type: t });
+      });
+      return;
+    }
+    if (g[k].length > 1) out.push({ key: k, items: g[k], type: known[0] || '' });
+  });
+  return out.map(o => {
+    const items = o.items.slice().sort((a, b) => b.n - a.n);
+    let target = items[0].no;
+    const m = mKey(items[0].no);
+    if (/^PC\d+$/.test(m) && (o.type === 'Poclain' || !o.type)) target = 'PC.' + String(m.slice(2)).padStart(2, '0');
+    return { key: o.key, target, items, total: items.reduce((a, x) => a + x.n, 0) };
+  }).sort((a, b) => b.items.length - a.items.length || b.total - a.total);
+}
+
+/* ek naav dusrya naavat halavaycha */
+function renameMachine(s, from, to) {
+  if (!from || !to || from === to) return 0;
+  let moved = 0;
+  const seen = {};
+  s.machineLog.forEach(r => { if (sameNo(r.machineNo, to) && r.machineNo !== from) seen[r.date] = 1; });
+  const keep = [];
+  s.machineLog.forEach(r => {
+    if (r.machineNo !== from) { keep.push(r); return; }
+    if (seen[r.date]) { moved++; return; }                   /* tya divsachi entry aadhich aahe */
+    r.machineNo = to; seen[r.date] = 1; keep.push(r); moved++;
+  });
+  s.machineLog = keep;
+  const tgt = s.machines.find(m => sameNo(m.no, to) && m.no !== from);
+  const src = s.machines.find(m => m.no === from);
+  if (src) {
+    if (tgt) {
+      if (!tgt.owner && src.owner) tgt.owner = src.owner;
+      if (!tgt.operator && src.operator) tgt.operator = src.operator;
+      if (!tgt.make && src.make) tgt.make = src.make;
+      if (!has(tgt.monthlyRate) && has(src.monthlyRate)) tgt.monthlyRate = src.monthlyRate;
+      s.machines = s.machines.filter(m => m.id !== src.id);
+    } else src.no = to;
+  } else if (!tgt) {
+    s.machines.push({ id: uid(), no: to, type: '', owner: '', operator: '', make: '', monthlyRate: '' });
+  }
+  return moved;
 }
 
 /* --- murum: amount = qty x rate, kiwa direct amount --- */
@@ -1181,6 +1258,24 @@ function machineRentView(s) {
 function machineMasterView(s) {
   return `
   <button class="btn" data-act="mAdd">+ Add machine<i>मशीन जोडा</i></button>
+  ${(() => {
+    const g = machineGroups(s);
+    if (!g.length) return '';
+    return `<div class="card mt" style="border-color:var(--hivis)"><h3>Ekach machine, vegle naav<i>एकच मशीन, वेगळे नाव</i><small>${g.length} group</small></h3>
+      <div class="pad" style="padding-bottom:6px"><div class="tiny" style="line-height:1.7">Khalche naav ekach machine che disat aahet (udaharan <b>PC.o5</b> ani <b>PC.05</b>). "Ek kara" dabla ki saglya entries ekach naavavar jatil.</div></div>
+      ${g.slice(0, 12).map(o => `<div class="row" style="display:block">
+        <div class="ttl">${esc(o.target)} <span class="tiny">&larr; ${o.items.length} naav, ${o.total} entries</span></div>
+        <div class="sub">${o.items.map(x => esc(x.no) + ' (' + x.n + ')').join('  ·  ')}</div>
+        <div class="btnrow" style="margin-top:8px">
+          <button class="btn sm" style="flex:1" data-act="mgMerge" data-v="${esc(o.key)}">Ek kara &rarr; ${esc(o.target)}<i>एक करा</i></button>
+          <button class="btn sec sm" style="flex:0 0 32%" data-act="mgEdit" data-v="${esc(o.key)}">Naav badla</button>
+        </div>
+      </div>`).join('')}
+      ${g.length > 12 ? `<div class="pad tiny">ani ${g.length - 12} ajun...</div>` : ''}
+      <div class="pad"><button class="btn dk sm" style="width:100%" data-act="mgAll">Sagle ${g.length} group ek kara<i>सगळे एक करा</i></button>
+      <div class="tiny" style="margin-top:8px">Badalnyaadhi juna data snapshot madhe jato &mdash; chukla tar Data safety madhun parat aanta yeto.</div></div>
+    </div>`;
+  })()}
   <div class="card mt"><h3>Rate master<i>रेट मास्टर</i><small>fill rates here</small></h3><div class="scroll"><table>
     <thead><tr><th>Type</th><th>Basis</th><th class="n">Package Rate</th><th class="n">Units</th><th class="n">Per Hr/Day</th></tr></thead>
     <tbody>${s.rateMaster.map((r, i) => `<tr data-act="rmEdit" data-v="${i}"><td><b>${esc(r.type)}</b></td><td class="tiny">${esc(r.basis)}</td><td class="n">${r.packageRate ? money0(r.packageRate) : '<span class="pill u">to fill</span>'}</td><td class="n">${r.packageUnits}</td><td class="n">${r.packageRate ? dec(num(r.packageRate) / (num(r.packageUnits) || 1), 0) : '—'}</td></tr>`).join('')}</tbody>
@@ -3222,6 +3317,39 @@ document.addEventListener('click', async e => {
     case 'waSend': window.open('https://wa.me/?text=' + encodeURIComponent(document.getElementById('f_blk').value), '_blank'); break;
     case 'mAdd': machineMasterForm(s); break;
     case 'mEdit': machineMasterForm(s, s.machines.find(x => x.id === v)); break;
+    case 'mgMerge': case 'mgAll': {
+      const groups = machineGroups(s);
+      const list = a === 'mgAll' ? groups : groups.filter(o => o.key === v);
+      if (!list.length) { toast('Kahi sapadla nahi'); break; }
+      if (!confirm(list.length + ' group ek kartoy.\n\nUdaharan: ' + list[0].items.map(x => x.no).join(' + ') + '  ->  ' + list[0].target + '\n\nPudhe jaayche?')) break;
+      try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
+      let moved = 0;
+      list.forEach(o => o.items.forEach(x => { if (x.no !== o.target) moved += renameMachine(s, x.no, o.target); }));
+      migrate(); await save(); render();
+      alert(list.length + ' group ek zale.\n' + moved + ' entries navin naavavar gelya.\n\nMachine Master madhe rate parat tapasa.');
+      break;
+    }
+    case 'mgEdit': {
+      const o = machineGroups(s).find(x => x.key === v);
+      if (!o) break;
+      const nm = prompt('Ya ' + o.items.length + ' naavansathi ek naav:\n' + o.items.map(x => x.no).join(', '), o.target);
+      if (!nm || !nm.trim()) break;
+      try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
+      let moved = 0;
+      o.items.forEach(x => { if (x.no !== nm.trim()) moved += renameMachine(s, x.no, nm.trim()); });
+      migrate(); await save(); render(); toast(moved + ' entries ' + nm.trim() + ' var gelya');
+      break;
+    }
+    case 'mRename': {
+      const m = s.machines.find(x => x.id === v);
+      if (!m) break;
+      const nm = prompt('Navin machine no:', m.no);
+      if (!nm || !nm.trim() || nm.trim() === m.no) break;
+      try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
+      const moved = renameMachine(s, m.no, nm.trim());
+      migrate(); await save(); render(); toast(moved + ' entries badalya');
+      break;
+    }
     case 'mDelOne': {
       const m = s.machines.find(x => x.id === v);
       if (!m) break;
