@@ -38,7 +38,7 @@ body{
   background:var(--bg);color:var(--ink);
   font-family:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   font-size:15px;line-height:1.45;
-  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  padding-bottom:calc(118px + env(safe-area-inset-bottom));
   -webkit-font-smoothing:antialiased;
 }
 h1,h2,h3,h4{font-family:'Barlow Condensed','Barlow',sans-serif;margin:0;font-weight:700;letter-spacing:.01em}
@@ -170,6 +170,11 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .nav button.on{color:var(--ink)}
 .nav button.on svg{stroke:var(--hivis-dk)}
 
+.nav.n7 button,.nav.n8 button{font-size:9.5px;padding:7px 1px 8px}
+.nav.n7 button svg,.nav.n8 button svg{width:19px;height:19px}
+.logo{height:26px;width:auto;max-width:88px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;flex:0 0 auto}
+.logobox{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+
 /* ---------- sheet / modal ---------- */
 .sheet{position:fixed;inset:0;z-index:80;background:rgba(15,20,25,.55);display:flex;align-items:flex-end;justify-content:center}
 .sheet .box{
@@ -213,6 +218,15 @@ h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 .tab i{font-size:9.5px;color:#6B7A87}
 .seg button i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--steel)}
 .seg button.on i{color:rgba(255,255,255,.7)}
+.searchwrap{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:45;
+  background:var(--surface);border-top:1px solid var(--line);padding:7px 10px;display:flex;gap:8px;align-items:center}
+.searchwrap input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:99px;background:#F4F7F9;font-size:15px}
+.searchwrap input:focus{outline:2px solid var(--hivis);outline-offset:-1px;background:#fff}
+.searchwrap button{flex:0 0 auto;background:none;border:0;color:var(--steel);font-size:13px;font-weight:700;padding:6px 8px}
+.spanel{position:fixed;left:0;right:0;top:0;bottom:calc(112px + env(safe-area-inset-bottom));z-index:44;
+  background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px 20px}
+.shead{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--steel);padding:10px 2px 6px}
+.brandlogo{height:30px;max-width:130px;object-fit:contain;display:block}
 @media (min-width:640px){ .kpis{grid-template-columns:repeat(4,1fr)} .k3{grid-template-columns:repeat(3,1fr)} }
 @media (prefers-reduced-motion:no-preference){ .sheet .box{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px)}} }
 </style>
@@ -405,7 +419,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v12 · 07-09-2026';
+const APP_VERSION = 'v15 · 08-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -735,12 +749,18 @@ function totals(s) {
   const ownerPaid = (s.ownerPayments || []).reduce((a, r) => a + num(r.amount), 0);
   const vp = s.vendorPayments.reduce((a, p) => a + num(p.amount), 0);
   const rent = s.machines.reduce((a, m) => a + machineRent(s, m.no).rent, 0);
+  /* payment allocate zalyavar cha khara hishob (diesel ani murum sathi pn) */
+  const dsPaidFinal = s.dieselLog.filter(d => fin[d.id] && fin[d.id].final === 'Paid').reduce((a, d) => a + num(d.amount), 0);
+  const dsUnpaidFinal = dsTotal - dsPaidFinal;
+  const muPaidFinal = mu.filter(m => fin[m.id] && fin[m.id].final === 'Paid').reduce((a, m) => a + mAmt(m), 0);
+  const muUnpaidFinal = muTotal - muPaidFinal;
   return {
     fin, expTotal, expPaidDirect, expUnpaidRaw, expPaidFinal, expUnpaidFinal,
+    dsPaidFinal, dsUnpaidFinal, muPaidFinal, muUnpaidFinal,
     dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent,
     muTotal, muPaid, muUnpaid, muQty, funds, ownerPaid,
     grand: expTotal + dsTotal + rent + muTotal,
-    netPending: (expUnpaidRaw + dsUnpaid + muUnpaid) - vp
+    netPending: expUnpaidFinal + dsUnpaidFinal + muUnpaidFinal
   };
 }
 
@@ -905,19 +925,24 @@ const ICON = {
   expense: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>',
   vendor: '<svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></svg>',
   murum: '<svg viewBox="0 0 24 24"><path d="M3 19h18L12 6zM8.5 19l3.5-5 3.5 5"/></svg>',
+  search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
   more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 };
 function navItems(s) {
   const m = s.mods || {};
-  const out = [['dash', 'Dashboard']];
-  if (m.machine !== false) out.push(['machine', 'Machine']);
-  if (m.diesel !== false) out.push(['diesel', 'Diesel']);
-  if (m.murum) out.push(['murum', 'Murum']);
-  out.push(['expense', 'Expense']);
-  if (m.vendor !== false) out.push(['vendor', 'Vendor']);
-  out.push(['more', 'More']);
+  const rest = [];
+  if (m.machine !== false) rest.push(['machine', 'Machine']);
+  if (m.diesel !== false) rest.push(['diesel', 'Diesel']);
+  if (m.murum) rest.push(['murum', 'Murum']);
+  rest.push(['expense', 'Expense']);
+  if (m.vendor !== false) rest.push(['vendor', 'Vendor']);
+  rest.push(['search', 'Search']);
+  rest.push(['more', 'More']);
+  const out = rest.slice();
+  out.splice(Math.floor(out.length / 2), 0, ['dash', 'Dashboard']);   /* Dashboard madhe */
   return out;
 }
+
 function subsFor(s, t) {
   const m = s.mods || {};
   if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary'], ['rent', 'Rent']].concat(m.owner ? [['owner', 'Owner']] : []).concat([['mast', 'Machines']]);
@@ -942,7 +967,9 @@ function render() {
   $('#app').innerHTML = `
   <div class="topbar">
     <div class="tb-row">
-      <div class="brand">SITE MANAGER<span>VEERSHREE REALTY ACCOUNT</span></div>
+      ${DB.logo
+        ? `<div style="flex:0 0 auto"><img src="${DB.logo}" class="brandlogo" alt=""></div>`
+        : '<div class="brand">SITE MANAGER<span>VEERSHREE REALTY ACCOUNT</span></div>'}
       <button class="sitepick" data-act="sites"><b>${esc(s.name)}</b><i>&#9660;</i></button>
     </div>
   </div>
@@ -950,11 +977,13 @@ function render() {
   <main>${STORAGE_OK ? '' : '<div class="warn">This device is not saving data. Download a backup from <b>More &rarr; Excel</b> when you finish.</div>'}
     ${VIEW[TAB](s)}
   </main>
-  <nav class="nav" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}">${ICON[k]}${l}</button>`).join('')}</nav>`;
+  <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}">${ICON[k]}${l}</button>`).join('')}</nav>`;
+  try { renderSearch(); } catch (e) { }
   window.scrollTo(0, 0);
 }
 
 const VIEW = {};
+VIEW.search = s => searchView(s);
 
 /* ---------------- DASHBOARD ---------------- */
 VIEW.dash = s => {
@@ -979,14 +1008,13 @@ VIEW.dash = s => {
     <div class="scroll"><table>
       <thead><tr><th>Head</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Pending</th></tr></thead>
       <tbody>
-        <tr><td>Site expense</td><td class="n">${money0(t.expTotal)}</td><td class="n">${money0(t.expPaidDirect)}</td><td class="n">${money0(t.expUnpaidRaw)}</td></tr>
-        ${s.mods.murum ? `<tr><td>Murum <span class="tiny">(${dec(t.muQty)} ${esc(s.murumUnit)})</span></td><td class="n">${money0(t.muTotal)}</td><td class="n">${money0(t.muPaid)}</td><td class="n">${money0(t.muUnpaid)}</td></tr>` : ''}
-        <tr><td>Diesel purchase</td><td class="n">${money0(t.dsTotal)}</td><td class="n">${money0(t.dsPaid)}</td><td class="n">${money0(t.dsUnpaid)}</td></tr>
-        <tr><td>Machine Rent <span class="tiny">(payable)</span></td><td class="n">${money0(t.rent)}</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
-        <tr><td>Less: vendor payments</td><td class="n">&mdash;</td><td class="n">${money0(t.vendorPaid)}</td><td class="n">-${money0(t.vendorPaid)}</td></tr>
+        <tr><td>Site expense</td><td class="n">${money0(t.expTotal)}</td><td class="n">${money0(t.expPaidFinal)}</td><td class="n">${money0(t.expUnpaidFinal)}</td></tr>
+        ${s.mods.murum ? `<tr><td>Murum <span class="tiny">(${dec(t.muQty)} ${esc(s.murumUnit)})</span></td><td class="n">${money0(t.muTotal)}</td><td class="n">${money0(t.muPaidFinal)}</td><td class="n">${money0(t.muUnpaidFinal)}</td></tr>` : ''}
+        ${s.mods.diesel !== false ? `<tr><td>Diesel purchase</td><td class="n">${money0(t.dsTotal)}</td><td class="n">${money0(t.dsPaidFinal)}</td><td class="n">${money0(t.dsUnpaidFinal)}</td></tr>` : ''}
       </tbody>
-      <tfoot><tr><td>NET</td><td class="n">${money0(t.grand)}</td><td class="n">${money0(t.expPaidDirect + t.dsPaid + t.vendorPaid)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
+      <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table></div>
+    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) tya-tya head madhe apoap dharle aahet.${s.mods.machine !== false ? ' Machine rent ' + money(t.rent) + ' vegla &mdash; Machine tab madhe.' : ''}</div>
   </div>
 
   <div class="card">
@@ -1076,7 +1104,12 @@ function machineLogView(s) {
       </div>`;
     }).join('') : '<div class="empty">No entries yet. Tap "+ Machine entry" above to start.<i>अजून एंट्री नाही</i></div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="mlMore">Ajun ${rows.length - shown.length} entries dakhva</button></div>` : ''}
-  </div>`;
+  </div>
+  ${(f && rows.length) ? `<div class="card"><div class="pad">
+    <div class="tiny" style="margin-bottom:8px;line-height:1.7"><b>${esc(f === '__none' ? 'Machine no nasleli' : f)}</b> chya <b>${rows.length}</b> entries (${dec(rows.reduce((a, r) => a + hoursOf(r), 0))} hours, ${dec(rows.reduce((a, r) => a + num(r.diesel), 0))} L diesel) ekach velela delete karta yetat.</div>
+    <button class="btn dgr sm" style="width:100%" data-act="mlDelAll" data-v="${esc(f)}">Ya machine chya saglya entries delete kara<i>सगळ्या एन्ट्री डिलीट</i></button>
+    <div class="tiny" style="margin-top:8px">Machine Master madhli machine rahil, fakt entries jatil.</div>
+  </div></div>` : ''}`;
 }
 
 function machineSumView(s) {
@@ -1176,8 +1209,8 @@ function dieselLogView(s) {
   <button class="btn" data-act="dAdd">+ Diesel entry<i>डिझेल एंट्री</i></button>
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">TOTAL DIESEL<i>एकूण डिझेल</i></div><div class="v num">${dec(t.dsLitres)} L</div></div>
-    <div class="kpi g"><div class="k">PAID<i>दिले</i></div><div class="v num">${money0(t.dsPaid)}</div></div>
-    <div class="kpi r"><div class="k">BAKI<i>बाकी</i></div><div class="v num">${money0((s.dieselVendors || []).reduce((a, v) => a + Math.max(0, dieselVendorStats(s, v).remaining), 0))}</div></div>
+    <div class="kpi g"><div class="k">PAID<i>दिले</i></div><div class="v num">${money0(t.dsPaidFinal)}</div></div>
+    <div class="kpi r"><div class="k">BAKI<i>बाकी</i></div><div class="v num">${money0(t.dsUnpaidFinal)}</div></div>
   </div>
   <div class="card">${shown.length ? shown.map(d => `<div class="row" data-act="dEdit" data-v="${d.id}">
       <div class="main"><div class="ttl">${esc(d.vendor)} <span class="pill ${fin[d.id] && fin[d.id].final === 'Paid' ? 'p' : 'u'}">${fin[d.id] && fin[d.id].final === 'Paid' ? (st(d) === 'Paid' ? 'Paid' : 'Paid (payment)') : 'Unpaid'}</span></div>
@@ -1314,8 +1347,18 @@ function vendorPendView(s) {
 
 function vendorPayView(s) {
   const rows = s.vendorPayments.slice().sort(byDateDesc);
+  const due = allVendors(s).map(v => ({ v, x: remVendorStats(s, v), d: isDieselVendor(s, v) }))
+    .filter(o => o.x.remaining > 0.5).sort((a, b) => b.x.remaining - a.x.remaining);
   return `
   <button class="btn" data-act="vpAdd">+ Vendor payment<i>व्हेंडर पेमेंट</i></button>
+  ${due.length ? `<div class="card mt"><h3>Kunala kiti dyaycha<i>कोणाला किती द्यायचे</i><small>${money(due.reduce((a, o) => a + o.x.remaining, 0))}</small></h3>
+    ${due.map(o => `<div class="row">
+      <div class="main"><div class="ttl">${esc(o.v)} ${o.d ? '<span class="pill n">diesel</span>' : ''}</div>
+      <div class="sub">ekun ${money(o.x.total || o.x.amount)} &middot; dile ${money((o.x.direct || 0) + (o.x.paid || o.x.payments || 0))}</div></div>
+      <div class="amt" style="color:var(--due)">${money0(o.x.remaining)}</div>
+      <button class="rowbtn" data-act="vpAdd" data-v="${esc(o.v)}" style="color:var(--hivis-dk)">Payment</button></div>`).join('')}
+    <div class="pad tiny">Payment takla ki tya vendor che junya bill pasun apoap Paid hotat &mdash; diesel bills pn.</div>
+  </div>` : ''}
   <div class="kpis mt" style="grid-template-columns:1fr">
     <div class="kpi g"><div class="k">TOTAL PAID OUT<i>एकूण पेमेंट</i></div><div class="v num">${money0(rows.reduce((a, p) => a + num(p.amount), 0))}</div></div>
   </div>
@@ -1362,8 +1405,8 @@ function excelView(s) {
     <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="xlAllDone">All pasted - mark done<i>पेस्ट झाले</i></button></div></div>
   </div>` : ''}
   <div class="card"><h3>Supervisor cha data<i>सुपरवायझरचा डेटा</i><small>Reading Book app madhun</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Supervisor ne pathavleli <b>site-data-....json</b> file ithe ghya &mdash; machine reading ani diesel bills apoap Machine Log ani Diesel Purchase madhe jatil. Ekda ghetleli entry parat ghetli jat nahi.</div>
-    <button class="btn sec sm" style="width:100%" data-act="impSup">Reading file import kara<i>फाईल इम्पोर्ट</i></button>
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Supervisor ne pathavlelya <b>site-data-....json</b> files ithe ghya &mdash; <b>ekach velela kitihi files</b> nivadta yetat &mdash; machine reading ani diesel bills apoap Machine Log ani Diesel Purchase madhe jatil. Ekda ghetleli entry parat ghetli jat nahi.</div>
+    <button class="btn sec sm" style="width:100%" data-act="impSup">Reading files import kara<i>फाईल इम्पोर्ट</i></button>
   </div></div>
   <div class="card"><h3>Data safety<i>डेटा सुरक्षा</i><small>${Store.mode === 'device' ? (PERSIST ? 'saved on this phone' : 'on this phone') : 'in Claude'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Data ${Store.mode === 'device' ? 'is kept in this phone in two places, plus one snapshot per day' : 'is kept in your Claude account'}. ${PERSIST ? 'The browser has been asked to keep this data permanently.' : ''} Even so, download a backup once a month and keep it on Drive.<i>महिन्यातून एकदा बॅकअप घ्या</i></div>
@@ -1433,6 +1476,14 @@ function sitesView(s) {
       <button class="btn sec sm" style="flex:1" data-act="supLinkWa">WhatsApp</button>
     </div>
     <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="supOpen">Reading Book ughada<i>अ‍ॅप उघडा</i></button></div>
+  </div></div>
+  <div class="card"><h3>Company cha logo<i>कंपनीचा लोगो</i></h3><div class="pad">
+    ${DB.logo ? `<div style="background:var(--ink);border-radius:10px;padding:12px;text-align:center;margin-bottom:10px"><img src="${DB.logo}" style="height:38px;max-width:70%;object-fit:contain"></div>` : '<div class="tiny" style="margin-bottom:10px">Logo takla ki var davikade "SITE MANAGER" chya jaagi to disel.</div>'}
+    <div class="btnrow">
+      <button class="btn sec sm" style="flex:1" data-act="logoPick">${DB.logo ? 'Logo badla' : 'Logo taka'}<i>लोगो निवडा</i></button>
+      ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoOff">Kaadha</button>' : ''}
+    </div>
+    <div class="tiny" style="margin-top:8px">PNG kiwa JPG chalel. App apoap chhota karun thevto, mhanun jaaga vaajat nahi.</div>
   </div></div>
   <div class="card"><h3>Site delete password<i>साइट डिलीट पासवर्ड</i><small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Site delete karayla ha password lagto, mhanje chukun kunachihi site jaat nahi. Pahilya velela delete kartana to set karta yeto.<br><span style="color:var(--steel)">साइट डिलीट करायला हा पासवर्ड लागतो.</span></div>
@@ -1586,6 +1637,123 @@ function dueView(s) {
     <b>4.</b> <b>Calendar</b> button dabla ki tumchya phone chya calendar madhe to divas ani alarm jato &mdash; app band asla tari to vajto.<br>
     <b>5.</b> Payment kelyavar <b>Zala</b> daba, kiwa "Payment kara" ne direct entry kara.
   </div></div>`;
+}
+
+/* ---------------- SEARCH ---------------- */
+function searchAll(s, q) {
+  const t = String(q || '').trim().toLowerCase();
+  if (t.length < 2) return null;
+  const nq = num(t.replace(/[^\d.]/g, ''));
+  const hit = (...parts) => {
+    const txt = parts.filter(x => x !== '' && x != null).join(' ').toLowerCase();
+    if (txt.indexOf(t) >= 0) return true;
+    return false;
+  };
+  const amtHit = v => nq > 0 && Math.round(num(v)) === Math.round(nq);
+  const dHit = d => d && (fmtDate(d).indexOf(t) >= 0 || String(d).indexOf(t) >= 0);
+  const fin = settle(s);
+  const R = [];
+  const add = (kind, act, id, title, sub, amt, pill) => R.push({ kind, act, id, title, sub, amt, pill });
+
+  s.expenseLog.forEach(e => {
+    if (hit(e.desc, e.category, e.vendor, e.paidBy, e.remark) || amtHit(e.amount) || dHit(e.date))
+      add('Kharch', 'eEdit', e.id, e.desc || e.category,
+        fmtDate(e.date) + ' · ' + (e.category || '') + (e.vendor ? ' · ' + e.vendor : '') + (e.paidBy ? ' · ' + e.paidBy : ''),
+        money0(e.amount), fin[e.id] && fin[e.id].final === 'Paid' ? 'p' : 'u');
+  });
+  (s.murumLog || []).forEach(m => {
+    if (hit(m.vendor, m.paidBy, m.remark) || amtHit(mAmt(m)) || dHit(m.date) || 'murum'.indexOf(t) === 0)
+      add('Murum', 'muEdit', m.id, m.vendor || 'Murum',
+        fmtDate(m.date) + ' · ' + dec(m.qty) + ' ' + (s.murumUnit || 'Brass') + (m.paidBy ? ' · ' + m.paidBy : ''),
+        money0(mAmt(m)), fin[m.id] && fin[m.id].final === 'Paid' ? 'p' : 'u');
+  });
+  s.dieselLog.forEach(d => {
+    if (hit(d.vendor, d.bill, d.paidBy, d.remark) || amtHit(d.amount) || dHit(d.date) || 'diesel'.indexOf(t) === 0)
+      add('Diesel', 'dEdit', d.id, d.vendor || 'Diesel',
+        fmtDate(d.date) + ' · ' + dec(d.litres) + ' L' + (d.bill ? ' · bill ' + d.bill : '') + (d.paidBy ? ' · ' + d.paidBy : ''),
+        money0(d.amount), fin[d.id] && fin[d.id].final === 'Paid' ? 'p' : 'u');
+  });
+  s.vendorPayments.forEach(p => {
+    if (hit(p.vendor, p.paidBy, p.mode, p.remark) || amtHit(p.amount) || dHit(p.date))
+      add('Vendor payment', 'vpEdit', p.id, p.vendor,
+        fmtDate(p.date) + (p.paidBy ? ' · ' + p.paidBy : '') + (p.mode ? ' · ' + p.mode : ''), money0(p.amount), 'p');
+  });
+  s.machineLog.forEach(r => {
+    if (hit(r.machineNo, r.remark, machineType(s, r.machineNo)) || amtHit(r.diesel) || dHit(r.date))
+      add('Machine log', 'mlEdit', r.id, r.machineNo || 'machine nahi',
+        fmtDate(r.date) + ' · ' + dec(hoursOf(r)) + ' hr' + (num(r.diesel) ? ' · ' + dec(r.diesel) + ' L' : '') + (r.remark ? ' · ' + r.remark : ''), '', 'n');
+  });
+  s.machines.forEach(m => {
+    if (hit(m.no, m.type, m.owner, m.operator, m.make)) {
+      const q2 = machineRent(s, m.no);
+      add('Machine', 'mEdit', m.id, m.no + ' · ' + m.type,
+        (m.owner ? m.owner + ' · ' : '') + dec(q2.hours) + ' hr · ' + dec(q2.diesel) + ' L' + (q2.hours ? ' · ' + dec(q2.diesel / q2.hours, 2) + ' L/hr' : ''),
+        q2.rent ? money0(q2.rent) : '', 'n');
+    }
+  });
+  (s.funds || []).forEach(f => {
+    if (hit(f.person, f.from, f.mode, f.remark) || amtHit(f.amount) || dHit(f.date))
+      add('Paise milale', 'fnEdit', f.id, f.person, fmtDate(f.date) + (f.from ? ' · ' + f.from : ''), money0(f.amount), 'p');
+  });
+  (s.ownerPayments || []).forEach(p => {
+    if (hit(p.owner, p.paidBy, p.mode, p.remark) || amtHit(p.amount) || dHit(p.date))
+      add('Owner payment', 'opEdit', p.id, p.owner, fmtDate(p.date) + (p.paidBy ? ' · ' + p.paidBy : ''), money0(p.amount), 'p');
+  });
+  (s.reminders || []).forEach(r => {
+    if (hit(r.vendor, r.note) || amtHit(r.amount) || dHit(r.due))
+      add('Payment date', 'remEdit', r.id, r.vendor || r.note, fmtDate(r.due) + (r.done ? ' · zala' : ''), num(r.amount) ? money0(r.amount) : '', r.done ? 'p' : 'u');
+  });
+  /* vendor / naav cha ekun hishob */
+  allVendors(s).forEach(v => {
+    if (v.toLowerCase().indexOf(t) >= 0) {
+      const x = remVendorStats(s, v);
+      add('Vendor hishob', 'vpAdd', v, v,
+        'ekun ' + money(x.total || x.amount) + ' · dile ' + money((x.direct || 0) + (x.paid || x.payments || 0)),
+        money0(x.remaining), x.remaining > 0.5 ? 'u' : 'p');
+    }
+  });
+  s.people.forEach(p => {
+    if (p.toLowerCase().indexOf(t) >= 0) {
+      const x = personStats(s, p);
+      add('Naav', 'person', p, p, 'site ' + money(x.site + x.mu) + ' · diesel ' + money(x.dsl) + ' · vendor ' + money(x.vp + x.op), money0(x.total), 'n');
+    }
+  });
+  return R;
+}
+
+function searchView(s) {
+  const q = UI.sq || '';
+  const res = searchAll(s, q);
+  const groups = {};
+  (res || []).forEach(r => { (groups[r.kind] = groups[r.kind] || []).push(r); });
+  const tot = (res || []).length;
+  const eg = ['Achit', 'PC-01', 'murum', 'diesel', '5000'];
+  return `
+  <div class="card"><div class="pad">
+    <div class="field" style="margin:0"><label>Kahihi shodha<i>काहीही शोधा</i></label>
+      <input id="sq" value="${esc(q)}" placeholder="naav, rakkam, tarikh, shabd" autocomplete="off" data-act="sqIn"></div>
+    ${q ? '' : `<div class="chips" style="flex-wrap:wrap;overflow:visible;border:0;padding:10px 0 0">
+      ${eg.map(x => `<button class="chip" data-act="sqEg" data-v="${esc(x)}">${esc(x)}</button>`).join('')}
+    </div>`}
+  </div></div>
+
+  ${!q ? `<div class="card"><div class="pad tiny" style="line-height:1.9">
+      <b>Naav</b> &mdash; vendor, machine, manager, supplier<br>
+      <b>Rakkam</b> &mdash; udaharan 5000<br>
+      <b>Tarikh</b> &mdash; 05/09/26<br>
+      <b>Shabd</b> &mdash; murum, diesel, nashta, bill number<br>
+      <span style="color:var(--steel)">नाव, रक्कम, तारीख किंवा कोणताही शब्द शोधा.</span>
+    </div></div>`
+    : res === null ? '<div class="card"><div class="empty">Kimaan 2 akshare liha.<i>किमान २ अक्षरे</i></div></div>'
+    : !tot ? `<div class="card"><div class="empty">"${esc(q)}" sathi kahi sapadla nahi.<i>काही सापडले नाही</i></div></div>`
+    : `<div class="card"><div class="pad tiny"><b>${tot}</b> gosti sapadlya</div></div>
+       ${Object.keys(groups).map(k => `<div class="card"><h3>${esc(k)}<small>${groups[k].length}</small></h3>
+         ${groups[k].slice(0, 40).map(r => `<div class="row" data-act="${r.act}" data-v="${esc(r.id)}">
+           <div class="main"><div class="ttl">${esc(r.title)} ${r.pill === 'p' ? '<span class="pill p">Paid</span>' : r.pill === 'u' ? '<span class="pill u">Baki</span>' : ''}</div>
+           <div class="sub">${esc(r.sub)}</div></div>
+           ${r.amt ? `<div class="amt">${r.amt}</div>` : ''}</div>`).join('')}
+         ${groups[k].length > 40 ? `<div class="pad tiny">ani ${groups[k].length - 40} ajun...</div>` : ''}
+       </div>`).join('')}`}`;
 }
 
 /* ============================================================
@@ -2587,6 +2755,37 @@ function siteForm(id) {
     null);   /* delete vegla: Sites madhe Delete button, password lagto */
 }
 
+/* ---------- company cha logo ---------- */
+function pickLogo() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = () => {
+    const f = inp.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onerror = () => alert('Image vachta ali nahi.');
+    rd.onload = () => {
+      const img = new Image();
+      img.onerror = () => alert('Hi image ughadta ali nahi.');
+      img.onload = async () => {
+        try {
+          const MW = 320, MH = 110;
+          let w = img.width, h = img.height;
+          const sc = Math.min(MW / w, MH / h, 1);
+          w = Math.max(1, Math.round(w * sc)); h = Math.max(1, Math.round(h * sc));
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          DB.logo = c.toDataURL('image/png');
+          await save(); render(); toast('Logo lavla');
+        } catch (e) { alert('Logo thevta ala nahi.'); }
+      };
+      img.src = rd.result;
+    };
+    rd.readAsDataURL(f);
+  };
+  inp.click();
+}
+
 /* ---------- payment cha divas (reminder) ---------- */
 function remForm(s, id) {
   const r = id ? (s.reminders || []).find(x => x.id === id) : null;
@@ -2810,52 +3009,85 @@ function exportCsv(kind) {
   toast('CSV downloaded');
 }
 
-/* ---------- supervisor chya Reading Book app madhli file (machine + diesel) ---------- */
+/* ---------- supervisor chya Reading Book app madhlya files (ekach velela kitihi) ---------- */
+function readFileText(f) {
+  return new Promise((res, rej) => {
+    const rd = new FileReader();
+    rd.onload = () => res(String(rd.result).replace(/^\uFEFF/, ''));
+    rd.onerror = () => rej(new Error(f.name));
+    rd.readAsText(f);
+  });
+}
+
 function importSupervisor(s) {
   const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = '.json,application/json';
-  inp.onchange = () => {
-    const f = inp.files[0]; if (!f) return;
-    const rd = new FileReader();
-    rd.onerror = () => alert('File vachta ali nahi.');
-    rd.onload = async () => {
-      let d;
-      try { d = JSON.parse(String(rd.result).replace(/^\uFEFF/, '')); }
-      catch (e) { return alert('Hi file vachta ali nahi.'); }
-      if (!d || (d.type !== 'sup-log' && d.type !== 'sup-machine-log')) {
-        return alert('Hi Reading Book chi file nahi.\n\nSupervisor la "Send data file to office" ha button dabayla sanga.');
-      }
-      const mRows = d.machineRows || d.rows || [];
-      const dRows = d.dieselRows || [];
-      if (!mRows.length && !dRows.length) return alert('Ya file madhe ek pn entry nahi.');
-      const days = [...new Set(mRows.map(r => r.date).concat(dRows.map(r => r.date)))].filter(Boolean).sort();
-      const msg = (d.site ? d.site + '\n' : '') + (d.supervisor ? 'Supervisor: ' + d.supervisor + '\n' : '') +
-        mRows.length + ' machine entries, ' + dRows.length + ' diesel bills\n' +
-        days.length + ' divas (' + fmtDate(days[0]) + ' te ' + fmtDate(days[days.length - 1]) + ')\n\n"' + s.name + '" madhe ghyaychya?';
-      if (!confirm(msg)) return;
+  inp.type = 'file'; inp.accept = '.json,application/json'; inp.multiple = true;
+  inp.onchange = async () => {
+    const files = Array.from(inp.files || []);
+    if (!files.length) return;
+    files.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    toast(files.length + ' file vachtoy...');
 
-      let mAdd = 0, mDup = 0, newM = 0, dAdd = 0, dDup = 0, newV = 0, newP = 0;
-      mRows.forEach(r => {
+    const packs = [], bad = [];
+    for (const f of files) {
+      let d = null;
+      try { d = JSON.parse(await readFileText(f)); } catch (e) { bad.push(f.name); continue; }
+      if (!d || (d.type !== 'sup-log' && d.type !== 'sup-machine-log')) { bad.push(f.name); continue; }
+      const m = d.machineRows || d.rows || [], dl = d.dieselRows || [];
+      if (!m.length && !dl.length) { bad.push(f.name); continue; }
+      packs.push({ name: f.name, d, m, dl });
+    }
+    if (!packs.length) {
+      return alert('Ek pn Reading Book chi file sapadli nahi.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+    }
+
+    const mTot = packs.reduce((a, p) => a + p.m.length, 0);
+    const dTot = packs.reduce((a, p) => a + p.dl.length, 0);
+    const days = [...new Set([].concat(...packs.map(p => p.m.map(r => r.date).concat(p.dl.map(r => r.date)))))].filter(Boolean).sort();
+    const sups = [...new Set(packs.map(p => p.d.supervisor).filter(Boolean))];
+    const msg = packs.length + ' file\n' + mTot + ' machine entries, ' + dTot + ' diesel bills\n' +
+      (days.length ? days.length + ' divas (' + fmtDate(days[0]) + ' te ' + fmtDate(days[days.length - 1]) + ')\n' : '') +
+      (sups.length ? 'Supervisor: ' + sups.join(', ') + '\n' : '') +
+      (bad.length ? '\n' + bad.length + ' file chalali nahi, ti sodli.\n' : '') +
+      '\n"' + s.name + '" madhe ghyaychya?';
+    if (!confirm(msg)) return;
+
+    /* aadhi juna data snapshot madhe */
+    try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
+
+    let mAdd = 0, mDup = 0, newM = 0, dAdd = 0, dDup = 0, newV = 0, newP = 0;
+    /* patkan duplicate tapasnyasathi key set */
+    const mKey = {}; s.machineLog.forEach(x => mKey[x.date + '|' + x.machineNo] = 1);
+    const dKey = {}; s.dieselLog.forEach(x => dKey[x.date + '|' + x.vendor + '|' + num(x.litres) + '|' + num(x.amount)] = 1);
+    const mNo = {}; s.machines.forEach(m => mNo[m.no] = 1);
+    const dvSet = {}; s.dieselVendors.forEach(v => dvSet[v] = 1);
+    const pSet = {}; s.people.forEach(p => pSet[p] = 1);
+    const rmSet = {}; s.rateMaster.forEach(r => rmSet[r.type] = 1);
+
+    packs.forEach(p => {
+      p.m.forEach(r => {
         if (!r.machineNo || !r.date) return;
-        if (s.machineLog.some(x => x.date === r.date && x.machineNo === r.machineNo)) { mDup++; return; }
-        if (!s.machines.some(m => m.no === r.machineNo)) {
+        const k = r.date + '|' + r.machineNo;
+        if (mKey[k]) { mDup++; return; }
+        mKey[k] = 1;
+        if (!mNo[r.machineNo]) {
           const type = r.type || '';
-          if (type && !s.rateMaster.some(rm => rm.type === type)) {
-            s.rateMaster.push({ type, basis: type === 'Hiwa' ? 'Daily' : 'Hourly', packageRate: 0, packageUnits: type === 'Hiwa' ? 30 : 240 });
-          }
+          if (type && !rmSet[type]) { s.rateMaster.push({ type, basis: type === 'Hiwa' ? 'Daily' : 'Hourly', packageRate: 0, packageUnits: type === 'Hiwa' ? 30 : 240 }); rmSet[type] = 1; }
           s.machines.push({ id: uid(), no: r.machineNo, type, owner: '', operator: '', make: '', monthlyRate: '' });
-          newM++;
+          mNo[r.machineNo] = 1; newM++;
         }
         s.machineLog.push({ id: uid(), date: r.date, machineNo: r.machineNo,
           inR: has(r.inR) ? num(r.inR) : '', outR: has(r.outR) ? num(r.outR) : '',
           diesel: has(r.diesel) ? num(r.diesel) : '', remark: r.remark || '' });
         mAdd++;
       });
-      dRows.forEach(r => {
+      p.dl.forEach(r => {
         if (!r.date) return;
-        if (s.dieselLog.some(x => x.date === r.date && x.vendor === r.vendor && num(x.amount) === num(r.amount) && num(x.litres) === num(r.litres))) { dDup++; return; }
-        if (r.vendor && !s.dieselVendors.includes(r.vendor)) { s.dieselVendors.push(r.vendor); newV++; }
-        if (r.paidBy && !s.people.includes(r.paidBy)) { s.people.push(r.paidBy); newP++; }
+        const k = r.date + '|' + (r.vendor || '') + '|' + num(r.litres) + '|' + num(r.amount);
+        if (dKey[k]) { dDup++; return; }
+        dKey[k] = 1;
+        if (r.vendor && !dvSet[r.vendor]) { s.dieselVendors.push(r.vendor); dvSet[r.vendor] = 1; newV++; }
+        if (r.paidBy && !pSet[r.paidBy]) { s.people.push(r.paidBy); pSet[r.paidBy] = 1; newP++; }
         s.dieselLog.push({ id: uid(), date: r.date, vendor: r.vendor || '',
           litres: has(r.litres) ? num(r.litres) : '', bill: r.bill || '',
           amount: has(r.amount) ? num(r.amount) : '',
@@ -2863,15 +3095,17 @@ function importSupervisor(s) {
           paidBy: r.paidBy || '', remark: r.remark || '' });
         dAdd++;
       });
-      migrate();
-      await save(); render();
-      alert(mAdd + ' machine entries ani ' + dAdd + ' diesel bills add zale.' +
-        ((mDup || dDup) ? '\n' + (mDup + dDup) + ' aadhich hote, te sodle.' : '') +
-        (newM ? '\n' + newM + ' navin machine add zalya - tyanche rate bhara.' : '') +
-        (newV ? '\n' + newV + ' navin diesel vendor add zale.' : '') +
-        (newP ? '\n' + newP + ' navin naav add zale.' : ''));
-    };
-    rd.readAsText(f);
+    });
+
+    migrate();
+    await save(); render();
+    alert(packs.length + ' file ghetlya.\n\n' +
+      mAdd + ' machine entries ani ' + dAdd + ' diesel bills add zale.' +
+      ((mDup || dDup) ? '\n' + (mDup + dDup) + ' aadhich hote, te sodle.' : '') +
+      (newM ? '\n' + newM + ' navin machine add zalya - tyanche rate bhara.' : '') +
+      (newV ? '\n' + newV + ' navin diesel vendor add zale.' : '') +
+      (newP ? '\n' + newP + ' navin naav add zale.' : '') +
+      (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
   };
   inp.click();
 }
@@ -2988,6 +3222,17 @@ document.addEventListener('click', async e => {
     case 'sub': UI[el.dataset.t || TAB] = v; if (el.dataset.t) TAB = el.dataset.t; render(); break;
     case 'mlFilter': UI.mlFilter = v; UI.mlMore = 60; render(); break;
     case 'mlMore': UI.mlMore = (UI.mlMore || 60) + 100; render(); break;
+    case 'mlDelAll': {
+      const list = v === '__none' ? s.machineLog.filter(r => !r.machineNo) : s.machineLog.filter(r => r.machineNo === v);
+      if (!list.length) break;
+      const hrs = list.reduce((a, r) => a + hoursOf(r), 0);
+      if (!confirm((v === '__none' ? 'Machine no nasleli' : v) + ' chya ' + list.length + ' entries (' + dec(hrs) + ' hours) kayamchya delete hotil.\n\nNakki?')) break;
+      const ids = {}; list.forEach(r => ids[r.id] = 1);
+      s.machineLog = s.machineLog.filter(r => !ids[r.id]);
+      UI.mlFilter = '';
+      await save(); render(); toast(list.length + ' entries delete zalya');
+      break;
+    }
     case 'dlMore': UI.dlMore = (UI.dlMore || 50) + 100; render(); break;
     case 'exCat': UI.exCat = v; UI.exMore = 50; render(); break;
     case 'exMore': UI.exMore = (UI.exMore || 50) + 100; render(); break;
@@ -3008,6 +3253,34 @@ document.addEventListener('click', async e => {
     case 'opAdd': ownerPayForm(s); break;
     case 'opEdit': ownerPayForm(s, s.ownerPayments.find(x => x.id === v)); break;
     case 'dayReg': dayRegisterSheet(s); break;
+    case 'qClear': {
+      UI.q = '';
+      const b = document.getElementById('q_box');
+      if (b) { b.value = ''; b.blur(); }
+      renderSearch(); break;
+    }
+    case 'sOpen': {
+      const k = el.dataset.k;
+      UI.q = '';
+      const b = document.getElementById('q_box');
+      if (b) { b.value = ''; b.blur(); }
+      renderSearch();
+      if (k === 'e') expenseForm(s, s.expenseLog.find(x => x.id === v));
+      else if (k === 'd') dieselForm(s, s.dieselLog.find(x => x.id === v));
+      else if (k === 'm') murumForm(s, s.murumLog.find(x => x.id === v));
+      else if (k === 'v') vpForm(s, s.vendorPayments.find(x => x.id === v));
+      else if (k === 'l') machineForm(s, s.machineLog.find(x => x.id === v));
+      else if (k === 'M') machineMasterForm(s, s.machines.find(x => x.id === v));
+      else if (k === 'f') fundsForm(s, s.funds.find(x => x.id === v));
+      else if (k === 'o') ownerPayForm(s, s.ownerPayments.find(x => x.id === v));
+      else if (k === 'r') remForm(s, v);
+      break;
+    }
+    case 'logoPick': pickLogo(); break;
+    case 'logoOff':
+      if (!confirm('Logo kaadhaycha?')) break;
+      delete DB.logo; await save(); render(); toast('Logo kaadhla');
+      break;
     case 'remAdd': remForm(s, null); break;
     case 'remEdit': remForm(s, v); break;
     case 'remDone': {
@@ -3116,6 +3389,7 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'expJson': download('site-manager-backup-' + today() + '.json', JSON.stringify(DB), 'application/json'); toast('Backup downloaded'); break;
+    case 'sqEg': UI.sq = v; TAB = 'search'; render(); break;
     case 'impJson': importJson(); break;
     case 'impSup': importSupervisor(s); break;
     case 'supOpen': window.open(supLink(), '_blank'); break;
