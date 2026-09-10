@@ -201,6 +201,15 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
   @page{margin:12mm}
 }
 
+.arow{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:10px;background:var(--surface);margin-bottom:7px;touch-action:none;user-select:none}
+.arow.drag{background:#FFF7DB;border-color:var(--hivis);box-shadow:0 6px 18px rgba(15,20,25,.16);opacity:.96}
+.arow .hnd{width:26px;flex:0 0 26px;color:var(--steel);font-size:17px;line-height:1;text-align:center;cursor:grab}
+.arow .anm{flex:1;font-weight:600;font-size:14px}
+.arow .asub{font-weight:400;font-size:11px;color:var(--steel);display:block}
+.arow .abtn{width:34px;height:32px;flex:0 0 34px;border:1px solid var(--line);border-radius:8px;
+  background:#F7F9FA;font-size:14px;color:var(--ink)}
+
 /* ---------- sheet / modal ---------- */
 .sheet{position:fixed;inset:0;z-index:80;background:rgba(15,20,25,.55);display:flex;align-items:flex-end;justify-content:center}
 .sheet .box{
@@ -446,7 +455,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v20 · 10-09-2026';
+const APP_VERSION = 'v23 · 10-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -516,7 +525,7 @@ function normSite(s) {
   const S = v => String(v == null ? '' : v).trim();
   const ST = r => String(r && r.status || '').trim().toLowerCase() === 'paid' ? 'Paid' : 'Unpaid';
   s.machineLog = s.machineLog.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), machineNo: S(r.machineNo),
-    inR: N(r.inR), outR: N(r.outR), diesel: N(r.diesel), remark: S(r.remark), xl: !!r.xl }));
+    inR: N(r.inR), outR: N(r.outR), diesel: N(r.diesel), openDiesel: N(r.openDiesel), remark: S(r.remark), xl: !!r.xl }));
   s.dieselLog = s.dieselLog.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), vendor: S(r.vendor),
     litres: N(r.litres), bill: S(r.bill), amount: N(r.amount), status: ST(r), paidBy: S(r.paidBy), remark: S(r.remark), xl: !!r.xl }));
   s.expenseLog = s.expenseLog.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), category: S(r.category),
@@ -727,6 +736,15 @@ function supLink() {
 function mAmt(r) {
   if (has(r.amount) && num(r.amount)) return num(r.amount);
   return num(r.qty) * num(r.rate);
+}
+
+/* ti machine chya sarvat pahilya divsachi entry aahe ka */
+function firstDayFor(s, no, date, rec) {
+  if (!no || !date) return false;
+  const others = (s.machineLog || []).filter(r => sameNo(r.machineNo, no) && (!rec || r.id !== rec.id));
+  if (!others.length) return true;
+  const first = others.reduce((a, r) => (String(r.date) < a ? String(r.date) : a), '9999-99-99');
+  return String(date) <= first;
 }
 
 /* ---------- machine no che variants shodhun ek karnyasathi ---------- */
@@ -1205,7 +1223,7 @@ function machineLogView(s) {
       return `<div class="row" data-act="mlEdit" data-v="${r.id}">
         <div class="main">
           <div class="ttl">${r.machineNo ? esc(r.machineNo) + ' <span class="pill n">' + esc(machineType(s, r.machineNo) || 'no type') + '</span>' : '<span class="pill u">machine number needed</span>'}</div>
-          <div class="sub">${fmtDate(r.date)} &nbsp;&middot;&nbsp; ${has(r.inR) ? dec(r.inR, 1) : '—'} &rarr; ${has(r.outR) ? dec(r.outR, 1) : '—'}${r.diesel ? ' &nbsp;&middot;&nbsp; ' + dec(r.diesel) + ' L' : ''}${r.remark ? ' &nbsp;&middot;&nbsp; ' + esc(r.remark) : ''}</div>
+          <div class="sub">${fmtDate(r.date)} &nbsp;&middot;&nbsp; ${has(r.inR) ? dec(r.inR, 1) : '—'} &rarr; ${has(r.outR) ? dec(r.outR, 1) : '—'}${r.diesel ? ' &nbsp;&middot;&nbsp; ' + dec(r.diesel) + ' L' : ''}${r.remark ? ' &nbsp;&middot;&nbsp; ' + esc(r.remark) : ''}${num(r.openDiesel) ? ' &nbsp;&middot;&nbsp; <b>opening ' + dec(r.openDiesel) + ' L</b>' : ''}</div>
         </div>
         <div class="amt">${dec(h)}<div class="tiny" style="font-weight:500">hr</div>${(h > 0 && num(r.diesel) > 0) ? `<div class="tiny" style="font-weight:700;color:var(--rent)">${dec(num(r.diesel) / h, 2)} L/hr</div>` : ''}</div>
       </div>`;
@@ -1291,7 +1309,10 @@ function machineRentView(s) {
 
 function machineMasterView(s) {
   return `
-  <button class="btn" data-act="mAdd">+ Add machine<i>मशीन जोडा</i></button>
+  <div class="btnrow" style="margin:0 0 12px">
+    <button class="btn" style="flex:1" data-act="mAdd">+ Add machine<i>मशीन जोडा</i></button>
+    <button class="btn sec" style="flex:1" data-act="mArrange">Arrange order<i>क्रम बदला</i></button>
+  </div>
   ${(() => {
     const g = machineGroups(s);
     if (!g.length) return '';
@@ -2360,6 +2381,7 @@ function machineBill(s, no) {
       ['TOTAL ENTRIES', r.entries],
       ['TOTAL HOURS', dec(r.hours)],
       ['TOTAL DIESEL (L)', dec(r.diesel)],
+      (() => { const o = rows.reduce((a, x) => a + num(x.openDiesel), 0); return o ? ['OPENING DIESEL (L)', dec(o)] : null; })(),
       ['DIESEL PER HOUR', lph ? dec(lph, 2) + ' L' : '-'],
       r.unit ? ['RATE / ' + (r.basis === 'Daily' ? 'DAY' : 'HR'), dec(r.unit, 0)] : null,
       r.rent ? ['RENT PAYABLE', money0(r.rent)] : null
@@ -2527,11 +2549,17 @@ function machineForm(s, rec) {
       <div class="f2">
         <div class="field"><label>Diesel filled (L)<i>भरलेले डिझेल</i></label><input type="number" inputmode="decimal" step="0.1" id="f_dsl" value="${has(r.diesel) ? r.diesel : ''}"></div>
         <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+      <div id="f_openwrap" style="display:none">
+        <div class="field"><label>Opening diesel in machine (L)<i>सुरुवातीला टाकीत असलेले डिझेल</i></label>
+          <input type="number" inputmode="decimal" step="0.1" id="f_open" value="${has(r.openDiesel) ? r.openDiesel : ''}" placeholder="machine aali tevha tankit kiti hota"></div>
+        <div class="tiny" style="margin:-6px 0 10px">He fakt <b>tya machine chya pahilya divsala</b> vicharla jata. Ha aakda diesel kharedit mojla jat nahi &mdash; fakt nond mhanun rahto.</div>
+      </div>
       </div>
     </div></div>`,
     () => {
       const no = val('f_no'); if (!no) return toast('Select a machine');
       const o = { date: val('f_date'), machineNo: no, inR: numVal('f_in'), outR: numVal('f_out'), diesel: numVal('f_dsl'), remark: val('f_rem') };
+      if (firstDayFor(s, no, val('f_date'), rec)) o.openDiesel = numVal('f_open'); else if (rec && has(rec.openDiesel)) o.openDiesel = rec.openDiesel;
       if (rec) Object.assign(rec, o); else s.machineLog.push({ id: uid(), ...o });
       return true;
     },
@@ -3273,6 +3301,82 @@ function importSupervisor(s) {
   inp.click();
 }
 
+/* ---------- machine cha kram badalnyacha screen (hold karun sarkva) ---------- */
+let AORDER = [];
+
+function arrangeRows(s) {
+  return AORDER.map((no, i) => {
+    const m = machineOf(s, no) || { no, type: '' };
+    const n = (s.machineLog || []).filter(r => sameNo(r.machineNo, no)).length;
+    return `<div class="arow" data-i="${i}">
+      <div class="hnd">&#8942;&#8942;</div>
+      <div class="anm">${esc(no)}<span class="asub">${esc(m.type || 'no type')} &middot; ${n} entries</span></div>
+      <button class="abtn" data-act="aUp" data-v="${i}">&#9650;</button>
+      <button class="abtn" data-act="aDn" data-v="${i}">&#9660;</button>
+    </div>`;
+  }).join('');
+}
+
+function arrangeForm(s) {
+  AORDER = s.machines.map(m => m.no);
+  if (AORDER.length < 2) return toast('Kimaan 2 machine lagtat');
+  openSheet('Machine order', `
+    <div class="card"><div class="pad">
+      <div class="tiny" style="margin-bottom:10px;line-height:1.7">Machine <b>hold karun var-khali sarkva</b>, kiwa bajuchya bantanni halva. Ha kram Machine Log chya chips madhe, Summary madhe ani saglikade tasach disel.<br><span style="color:var(--steel)">मशीन धरून वर-खाली सरकवा.</span></div>
+      <div id="alist">${arrangeRows(s)}</div>
+    </div></div>`,
+    () => {
+      const pos = {};
+      AORDER.forEach((no, i) => pos[String(no).toLowerCase()] = i);
+      s.machines.sort((a, b) => {
+        const x = pos[String(a.no).toLowerCase()], y = pos[String(b.no).toLowerCase()];
+        return (x == null ? 99 : x) - (y == null ? 99 : y);
+      });
+      return true;
+    }, null);
+  bindDrag(s);
+}
+
+function redrawArrange(s) {
+  const box = document.getElementById('alist');
+  if (box) { box.innerHTML = arrangeRows(s); bindDrag(s); }
+}
+
+function bindDrag(s) {
+  const box = document.getElementById('alist');
+  if (!box || !box.querySelectorAll) return;
+  const rows = Array.from(box.querySelectorAll('.arow') || []);
+  let drag = null;
+  const start = (row, y) => { drag = { row, from: +row.dataset.i, y0: y, moved: 0 }; row.classList.add('drag'); };
+  const move = y => {
+    if (!drag) return;
+    const dy = y - drag.y0;
+    drag.row.style.transform = 'translateY(' + dy + 'px)';
+    drag.moved = Math.round(dy / (drag.row.offsetHeight || 52));
+  };
+  const end = () => {
+    if (!drag) return;
+    const to = Math.max(0, Math.min(AORDER.length - 1, drag.from + drag.moved));
+    drag.row.classList.remove('drag');
+    drag.row.style.transform = '';
+    if (to !== drag.from) {
+      const [x] = AORDER.splice(drag.from, 1);
+      AORDER.splice(to, 0, x);
+      redrawArrange(s);
+    }
+    drag = null;
+  };
+  rows.forEach(row => {
+    row.addEventListener('touchstart', e => { if (e.target.closest('[data-act]')) return; start(row, e.touches[0].clientY); }, { passive: true });
+    row.addEventListener('touchmove', e => { if (drag) { e.preventDefault(); move(e.touches[0].clientY); } }, { passive: false });
+    row.addEventListener('touchend', end);
+    row.addEventListener('touchcancel', end);
+    row.addEventListener('mousedown', e => { if (e.target.closest('[data-act]')) return; start(row, e.clientY); });
+  });
+  document.addEventListener('mousemove', e => { if (drag) move(e.clientY); });
+  document.addEventListener('mouseup', end);
+}
+
 let PENDING_IMPORT = null;
 
 /* file madhun sites kaadhto — juna format, navin format, ek site, sites chi yaadi */
@@ -3534,6 +3638,14 @@ document.addEventListener('click', async e => {
       try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
       const moved = renameMachine(s, m.no, nm.trim());
       migrate(); await save(); render(); toast(moved + ' entries badalya');
+      break;
+    }
+    case 'mArrange': arrangeForm(s); break;
+    case 'aUp': case 'aDn': {
+      const i = +v, j = a === 'aUp' ? i - 1 : i + 1;
+      if (j < 0 || j >= AORDER.length) break;
+      const t = AORDER[i]; AORDER[i] = AORDER[j]; AORDER[j] = t;
+      redrawArrange(s);
       break;
     }
     case 'mBill':
