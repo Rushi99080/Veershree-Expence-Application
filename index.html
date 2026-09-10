@@ -446,7 +446,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v19 · 09-09-2026';
+const APP_VERSION = 'v20 · 10-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -1035,7 +1035,6 @@ const ICON = {
   expense: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>',
   vendor: '<svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></svg>',
   murum: '<svg viewBox="0 0 24 24"><path d="M3 19h18L12 6zM8.5 19l3.5-5 3.5 5"/></svg>',
-  account: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg>',
   more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 };
 function navItems(s) {
@@ -1046,7 +1045,6 @@ function navItems(s) {
   if (m.murum) rest.push(['murum', 'Murum']);
   rest.push(['expense', 'Expense']);
   if (m.vendor !== false) rest.push(['vendor', 'Vendor']);
-  rest.push(['account', 'Account']);
   rest.push(['more', 'More']);
   const out = rest.slice();
   out.splice(Math.floor(out.length / 2), 0, ['dash', 'Dashboard']);   /* Dashboard madhe */
@@ -1069,8 +1067,6 @@ const SUBS = {
 const sub = t => { const l = subsFor(site(), t); return (l && l.some(x => x[0] === UI[t])) ? UI[t] : (l ? l[0][0] : ''); };
 
 function render() {
-  if (accNew()) { $('#app').innerHTML = signupView(); return; }
-  if (accLocked()) { $('#app').innerHTML = UI.forgot ? forgotView() : loginView(); return; }
   const s = site();
   const nav = navItems(s);
   if (!nav.some(x => x[0] === TAB)) TAB = 'dash';
@@ -1518,7 +1514,6 @@ function vendorSumView(s) {
 }
 
 /* ---------------- MORE ---------------- */
-VIEW.account = s => accountView(s);
 VIEW.more = s => { const k = sub('more'); return k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
 
 /* ---------------- EXCEL SYNC ---------------- */
@@ -2484,146 +2479,6 @@ function openBill(html, name) {
 }
 let PRINT_NAME = 'report';
 function closeBill() { $('#print').innerHTML = ''; document.body.style.overflow = ''; }
-
-/* ============================================================
-   ACCOUNT — signup / login / forgot password / account screen
-   ============================================================ */
-
-/* Firebase chi key ithe takli ki Google login chalu hoto */
-const CLOUD = { enabled: false, apiKey: '', authDomain: '', projectId: '' };
-
-let ACC = null;                                   /* logged-in account */
-
-const accKey = 'vsms:acc:v1';
-function accSave() {
-  try { ACC ? localStorage.setItem(accKey, '1') : localStorage.removeItem(accKey); } catch (e) { }
-}
-function accLoad() { try { return localStorage.getItem(accKey) === '1'; } catch (e) { return false; } }
-
-const cleanMob = m => String(m || '').replace(/[^\d]/g, '').slice(-10);
-const cleanMail = e => String(e || '').trim().toLowerCase();
-const codeGen = () => {
-  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let o = '';
-  for (let i = 0; i < 10; i++) o += c[Math.floor(Math.random() * c.length)];
-  return o.slice(0, 5) + '-' + o.slice(5);
-};
-
-async function accHash(pw) { return await sha('acc:' + String(pw) + ':' + (DB.account ? DB.account.salt : '')); }
-
-function accLocked() { return !!(DB.account && !ACC); }
-function accNew() { return !DB.account; }
-
-/* ---------------- SIGNUP ---------------- */
-function signupView() {
-  return `
-  <div class="lock">
-    <div class="lockbox">
-      <div class="brand" style="margin-bottom:14px">SITE MANAGER<span>CREATE YOUR ACCOUNT</span></div>
-      <div class="field"><label>Company name<i>कंपनीचे नाव</i></label><input id="a_co" placeholder="Veershree Realty" autocomplete="organization"></div>
-      <div class="field"><label>Your name<i>तुमचे नाव</i></label><input id="a_nm" placeholder="Rushi" autocomplete="name"></div>
-      <div class="field"><label>Email<i>ईमेल</i></label><input id="a_em" type="email" placeholder="name@gmail.com" autocomplete="email" autocapitalize="none"></div>
-      <div class="field"><label>Mobile number<i>मोबाईल नंबर</i></label><input id="a_mo" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" autocomplete="tel"></div>
-      <div class="f2">
-        <div class="field"><label>Password<i>पासवर्ड</i></label><input id="a_p1" type="password" placeholder="min 4"></div>
-        <div class="field"><label>Repeat password<i>पुन्हा</i></label><input id="a_p2" type="password"></div>
-      </div>
-      <div id="a_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
-      <button class="btn" data-act="accSignup">Create account<i>अकाउंट तयार करा</i></button>
-      ${CLOUD.enabled ? '<div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accGoogle">Continue with Google</button></div>' : ''}
-      <div class="tiny" style="margin-top:12px;line-height:1.7">Ha account <b>ya phone var</b> banto. Email pathavnyasathi server nahi, mhanun password visarla tar <b>recovery code</b> lagto &mdash; to pudhchya screen var milel, kuthe tari lihun theva.</div>
-    </div>
-  </div>`;
-}
-
-/* ---------------- LOGIN ---------------- */
-function loginView() {
-  const a = DB.account || {};
-  return `
-  <div class="lock">
-    <div class="lockbox">
-      ${DB.logo ? `<div style="text-align:center;margin-bottom:12px"><img src="${DB.logo}" style="max-height:54px;max-width:170px;object-fit:contain"></div>`
-      : `<div class="brand" style="margin-bottom:14px">SITE MANAGER<span>${esc((a.company || 'ACCOUNT').toUpperCase())}</span></div>`}
-      <div class="field"><label>Email or mobile number<i>ईमेल किंवा मोबाईल</i></label><input id="l_id" placeholder="${esc(a.email || '')}" autocapitalize="none" autocomplete="username"></div>
-      <div class="field"><label>Password<i>पासवर्ड</i></label><input id="l_pw" type="password" autocomplete="current-password"></div>
-      <div id="l_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
-      <button class="btn" data-act="accLogin">Log in<i>लॉग इन</i></button>
-      ${CLOUD.enabled ? '<div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accGoogle">Continue with Google</button></div>' : ''}
-      <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accForgot">Forgot password<i>पासवर्ड विसरलात?</i></button></div>
-    </div>
-  </div>`;
-}
-
-/* ---------------- FORGOT ---------------- */
-function forgotView() {
-  return `
-  <div class="lock">
-    <div class="lockbox">
-      <div class="brand" style="margin-bottom:14px">RESET PASSWORD<span>RECOVERY CODE LAGEL</span></div>
-      <div class="field"><label>Recovery code<i>रिकव्हरी कोड</i></label><input id="f_code" placeholder="XXXXX-XXXXX" autocapitalize="characters"></div>
-      <div class="f2">
-        <div class="field"><label>New password<i>नवीन पासवर्ड</i></label><input id="f_p1" type="password"></div>
-        <div class="field"><label>Repeat<i>पुन्हा</i></label><input id="f_p2" type="password"></div>
-      </div>
-      <div id="f_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
-      <button class="btn" data-act="accReset">Set new password<i>नवीन पासवर्ड ठेवा</i></button>
-      <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accBack">Back to login</button></div>
-      <div class="tiny" style="margin-top:12px;line-height:1.7">Recovery code haravla asel tar phone varcha data suraksit aahe &mdash; More &rarr; Excel madhun backup gheun app parat set karta yeto.</div>
-    </div>
-  </div>`;
-}
-
-/* ---------------- ACCOUNT TAB ---------------- */
-function accountView(s) {
-  const a = DB.account || {};
-  const sites = DB.sites || [];
-  const rows = sites.reduce((n, x) => n + x.expenseLog.length + x.machineLog.length + x.dieselLog.length + (x.murumLog || []).length + x.vendorPayments.length, 0);
-  let bytes = 0;
-  try { bytes = JSON.stringify(DB).length; } catch (e) { }
-  return `
-  <div class="card"><h3>Account<i>अकाउंट</i></h3>
-    <div class="scroll"><table><tbody>
-      <tr><td class="muted">Company</td><td class="right"><b>${esc(a.company || '-')}</b></td></tr>
-      <tr><td class="muted">Name</td><td class="right"><b>${esc(a.name || '-')}</b></td></tr>
-      <tr><td class="muted">Email</td><td class="right">${esc(a.email || '-')}</td></tr>
-      <tr><td class="muted">Mobile</td><td class="right">${esc(a.mobile || '-')}</td></tr>
-      <tr><td class="muted">Member since</td><td class="right">${a.created ? fmtDate(a.created) : '-'}</td></tr>
-      <tr><td class="muted">Signed in as</td><td class="right">${esc((ACC && ACC.by) || 'this device')}</td></tr>
-    </tbody></table></div>
-    <div class="pad">
-      <div class="btnrow">
-        <button class="btn sec sm" style="flex:1" data-act="accEdit">Edit details<i>माहिती बदला</i></button>
-        <button class="btn sec sm" style="flex:1" data-act="accPass">Change password<i>पासवर्ड बदला</i></button>
-      </div>
-      <div class="btnrow">
-        <button class="btn sec sm" style="flex:1" data-act="accCode">Show recovery code</button>
-        <button class="btn dk sm" style="flex:1" data-act="accLogout">Log out<i>लॉग आऊट</i></button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card"><h3>Your data<i>तुमचा डेटा</i></h3>
-    <div class="scroll"><table><tbody>
-      <tr><td class="muted">Sites</td><td class="right"><b>${sites.length}</b></td></tr>
-      <tr><td class="muted">Total entries</td><td class="right"><b>${rows}</b></td></tr>
-      <tr><td class="muted">Data size</td><td class="right">${(bytes / 1024).toFixed(0)} KB</td></tr>
-      <tr><td class="muted">Storage</td><td class="right">${STORAGE_OK ? 'working' : 'NOT saving'}</td></tr>
-      <tr><td class="muted">App version</td><td class="right">${esc(APP_VERSION)}</td></tr>
-    </tbody></table></div>
-    <div class="pad"><button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Backup and Excel<i>बॅकअप</i></button></div>
-  </div>
-
-  <div class="card"><h3>Sign-in with Google<i>गुगल लॉगिन</i></h3><div class="pad">
-    ${CLOUD.enabled
-      ? '<div class="tiny">Google sign-in chalu aahe.</div>'
-      : `<div class="tiny" style="line-height:1.8">Google login sathi <b>Firebase project</b> lagto (Google cha, free). Te banvun tyachi key dili ki ha button chalu hoto. Tya nantar &mdash; email ne password reset, ani ekach account saglya phone var.</div>`}
-  </div></div>
-
-  <div class="card"><h3>Danger zone<i>सावधान</i></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:8px">Account kaadhla tari <b>site cha data rahto</b>. Parat login screen yeil ani navin account banvava lagel.</div>
-    <button class="btn dgr sm" style="width:100%" data-act="accDel">Remove account<i>अकाउंट काढा</i></button>
-  </div></div>`;
-}
 
 /* ============================================================
    FORMS + ACTIONS
@@ -3681,117 +3536,6 @@ document.addEventListener('click', async e => {
       migrate(); await save(); render(); toast(moved + ' entries badalya');
       break;
     }
-    case 'accSignup': {
-      const co = val('a_co').trim(), nm = val('a_nm').trim();
-      const em = cleanMail(val('a_em')), mo = cleanMob(val('a_mo'));
-      const p1 = val('a_p1'), p2 = val('a_p2');
-      const err = m => { const e = document.getElementById('a_err'); if (e) e.textContent = m; };
-      if (!co) return err('Company name taka');
-      if (!em && !mo) return err('Email kiwa mobile number taka');
-      if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err('Email barobar nahi');
-      if (mo && mo.length !== 10) return err('Mobile number 10 aakdi hava');
-      if (p1.length < 4) return err('Password kimaan 4 akshare');
-      if (p1 !== p2) return err('Donhi password sarkhe nahit');
-      const salt = uid() + uid(), code = codeGen();
-      DB.account = { company: co, name: nm, email: em, mobile: mo, salt, created: today() };
-      DB.account.hash = await sha('acc:' + p1 + ':' + salt);
-      DB.account.code = await sha('code:' + code + ':' + salt);
-      ACC = { by: em || mo }; accSave();
-      await save(); render();
-      alert('Account taiyar!\n\nRECOVERY CODE:  ' + code + '\n\nPassword visarla tar haach lagto. Ha code kuthe tari lihun theva - parat dakhavta yenar nahi (fakt hash thevla jato).');
-      break;
-    }
-    case 'accLogin': {
-      const id = val('l_id').trim(), pw = val('l_pw');
-      const err = m => { const e = document.getElementById('l_err'); if (e) e.textContent = m; };
-      const a = DB.account || {};
-      const ok = cleanMail(id) === (a.email || '') || (cleanMob(id) && cleanMob(id) === (a.mobile || ''));
-      if (!ok) return err('He email/mobile ya account che nahi');
-      if (await sha('acc:' + pw + ':' + a.salt) !== a.hash) return err('Password chukicha');
-      ACC = { by: a.email || a.mobile }; accSave();
-      UI = {}; TAB = 'dash'; render();
-      break;
-    }
-    case 'accForgot': UI.forgot = 1; render(); break;
-    case 'accBack': UI.forgot = 0; render(); break;
-    case 'accReset': {
-      const a = DB.account || {};
-      const code = val('f_code').trim().toUpperCase(), p1 = val('f_p1'), p2 = val('f_p2');
-      const err = m => { const e = document.getElementById('f_err'); if (e) e.textContent = m; };
-      if (await sha('code:' + code + ':' + a.salt) !== a.code) return err('Recovery code chukicha');
-      if (p1.length < 4) return err('Password kimaan 4 akshare');
-      if (p1 !== p2) return err('Donhi password sarkhe nahit');
-      a.hash = await sha('acc:' + p1 + ':' + a.salt);
-      UI.forgot = 0; ACC = { by: a.email || a.mobile }; accSave();
-      await save(); render(); toast('Navin password thevla');
-      break;
-    }
-    case 'accGoogle':
-      alert('Google login sathi Firebase key lagte.\n\nAata email/mobile ani password ne login kara.');
-      break;
-    case 'accLogout':
-      if (!confirm('Log out karaycha? Data phone madhech rahil.')) break;
-      ACC = null; accSave(); UI = {}; render();
-      break;
-    case 'accEdit': {
-      const a = DB.account || {};
-      openSheet('Account details', `
-        <div class="card"><div class="pad">
-          <div class="field"><label>Company name<i>कंपनीचे नाव</i></label><input id="e_co" value="${esc(a.company || '')}"></div>
-          <div class="field"><label>Your name<i>तुमचे नाव</i></label><input id="e_nm" value="${esc(a.name || '')}"></div>
-          <div class="field"><label>Email<i>ईमेल</i></label><input id="e_em" type="email" value="${esc(a.email || '')}" autocapitalize="none"></div>
-          <div class="field"><label>Mobile<i>मोबाईल</i></label><input id="e_mo" type="tel" inputmode="numeric" value="${esc(a.mobile || '')}"></div>
-        </div></div>`,
-        () => {
-          const co = val('e_co').trim();
-          if (!co) return toast('Company name taka');
-          a.company = co; a.name = val('e_nm').trim();
-          a.email = cleanMail(val('e_em')); a.mobile = cleanMob(val('e_mo'));
-          if (!a.email && !a.mobile) return toast('Email kiwa mobile lagto');
-          return true;
-        }, null);
-      break;
-    }
-    case 'accPass': {
-      const a = DB.account || {};
-      openSheet('Change password', `
-        <div class="card"><div class="pad">
-          <div class="field"><label>Juna password<i>जुना पासवर्ड</i></label><input id="c_old" type="password"></div>
-          <div class="field"><label>Navin password<i>नवीन पासवर्ड</i></label><input id="c_p1" type="password"></div>
-          <div class="field"><label>Parat tach<i>पुन्हा</i></label><input id="c_p2" type="password"></div>
-        </div></div>`,
-        () => {
-          const o = val('c_old'), p1 = val('c_p1'), p2 = val('c_p2');
-          if (p1.length < 4) return toast('Kimaan 4 akshare');
-          if (p1 !== p2) return toast('Donhi sarkhe nahit');
-          sha('acc:' + o + ':' + a.salt).then(async h => {
-            if (h !== a.hash) return toast('Juna password chukicha');
-            a.hash = await sha('acc:' + p1 + ':' + a.salt);
-            closeSheet(); await save(); render(); toast('Password badalla');
-          });
-          return false;
-        }, null);
-      break;
-    }
-    case 'accCode': {
-      const a = DB.account || {};
-      const nw = codeGen();
-      if (!confirm('Juna recovery code dakhavta yet nahi (to suraksitpane hash karun thevla aahe).\n\nNavin code banvaycha ka? Juna mag chalnar nahi.')) break;
-      a.code = await sha('code:' + nw + ':' + a.salt);
-      await save();
-      alert('NAVIN RECOVERY CODE:  ' + nw + '\n\nKuthe tari lihun theva.');
-      break;
-    }
-    case 'accDel': {
-      const a = DB.account || {};
-      const pw = prompt('Account kaadhnyasathi password taka:');
-      if (pw == null) break;
-      if (await sha('acc:' + pw + ':' + a.salt) !== a.hash) { toast('Password chukicha'); break; }
-      if (!confirm('Account kaadhtoy. Site cha data rahil, pan parat navin account banvava lagel. Nakki?')) break;
-      delete DB.account; ACC = null; accSave();
-      UI = {}; TAB = 'dash'; await save(); render();
-      break;
-    }
     case 'mBill':
       if (!v) { toast('Machine nivda'); break; }
       openBill(machineBill(s, v), 'machine-' + v);
@@ -3929,7 +3673,7 @@ document.addEventListener('change', e => {
 });
 
 /* ---------- go ---------- */
-(async () => { await load(); ACC = accLoad() ? { by: (DB.account && (DB.account.email || DB.account.mobile)) || 'device' } : null; render(); try { notifyDue(site()); } catch (e) { } })();
+(async () => { await load(); render(); try { notifyDue(site()); } catch (e) { } })();
 
 </script>
 </body>
