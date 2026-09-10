@@ -175,6 +175,32 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .logo{height:26px;width:auto;max-width:88px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;flex:0 0 auto}
 .logobox{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 
+.prt{position:fixed;inset:0;z-index:100;background:#fff;overflow-y:auto;padding:16px 14px calc(90px + env(safe-area-inset-bottom))}
+.prtbar{position:fixed;left:0;right:0;bottom:0;z-index:101;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+.bill{max-width:760px;margin:0 auto;color:#000;font-size:12.5px}
+.bill h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;margin:0 0 2px}
+.bill .meta{font-size:11.5px;color:#333;margin-bottom:12px;line-height:1.6}
+.bill table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:14px}
+.bill th{background:#EEF2F5;border:1px solid #B9C4CC;padding:5px 6px;text-align:left;font-size:10.5px;letter-spacing:.03em}
+.bill td{border:1px solid #D6DDE3;padding:4px 6px;vertical-align:top}
+.bill td.n,.bill th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bill tfoot td{font-weight:700;background:#F5F7F9}
+.bill .kpi{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.bill .kpi div{border:1px solid #B9C4CC;border-radius:6px;padding:6px 10px;min-width:100px}
+.bill .kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px}
+.bill .kpi span{font-size:9.5px;letter-spacing:.06em;color:#444}
+.bill h2{font-family:'Barlow Condensed',sans-serif;font-size:15px;margin:16px 0 6px;border-bottom:1.5px solid #000;padding-bottom:2px}
+.bill .sign{margin-top:26px;display:flex;justify-content:space-between;font-size:11px;color:#333}
+@media print{
+  body{background:#fff!important;padding:0!important}
+  body > *{display:none!important}
+  body > #print{display:block!important}
+  .prt{position:static;padding:0;overflow:visible}
+  .prtbar{display:none!important}
+  .bill{max-width:none;font-size:11px}
+  @page{margin:12mm}
+}
+
 /* ---------- sheet / modal ---------- */
 .sheet{position:fixed;inset:0;z-index:80;background:rgba(15,20,25,.55);display:flex;align-items:flex-end;justify-content:center}
 .sheet .box{
@@ -235,6 +261,7 @@ h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 <div id="app"></div>
 <div id="modal"></div>
 <div id="toast"></div>
+<div id="print"></div>
 <script>
 /* ---------- error disla tar screen var dakhva (blank page nako) ---------- */
 window.onerror = function (msg, src, line) {
@@ -419,7 +446,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v17 · 08-09-2026';
+const APP_VERSION = 'v19 · 09-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -685,37 +712,10 @@ function inRange(d, from, to) {
   return true;
 }
 
-/* --- vendor settlement (Expense Log J / K columns, FIFO per vendor) --- */
-function settle(s) {
-  const map = {};                                   // expenseId -> {final, by}
-  const paidByVendor = {};                          // vendor -> total paid
-  const payList = {};                               // vendor -> payments in order (running cum)
-  s.vendorPayments.forEach(p => {
-    const v = p.vendor || '';
-    paidByVendor[v] = (paidByVendor[v] || 0) + num(p.amount);
-    (payList[v] = payList[v] || []).push(p);
-  });
-  Object.keys(payList).forEach(v => {
-    let c = 0; payList[v] = payList[v].map(p => ({ ...p, cum: (c += num(p.amount)) }));
-  });
-  const cumUnpaid = {};
-  const ledger = s.expenseLog
-    .concat((s.murumLog || []).map(m => ({ ...m, amount: mAmt(m), category: 'Murum', desc: m.desc || ('Murum ' + dec(m.qty) + ' ' + (s.murumUnit || 'Brass')) })))
-    .concat((s.dieselLog || []).map(d => ({ ...d, category: 'Diesel', desc: 'Diesel ' + dec(d.litres) + ' L' })));
-  ledger.forEach(e => {
-    if (st(e) === 'Paid') { map[e.id] = { final: 'Paid', by: e.paidBy || '' }; return; }
-    if (!e.vendor) { map[e.id] = { final: 'Unpaid', by: '' }; return; }
-    const c = cumUnpaid[e.vendor] = (cumUnpaid[e.vendor] || 0) + num(e.amount);
-    const paid = paidByVendor[e.vendor] || 0;
-    if (Math.round(paid * 100) >= Math.round(c * 100)) {
-      const hit = (payList[e.vendor] || []).find(p => p.cum >= c - 0.001);
-      map[e.id] = { final: 'Paid', by: hit ? (hit.paidBy || '') : '' };
-    } else map[e.id] = { final: 'Unpaid', by: '' };
-  });
-  return map;
-}
+/* --- vendor settlement: payment junya bill pasun vaparto (date nusar) --- */
+/* pratek entry sathi: final = Paid/Unpaid, paid = kiti rakkam lagli, by = koni dile */
 
-/* supervisor app chi link — tich folder madhla supervisor.html */
+/* supervisor app chi link - tich folder madhla supervisor.html */
 function supLink() {
   try {
     const u = location.href.split('#')[0].split('?')[0];
@@ -723,13 +723,18 @@ function supLink() {
   } catch (e) { return 'supervisor.html'; }
 }
 
+/* --- murum: amount = qty x rate, kiwa direct amount --- */
+function mAmt(r) {
+  if (has(r.amount) && num(r.amount)) return num(r.amount);
+  return num(r.qty) * num(r.rate);
+}
+
 /* ---------- machine no che variants shodhun ek karnyasathi ---------- */
-/* PC.o5 / PC.05 / Pc5 / 05 -> ekach; Hiwa che number vegle rahtat */
 function mKey(no) {
   const t = String(no || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/O/g, '0');
   const digits = t.replace(/[^0-9]/g, '');
   let letters = t.replace(/[0-9]/g, '');
-  if (!letters) letters = 'PC';                             /* fakt aakda = PC dharaycha */
+  if (!letters) letters = 'PC';
   return letters + (digits ? String(parseInt(digits, 10)) : '');
 }
 
@@ -748,7 +753,6 @@ function machineGroups(s) {
   Object.values(cnt).forEach(x => { const k = mKey(x.no); (g[k] = g[k] || []).push(x); });
   const out = [];
   Object.keys(g).forEach(k => {
-    /* ekach key pan vegla type (Poclain vs Hiwa) asel tar vegle thevaayche */
     const byType = {};
     g[k].forEach(x => { const t = x.type || '?'; (byType[t] = byType[t] || []).push(x); });
     const known = Object.keys(byType).filter(t => t !== '?');
@@ -770,7 +774,6 @@ function machineGroups(s) {
   }).sort((a, b) => b.items.length - a.items.length || b.total - a.total);
 }
 
-/* ek naav dusrya naavat halavaycha */
 function renameMachine(s, from, to) {
   if (!from || !to || from === to) return 0;
   let moved = 0;
@@ -779,7 +782,7 @@ function renameMachine(s, from, to) {
   const keep = [];
   s.machineLog.forEach(r => {
     if (r.machineNo !== from) { keep.push(r); return; }
-    if (seen[r.date]) { moved++; return; }                   /* tya divsachi entry aadhich aahe */
+    if (seen[r.date]) { moved++; return; }
     r.machineNo = to; seen[r.date] = 1; keep.push(r); moved++;
   });
   s.machineLog = keep;
@@ -799,10 +802,40 @@ function renameMachine(s, from, to) {
   return moved;
 }
 
-/* --- murum: amount = qty x rate, kiwa direct amount --- */
-function mAmt(r) {
-  if (has(r.amount) && num(r.amount)) return num(r.amount);
-  return num(r.qty) * num(r.rate);
+function settle(s) {
+  const map = {};
+  const pool = {};                                     /* vendor -> vaparaychi urleli payment */
+  const payList = {};                                  /* vendor -> payments (date nusar) */
+  (s.vendorPayments || []).forEach(p => {
+    const v = p.vendor || '';
+    pool[v] = (pool[v] || 0) + num(p.amount);
+    (payList[v] = payList[v] || []).push(p);
+  });
+  Object.keys(payList).forEach(v => payList[v].sort((a, b) => String(a.date).localeCompare(String(b.date))));
+
+  const ledger = []
+    .concat(s.expenseLog.map((e, i) => ({ id: e.id, vendor: e.vendor, date: e.date, amount: num(e.amount), st: st(e), by: e.paidBy, ord: i, kind: 0 })))
+    .concat((s.murumLog || []).map((m, i) => ({ id: m.id, vendor: m.vendor, date: m.date, amount: mAmt(m), st: st(m), by: m.paidBy, ord: i, kind: 1 })))
+    .concat((s.dieselLog || []).map((d, i) => ({ id: d.id, vendor: d.vendor, date: d.date, amount: num(d.amount), st: st(d), by: d.paidBy, ord: i, kind: 2 })));
+
+  /* aadhi thet dilele */
+  ledger.forEach(x => {
+    if (x.st === 'Paid') map[x.id] = { final: 'Paid', paid: x.amount, by: x.by || '' };
+    else if (!x.vendor) map[x.id] = { final: 'Unpaid', paid: 0, by: '' };
+  });
+  /* urleli udhaari: junya tarkhे pasun payment lavaychi */
+  const open = ledger.filter(x => x.st !== 'Paid' && x.vendor)
+    .sort((a, b) => String(a.date || '9999').localeCompare(String(b.date || '9999')) || a.kind - b.kind || a.ord - b.ord);
+  open.forEach(x => {
+    const have = pool[x.vendor] || 0;
+    if (have <= 0.004) { map[x.id] = { final: 'Unpaid', paid: 0, by: '' }; return; }
+    const use = Math.min(have, x.amount);
+    pool[x.vendor] = have - use;
+    const full = use >= x.amount - 0.004;
+    const who = (payList[x.vendor] || []).map(p => p.paidBy).filter(Boolean);
+    map[x.id] = { final: full ? 'Paid' : 'Unpaid', paid: use, by: full ? (who[who.length - 1] || 'vendor payment') : '' };
+  });
+  return map;
 }
 
 /* --- totals for the whole site (Plot Dashboard) --- */
@@ -1002,6 +1035,7 @@ const ICON = {
   expense: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>',
   vendor: '<svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></svg>',
   murum: '<svg viewBox="0 0 24 24"><path d="M3 19h18L12 6zM8.5 19l3.5-5 3.5 5"/></svg>',
+  account: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg>',
   more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 };
 function navItems(s) {
@@ -1012,6 +1046,7 @@ function navItems(s) {
   if (m.murum) rest.push(['murum', 'Murum']);
   rest.push(['expense', 'Expense']);
   if (m.vendor !== false) rest.push(['vendor', 'Vendor']);
+  rest.push(['account', 'Account']);
   rest.push(['more', 'More']);
   const out = rest.slice();
   out.splice(Math.floor(out.length / 2), 0, ['dash', 'Dashboard']);   /* Dashboard madhe */
@@ -1034,6 +1069,8 @@ const SUBS = {
 const sub = t => { const l = subsFor(site(), t); return (l && l.some(x => x[0] === UI[t])) ? UI[t] : (l ? l[0][0] : ''); };
 
 function render() {
+  if (accNew()) { $('#app').innerHTML = signupView(); return; }
+  if (accLocked()) { $('#app').innerHTML = UI.forgot ? forgotView() : loginView(); return; }
   const s = site();
   const nav = navItems(s);
   if (!nav.some(x => x[0] === TAB)) TAB = 'dash';
@@ -1120,12 +1157,12 @@ VIEW.dash = s => {
         <div class="main"><div class="ttl">${esc(r.vendor || r.note || 'Payment')} ${dueLate(r) ? '<span class="pill u">talun gela</span>' : '<span class="pill n">' + fmtDate(r.due) + '</span>'}</div>
         <div class="sub">${dueLate(r) ? fmtDate(r.due) + ' &middot; ' : ''}${r.vendor ? 'baki ' + money(remVendorStats(s, r.vendor).remaining) : ''}${r.note ? ' &middot; ' + esc(r.note) : ''}</div></div>
         <div class="amt">${num(r.amount) ? money0(r.amount) : ''}</div></div>`).join('')}
-      <div class="pad"><button class="btn sm" style="width:100%" data-act="sub" data-v="due" data-t="vendor">Sagle bagha<i>सगळे बघा</i></button></div>
+      <div class="pad"><button class="btn sm" style="width:100%" data-act="sub" data-v="due" data-t="vendor">View all<i>सगळे बघा</i></button></div>
     </div>`;
   })()}
-  ${DB.lastBackup === today() ? '' : `<div class="card"><h3>Aajcha backup<i>आजचा बॅकअप</i></h3><div class="pad">
+  ${DB.lastBackup === today() ? '' : `<div class="card"><h3>Daily backup<i>आजचा बॅकअप</i></h3><div class="pad">
     <div class="tiny" style="margin-bottom:8px">Roj ek tap &mdash; file phone chya <b>Downloads</b> madhe tarkhesakat save hote.</div>
-    <button class="btn sm" style="width:100%" data-act="dayBackup">Aajcha backup ghya<i>बॅकअप घ्या</i></button>
+    <button class="btn sm" style="width:100%" data-act="dayBackup">Download today's backup<i>बॅकअप घ्या</i></button>
   </div></div>`}
   ${pendingCount(s) ? `<div class="card"><h3>Excel sync<i>एक्सेल सिंक</i><small>${pendingCount(s)} new entries</small></h3><div class="pad"><div class="tiny" style="margin-bottom:8px">These entries have not gone into your Excel sheet yet.</div><button class="btn sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Add to Excel<i>एक्सेलमध्ये टाका</i></button></div></div>` : ''}
   <div class="btnrow" style="margin-bottom:12px">
@@ -1181,7 +1218,7 @@ function machineLogView(s) {
   </div>
   ${(f && rows.length) ? `<div class="card"><div class="pad">
     <div class="tiny" style="margin-bottom:8px;line-height:1.7"><b>${esc(f === '__none' ? 'Machine no nasleli' : f)}</b> chya <b>${rows.length}</b> entries (${dec(rows.reduce((a, r) => a + hoursOf(r), 0))} hours, ${dec(rows.reduce((a, r) => a + num(r.diesel), 0))} L diesel) ekach velela delete karta yetat.</div>
-    <button class="btn dgr sm" style="width:100%" data-act="mlDelAll" data-v="${esc(f)}">Ya machine chya saglya entries delete kara<i>सगळ्या एन्ट्री डिलीट</i></button>
+    <button class="btn dgr sm" style="width:100%" data-act="mlDelAll" data-v="${esc(f)}">Delete all entries of this machine<i>सगळ्या एन्ट्री डिलीट</i></button>
     <div class="tiny" style="margin-top:8px">Machine Master madhli machine rahil, fakt entries jatil.</div>
   </div></div>` : ''}`;
 }
@@ -1241,6 +1278,7 @@ function machineRentView(s) {
       <div><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(r.diesel)}</div></div>
     </div>
   </div>
+  <div class="card"><div class="pad"><button class="btn sec sm" style="width:100%" data-act="mBill" data-v="${esc(UI.rentMachine || '')}">Machine report PDF<i>मशीन रिपोर्ट</i></button></div></div>
   <div class="card"><h3>Machine details<i>मशीन माहिती</i></h3><div class="scroll"><table><tbody>
     <tr><td class="muted">Type</td><td class="right"><b>${esc(m.type || '—')}</b></td></tr>
     <tr><td class="muted">Owner</td><td class="right"><b>${esc(m.owner || '—')}</b></td></tr>
@@ -1261,18 +1299,18 @@ function machineMasterView(s) {
   ${(() => {
     const g = machineGroups(s);
     if (!g.length) return '';
-    return `<div class="card mt" style="border-color:var(--hivis)"><h3>Ekach machine, vegle naav<i>एकच मशीन, वेगळे नाव</i><small>${g.length} group</small></h3>
+    return `<div class="card mt" style="border-color:var(--hivis)"><h3>Same machine, different names<i>एकच मशीन, वेगळे नाव</i><small>${g.length} group</small></h3>
       <div class="pad" style="padding-bottom:6px"><div class="tiny" style="line-height:1.7">Khalche naav ekach machine che disat aahet (udaharan <b>PC.o5</b> ani <b>PC.05</b>). "Ek kara" dabla ki saglya entries ekach naavavar jatil.</div></div>
       ${g.slice(0, 12).map(o => `<div class="row" style="display:block">
         <div class="ttl">${esc(o.target)} <span class="tiny">&larr; ${o.items.length} naav, ${o.total} entries</span></div>
         <div class="sub">${o.items.map(x => esc(x.no) + ' (' + x.n + ')').join('  ·  ')}</div>
         <div class="btnrow" style="margin-top:8px">
-          <button class="btn sm" style="flex:1" data-act="mgMerge" data-v="${esc(o.key)}">Ek kara &rarr; ${esc(o.target)}<i>एक करा</i></button>
-          <button class="btn sec sm" style="flex:0 0 32%" data-act="mgEdit" data-v="${esc(o.key)}">Naav badla</button>
+          <button class="btn sm" style="flex:1" data-act="mgMerge" data-v="${esc(o.key)}">Merge into ${esc(o.target)}<i>एक करा</i></button>
+          <button class="btn sec sm" style="flex:0 0 32%" data-act="mgEdit" data-v="${esc(o.key)}">Rename</button>
         </div>
       </div>`).join('')}
       ${g.length > 12 ? `<div class="pad tiny">ani ${g.length - 12} ajun...</div>` : ''}
-      <div class="pad"><button class="btn dk sm" style="width:100%" data-act="mgAll">Sagle ${g.length} group ek kara<i>सगळे एक करा</i></button>
+      <div class="pad"><button class="btn dk sm" style="width:100%" data-act="mgAll">Merge all ${g.length} groups<i>सगळे एक करा</i></button>
       <div class="tiny" style="margin-top:8px">Badalnyaadhi juna data snapshot madhe jato &mdash; chukla tar Data safety madhun parat aanta yeto.</div></div>
     </div>`;
   })()}
@@ -1285,6 +1323,8 @@ function machineMasterView(s) {
       <div class="main"><div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
       <div class="sub">${esc(m.owner || 'no owner')}${m.operator ? ' &middot; ' + esc(m.operator) : ''}${(() => { const q = machineRent(s, m.no); return q.hours ? ' &middot; <b>' + dec(q.diesel / q.hours, 2) + ' L/hr</b>' : ''; })()}</div></div>
       <div class="amt tiny" style="font-weight:600">${has(m.monthlyRate) && num(m.monthlyRate) ? money0(m.monthlyRate) : ''}</div>
+      <button class="rowbtn" data-act="mRename" data-v="${m.id}">Rename</button>
+      <button class="rowbtn" data-act="mBill" data-v="${esc(m.no)}" style="color:var(--hivis-dk)">PDF</button>
       <button class="rowbtn" data-act="mDelOne" data-v="${m.id}" style="color:var(--due)">Delete</button>
     </div>`).join('') || '<div class="empty">No machines yet.<i>अजून मशीन नाही</i></div>'}
   </div>`;
@@ -1308,7 +1348,7 @@ function dieselLogView(s) {
   <div class="card">${shown.length ? shown.map(d => `<div class="row" data-act="dEdit" data-v="${d.id}">
       <div class="main"><div class="ttl">${esc(d.vendor)} <span class="pill ${fin[d.id] && fin[d.id].final === 'Paid' ? 'p' : 'u'}">${fin[d.id] && fin[d.id].final === 'Paid' ? (st(d) === 'Paid' ? 'Paid' : 'Paid (payment)') : 'Unpaid'}</span></div>
       <div class="sub">${fmtDate(d.date)} &middot; ${dec(d.litres)} L${num(d.litres) ? ' @ ' + dec(num(d.amount) / num(d.litres), 2) : ''}${d.paidBy ? ' &middot; ' + esc(d.paidBy) : ''}${d.bill && d.bill !== '-' ? ' &middot; Bill ' + esc(d.bill) : ''}</div></div>
-      <div class="amt">${money0(d.amount)}</div></div>`).join('') : '<div class="empty">No diesel entries yet.<i>अजून डिझेल एंट्री नाही</i></div>'}
+      <div class="amt">${money0(d.amount)}${(fin[d.id] && fin[d.id].final === 'Unpaid' && fin[d.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[d.id].paid)} dile</div>` : ''}</div></div>`).join('') : '<div class="empty">No diesel entries yet.<i>अजून डिझेल एंट्री नाही</i></div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="dlMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
   </div>`;
 }
@@ -1325,7 +1365,7 @@ function dieselSumView(s) {
   </div>
   <div class="card"><h3>Vendor-wise<i>व्हेंडर नुसार</i></h3><div class="scroll"><table>
     <thead><tr><th>Vendor</th><th class="n">Litres</th><th class="n">Amount</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Baki</th></tr></thead>
-    <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr data-act="vpAdd" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny">${x.bills} bill</div></td><td class="n">${dec(x.litres)}</td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>`; }).join('') || '<tr><td colspan="6" class="muted">Add a diesel vendor.</td></tr>'}</tbody>
+    <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr data-act="vBill" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div></td><td class="n">${dec(x.litres)}</td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>`; }).join('') || '<tr><td colspan="6" class="muted">Add a diesel vendor.</td></tr>'}</tbody>
   </table></div></div>
   <div class="card"><h3>Machine-wise<i>मशीन नुसार</i> diesel</h3><div class="scroll"><table>
     <thead><tr><th>Machine</th><th class="n">Diesel (L)</th><th class="n">Hours</th><th class="n">L / hr</th></tr></thead>
@@ -1365,7 +1405,7 @@ function expenseLogView(s) {
       return `<div class="row" data-act="eEdit" data-v="${e.id}">
         <div class="main"><div class="ttl">${esc(e.desc || e.category)} <span class="pill ${fs.final === 'Paid' ? 'p' : 'u'}">${fs.final}</span></div>
         <div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}${e.vendor ? ' &middot; ' + esc(e.vendor) : ''}${fs.by ? ' &middot; ' + esc(fs.by) : ''}</div></div>
-        <div class="amt">${money0(e.amount)}</div></div>`;
+        <div class="amt">${money0(e.amount)}${(fs.final === 'Unpaid' && fs.paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fs.paid)} dile</div><div class="tiny" style="font-weight:700;color:var(--due)">baki ${money0(fs.bal)}</div>` : ''}</div></div>`;
     }).join('') : '<div class="empty">Nothing here.<i>इथे काही नाही</i></div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="exMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
   </div>`;
@@ -1404,7 +1444,7 @@ function vendorPendView(s) {
   const fin = settle(s);
   const pend = s.expenseLog.filter(e => fin[e.id].final === 'Unpaid').sort(byDateDesc);
   const byV = {}; pend.forEach(e => { const v = e.vendor || '(no vendor)'; (byV[v] = byV[v] || []).push(e); });
-  const dieselPend = s.dieselLog.filter(d => st(d) === 'Unpaid');
+  const dieselPend = s.dieselLog.filter(d => fin[d.id] && fin[d.id].final === 'Unpaid');
   const total = pend.reduce((a, e) => a + num(e.amount), 0);
   return `
   <div class="kpis">
@@ -1414,7 +1454,8 @@ function vendorPendView(s) {
   ${Object.keys(byV).sort().map(v => {
     const list = byV[v]; const vs = v === '(no vendor)' ? null : vendorStats(s, v);
     return `<div class="card"><h3>${esc(v)}<small>balance ${money(list.reduce((a, e) => a + num(e.amount), 0))}</small></h3>
-      ${list.map(e => `<div class="row" data-act="eEdit" data-v="${e.id}"><div class="main"><div class="ttl">${esc(e.desc || e.category)}</div><div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}</div></div><div class="amt">${money0(e.amount)}</div></div>`).join('')}
+      ${list.map(e => `<div class="row" data-act="eEdit" data-v="${e.id}"><div class="main"><div class="ttl">${esc(e.desc || e.category)}</div><div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}</div></div>
+        <div class="amt">${money0(e.amount)}${(fin[e.id] && fin[e.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[e.id].paid)}</div><div class="tiny" style="font-weight:700;color:var(--due)">baki ${money0(fin[e.id].bal)}</div>` : ''}</div></div>`).join('')}
       ${vs ? `<div class="pad"><button class="btn sm" data-act="vpAdd" data-v="${esc(v)}">Make payment<i>पेमेंट करा</i></button></div>` : ''}
     </div>`;
   }).join('') || '<div class="card"><div class="empty">No pending vendor credit.<i>कोणाची उधारी बाकी नाही</i></div></div>'}
@@ -1422,7 +1463,7 @@ function vendorPendView(s) {
     const dv = (s.dieselVendors || []).map(v => ({ v, x: dieselVendorStats(s, v) })).filter(o => o.x.remaining > 0.5);
     if (!dv.length) return '';
     return dv.map(o => {
-      const bills = s.dieselLog.filter(d => d.vendor === o.v && st(d) === 'Unpaid').sort(byDateDesc);
+      const bills = s.dieselLog.filter(d => d.vendor === o.v && fin[d.id] && fin[d.id].final === 'Unpaid').sort(byDateDesc);
       return `<div class="card"><h3>${esc(o.v)}<i>डिझेल</i><small>baki ${money(o.x.remaining)}</small></h3>
         <div class="scroll"><table><tbody>
           <tr><td class="muted">Ekun bill</td><td class="right n"><b>${money(o.x.amount)}</b></td></tr>
@@ -1432,7 +1473,7 @@ function vendorPendView(s) {
         </tbody></table></div>
         ${bills.slice(0, 12).map(d => `<div class="row" data-act="dEdit" data-v="${d.id}"><div class="main"><div class="ttl">${fmtDate(d.date)}</div>
           <div class="sub">${dec(d.litres)} L${d.bill ? ' &middot; bill ' + esc(d.bill) : ''}</div></div><div class="amt">${money0(d.amount)}</div></div>`).join('')}
-        <div class="pad"><button class="btn sm" style="width:100%" data-act="vpAdd" data-v="${esc(o.v)}">Payment kara<i>पेमेंट करा</i></button></div>
+        <div class="pad"><button class="btn sm" style="width:100%" data-act="vpAdd" data-v="${esc(o.v)}">Make payment<i>पेमेंट करा</i></button></div>
       </div>`;
     }).join('');
   })()}`;
@@ -1444,7 +1485,7 @@ function vendorPayView(s) {
     .filter(o => o.x.remaining > 0.5).sort((a, b) => b.x.remaining - a.x.remaining);
   return `
   <button class="btn" data-act="vpAdd">+ Vendor payment<i>व्हेंडर पेमेंट</i></button>
-  ${due.length ? `<div class="card mt"><h3>Kunala kiti dyaycha<i>कोणाला किती द्यायचे</i><small>${money(due.reduce((a, o) => a + o.x.remaining, 0))}</small></h3>
+  ${due.length ? `<div class="card mt"><h3>Who to pay<i>कोणाला किती द्यायचे</i><small>${money(due.reduce((a, o) => a + o.x.remaining, 0))}</small></h3>
     ${due.map(o => `<div class="row">
       <div class="main"><div class="ttl">${esc(o.v)} ${o.d ? '<span class="pill n">diesel</span>' : ''}</div>
       <div class="sub">ekun ${money(o.x.total || o.x.amount)} &middot; dile ${money((o.x.direct || 0) + (o.x.paid || o.x.payments || 0))}</div></div>
@@ -1466,16 +1507,18 @@ function vendorSumView(s) {
   return `
   <div class="card"><h3>Vendor-wise account<i>व्हेंडर नुसार हिशोब</i></h3><div class="scroll"><table>
     <thead><tr><th>Vendor</th><th class="n">Total</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Remaining</th></tr></thead>
-    <tbody>${rows.sort((a, b) => b.x.remaining - a.x.remaining).map(o => `<tr><td class="nowrap">${esc(o.v)}</td><td class="n">${money0(o.x.total)}</td><td class="n">${money0(o.x.direct)}</td><td class="n">${money0(o.x.paid)}</td><td class="n"><b style="color:${o.x.remaining > 0 ? 'var(--due)' : 'var(--paid)'}">${money0(o.x.remaining)}</b></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No vendor entries.</td></tr>'}</tbody>
+    <tbody>${rows.sort((a, b) => b.x.remaining - a.x.remaining).map(o => `<tr data-act="vBill" data-v="${esc(o.v)}"><td class="nowrap">${esc(o.v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div></td><td class="n">${money0(o.x.total)}</td><td class="n">${money0(o.x.direct)}</td><td class="n">${money0(o.x.paid)}</td><td class="n"><b style="color:${o.x.remaining > 0 ? 'var(--due)' : 'var(--paid)'}">${money0(o.x.remaining)}</b></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No vendor entries.</td></tr>'}</tbody>
     <tfoot><tr><td>TOTAL<i>एकूण</i></td><td class="n">${money0(T.t)}</td><td class="n">${money0(T.d)}</td><td class="n">${money0(T.p)}</td><td class="n">${money0(T.r)}</td></tr></tfoot>
   </table></div></div>
   <div class="card"><h3>Diesel vendors<i>डिझेल पंप</i></h3><div class="scroll"><table>
-    <thead><tr><th>Vendor</th><th class="n">Amount</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead>
-    <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr><td class="nowrap">${esc(v)}</td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.paid)}</td><td class="n" style="color:${x.unpaid ? 'var(--due)' : 'inherit'}">${money0(x.unpaid)}</td></tr>`; }).join('')}</tbody>
+    <thead><tr><th>Vendor</th><th class="n">Total</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Balance</th></tr></thead>
+    <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr data-act="vBill" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div><div class="tiny">${x.bills} bill</div></td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>
+      <tr><td colspan="5" style="padding-top:0"><div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="vpAdd" data-v="${esc(v)}">Make payment</button><button class="btn sec sm" style="flex:1" data-act="pdfVendor" data-v="${esc(v)}">PDF bill</button></div></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted">No diesel vendors.</td></tr>'}</tbody>
   </table></div></div>`;
 }
 
 /* ---------------- MORE ---------------- */
+VIEW.account = s => accountView(s);
 VIEW.more = s => { const k = sub('more'); return k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
 
 /* ---------------- EXCEL SYNC ---------------- */
@@ -1497,9 +1540,9 @@ function excelView(s) {
     <div class="pad"><div class="tiny">Use this if you still work in your old Veershree_industrial_park.xlsx — only the new rows are copied.</div>
     <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="xlAllDone">All pasted - mark done<i>पेस्ट झाले</i></button></div></div>
   </div>` : ''}
-  <div class="card"><h3>Supervisor cha data<i>सुपरवायझरचा डेटा</i><small>Reading Book app madhun</small></h3><div class="pad">
+  <div class="card"><h3>Supervisor data<i>सुपरवायझरचा डेटा</i><small>Reading Book app madhun</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Supervisor ne pathavlelya <b>site-data-....json</b> files ithe ghya &mdash; <b>ekach velela kitihi files</b> nivadta yetat &mdash; machine reading ani diesel bills apoap Machine Log ani Diesel Purchase madhe jatil. Ekda ghetleli entry parat ghetli jat nahi.</div>
-    <button class="btn sec sm" style="width:100%" data-act="impSup">Reading files import kara<i>फाईल इम्पोर्ट</i></button>
+    <button class="btn sec sm" style="width:100%" data-act="impSup">Import reading files<i>फाईल इम्पोर्ट</i></button>
   </div></div>
   <div class="card"><h3>Data safety<i>डेटा सुरक्षा</i><small>${Store.mode === 'device' ? (PERSIST ? 'saved on this phone' : 'on this phone') : 'in Claude'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Data ${Store.mode === 'device' ? 'is kept in this phone in two places, plus one snapshot per day' : 'is kept in your Claude account'}. ${PERSIST ? 'The browser has been asked to keep this data permanently.' : ''} Even so, download a backup once a month and keep it on Drive.<i>महिन्यातून एकदा बॅकअप घ्या</i></div>
@@ -1561,26 +1604,26 @@ function sitesView(s) {
     <div class="pad"><button class="btn" data-act="siteAdd">+ New site<i>नवीन साइट</i></button></div>
   </div>
   <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
-  <div class="card"><h3>Supervisor cha app<i>सुपरवायझरचा अ‍ॅप</i></h3><div class="pad">
+  <div class="card"><h3>Supervisor app<i>सुपरवायझरचा अ‍ॅप</i></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Reading Book cha link supervisor la WhatsApp var pathva. Tyane tach link ughadun "Add to Home screen" karaycha.<br><span style="color:var(--steel)">हा लिंक सुपरवायझरला पाठवा.</span></div>
     <div class="field"><label>Link<i>लिंक</i></label><input id="f_suplink" value="${esc(supLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
     <div class="btnrow">
       <button class="btn sec sm" style="flex:1" data-act="supLinkCopy">Copy link<i>लिंक कॉपी</i></button>
       <button class="btn sec sm" style="flex:1" data-act="supLinkWa">WhatsApp</button>
     </div>
-    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="supOpen">Reading Book ughada<i>अ‍ॅप उघडा</i></button></div>
+    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="supOpen">Open Reading Book<i>अ‍ॅप उघडा</i></button></div>
   </div></div>
-  <div class="card"><h3>Company cha logo<i>कंपनीचा लोगो</i></h3><div class="pad">
+  <div class="card"><h3>Company logo<i>कंपनीचा लोगो</i></h3><div class="pad">
     ${DB.logo ? `<div style="background:var(--ink);border-radius:10px;padding:12px;text-align:center;margin-bottom:10px"><img src="${DB.logo}" style="height:38px;max-width:70%;object-fit:contain"></div>` : '<div class="tiny" style="margin-bottom:10px">Logo takla ki var davikade "SITE MANAGER" chya jaagi to disel.</div>'}
     <div class="btnrow">
       <button class="btn sec sm" style="flex:1" data-act="logoPick">${DB.logo ? 'Logo badla' : 'Logo taka'}<i>लोगो निवडा</i></button>
-      ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoOff">Kaadha</button>' : ''}
+      ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoOff">Remove</button>' : ''}
     </div>
     <div class="tiny" style="margin-top:8px">PNG kiwa JPG chalel. App apoap chhota karun thevto, mhanun jaaga vaajat nahi.</div>
   </div></div>
   <div class="card"><h3>Site delete password<i>साइट डिलीट पासवर्ड</i><small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Site delete karayla ha password lagto, mhanje chukun kunachihi site jaat nahi. Pahilya velela delete kartana to set karta yeto.<br><span style="color:var(--steel)">साइट डिलीट करायला हा पासवर्ड लागतो.</span></div>
-    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Password badla<i>पासवर्ड बदला</i></button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Password set kara<i>पासवर्ड ठेवा</i></button>'}
+    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password<i>पासवर्ड बदला</i></button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password<i>पासवर्ड ठेवा</i></button>'}
   </div></div>
   <div class="card"><h3>Backup and Excel<i>बॅकअप आणि एक्सेल</i></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px">Take the Excel file and backup from <b>More &rarr; Excel</b>.</div>
@@ -1589,7 +1632,7 @@ function sitesView(s) {
   <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
   <div class="card"><h3>Site delete password<i>साइट डिलीट पासवर्ड</i><small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Site delete karayla ha password lagto, mhanje chukun kunachihi site jaat nahi. Pahilya velela delete kartana to set karta yeto.<br><span style="color:var(--steel)">साइट डिलीट करायला हा पासवर्ड लागतो.</span></div>
-    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Password badla<i>पासवर्ड बदला</i></button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Password set kara<i>पासवर्ड ठेवा</i></button>'}
+    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password<i>पासवर्ड बदला</i></button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password<i>पासवर्ड ठेवा</i></button>'}
   </div></div>
   <div class="card"><h3>Backup and Excel<i>बॅकअप आणि एक्सेल</i></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px">Take the Excel file and backup from <b>More &rarr; Excel</b>.</div>
@@ -1689,14 +1732,14 @@ function dueView(s) {
   const canNotify = typeof Notification !== 'undefined';
   const perm = canNotify ? Notification.permission : 'x';
   return `
-  <button class="btn" data-act="remAdd">+ Payment date thevaa<i>तारीख ठेवा</i></button>
+  <button class="btn" data-act="remAdd">+ Add payment due date<i>देय तारीख</i></button>
 
   ${perm === 'granted' ? '' : `<div class="card mt"><div class="pad">
     <div class="tiny" style="margin-bottom:8px;line-height:1.7">App ughadlyavar popup notification havа asel tar ekda parvangi dya. <b>App band asel tevha</b> notification yenar nahi &mdash; tyasathi pratek reminder samorcha <b>Calendar</b> button vapra, tо phone chya calendar madhe alarm thevto.</div>
-    ${canNotify ? '<button class="btn sec sm" style="width:100%" data-act="notifyOn">Notification chalu kara<i>नोटिफिकेशन चालू</i></button>' : '<div class="tiny">Ya browser madhe notification nahi.</div>'}
+    ${canNotify ? '<button class="btn sec sm" style="width:100%" data-act="notifyOn">Turn on notifications<i>नोटिफिकेशन चालू</i></button>' : '<div class="tiny">Ya browser madhe notification nahi.</div>'}
   </div></div>`}
 
-  <div class="card mt"><h3>Yenare payment<i>येणारे पेमेंट</i><small>${open.length}</small></h3>
+  <div class="card mt"><h3>Payment due<i>येणारे पेमेंट</i><small>${open.length}</small></h3>
     ${open.length ? open.map(r => {
       const late = dueLate(r), tod = r.due === today();
       const bal = r.vendor ? remVendorStats(s, r.vendor).remaining : 0;
@@ -1710,20 +1753,20 @@ function dueView(s) {
           <div class="amt">${num(r.amount) ? money0(r.amount) : ''}</div>
         </div>
         <div class="btnrow" style="margin-top:8px">
-          ${r.vendor ? `<button class="btn sm" style="flex:1" data-act="vpAdd" data-v="${esc(r.vendor)}">Payment kara</button>` : ''}
-          <button class="btn sec sm" style="flex:1" data-act="remIcs" data-v="${r.id}">Calendar<i>कॅलेंडरमध्ये</i></button>
-          <button class="btn sec sm" style="flex:0 0 30%" data-act="remDone" data-v="${r.id}">Zala</button>
+          ${r.vendor ? `<button class="btn sm" style="flex:1" data-act="vpAdd" data-v="${esc(r.vendor)}">Make payment</button>` : ''}
+          <button class="btn sec sm" style="flex:1" data-act="remIcs" data-v="${r.id}">Add to calendar<i>कॅलेंडरमध्ये</i></button>
+          <button class="btn sec sm" style="flex:0 0 30%" data-act="remDone" data-v="${r.id}">Done</button>
         </div>
       </div>`;
     }).join('') : '<div class="empty">Ek pn date thevleli nahi.<i>तारीख ठेवलेली नाही</i></div>'}
   </div>
 
-  ${done.length ? `<div class="card"><h3>Zalele<i>झालेले</i><small>${done.length}</small></h3>
+  ${done.length ? `<div class="card"><h3>Completed<i>पूर्ण झालेले</i><small>${done.length}</small></h3>
     ${done.slice(0, 10).map(r => `<div class="row" data-act="remEdit" data-v="${r.id}"><div class="main"><div class="ttl">${esc(r.vendor || r.note)} <span class="pill p">zala</span></div>
       <div class="sub">${fmtDate(r.due)}</div></div><div class="amt">${num(r.amount) ? money0(r.amount) : ''}</div></div>`).join('')}
   </div>` : ''}
 
-  <div class="card"><h3>He kase chalta<i>हे कसे चालते</i></h3><div class="pad tiny" style="line-height:1.9">
+  <div class="card"><h3>How this works<i>हे कसे चालते</i></h3><div class="pad tiny" style="line-height:1.9">
     <b>1.</b> Vendor ani tarikh thevaa &mdash; udaharan Achit, 15 tarkhela ₹50,000.<br>
     <b>2.</b> Ti tarikh javal aali ki <b>Dashboard var laal/pivla card</b> disto (3 divas aadhi pasun).<br>
     <b>3.</b> App ughadla ki <b>popup notification</b> yeto (ekda parvangi dilyavar).<br>
@@ -2295,6 +2338,294 @@ function exportExcel(s) {
 }
 
 /* ============================================================
+   BILL / PDF  —  machine ani vendor cha vegla report
+   Print daba -> phone madhe "Save as PDF"
+   ============================================================ */
+const bTag = () => (site().name || 'Site') + '  ·  ' + fmtDate(today());
+
+function billHead(title, sub) {
+  return `<h1>${esc(title)}</h1><div class="meta">${esc(bTag())}${sub ? '<br>' + sub : ''}</div>`;
+}
+const kpi = list => `<div class="kpi">${list.filter(Boolean).map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join('')}</div>`;
+
+/* ---------------- MACHINE BILL ---------------- */
+function machineBill(s, no) {
+  const m = machineOf(s, no) || { no, type: '', owner: '', operator: '', make: '' };
+  const r = machineRent(s, no);
+  const rows = s.machineLog.filter(x => sameNo(x.machineNo, no))
+    .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const lph = r.hours ? r.diesel / r.hours : 0;
+  return `<div class="bill">
+    ${billHead('Machine Report  -  ' + m.no,
+      'Machine type: ' + esc(m.type || '-') +
+      '<br>Owner: ' + esc(m.owner || '-') +
+      '<br>Driver / Operator: ' + esc(m.operator || '-') +
+      (m.make ? '<br>Make: ' + esc(m.make) : ''))}
+    ${kpi([
+      ['TOTAL ENTRIES', r.entries],
+      ['TOTAL HOURS', dec(r.hours)],
+      ['TOTAL DIESEL (L)', dec(r.diesel)],
+      ['DIESEL PER HOUR', lph ? dec(lph, 2) + ' L' : '-'],
+      r.unit ? ['RATE / ' + (r.basis === 'Daily' ? 'DAY' : 'HR'), dec(r.unit, 0)] : null,
+      r.rent ? ['RENT PAYABLE', money0(r.rent)] : null
+    ])}
+    <h2>All entries</h2>
+    <table>
+      <thead><tr><th>Sr</th><th>Date</th><th class="n">In reading</th><th class="n">Out reading</th><th class="n">Hours</th><th class="n">Diesel (L)</th><th class="n">L / hr</th><th>Remark</th></tr></thead>
+      <tbody>${rows.map((x, i) => {
+        const h = hoursOf(x), d = num(x.diesel);
+        return `<tr><td class="n">${i + 1}</td><td>${fmtDate(x.date)}</td>
+          <td class="n">${has(x.inR) ? dec(x.inR, 1) : '-'}</td>
+          <td class="n">${has(x.outR) ? dec(x.outR, 1) : '-'}</td>
+          <td class="n">${h ? dec(h) : '-'}</td>
+          <td class="n">${d ? dec(d) : '-'}</td>
+          <td class="n">${(h && d) ? dec(d / h, 2) : '-'}</td>
+          <td>${esc(x.remark || '')}</td></tr>`;
+      }).join('') || '<tr><td colspan="8">No entries</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="4">TOTAL</td><td class="n">${dec(r.hours)}</td><td class="n">${dec(r.diesel)}</td><td class="n">${lph ? dec(lph, 2) : '-'}</td><td></td></tr></tfoot>
+    </table>
+    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+  </div>`;
+}
+
+/* ---------------- VENDOR BILL ---------------- */
+function vendorBill(s, v) {
+  const dv = isDieselVendor(s, v);
+  const x = dv ? dieselVendorStats(s, v) : vendorStats(s, v);
+  const fin = settle(s);
+  const total = dv ? x.amount : x.total;
+  const direct = x.direct || 0;
+  const payments = dv ? x.payments : x.paid;
+  const remaining = x.remaining;
+
+  /* saglya nondi ekatra, date pramane */
+  let items = [];
+  s.expenseLog.filter(e => e.vendor === v).forEach(e => items.push({
+    date: e.date, kind: e.category || 'Expense', desc: e.desc || '', qty: '',
+    amount: num(e.amount), f: fin[e.id] || {}
+  }));
+  (s.murumLog || []).filter(m => m.vendor === v).forEach(m => items.push({
+    date: m.date, kind: 'Murum', desc: m.remark || '', qty: dec(m.qty) + ' ' + (s.murumUnit || 'Brass'),
+    amount: mAmt(m), f: fin[m.id] || {}
+  }));
+  (s.dieselLog || []).filter(d => d.vendor === v).forEach(d => items.push({
+    date: d.date, kind: 'Diesel', desc: d.bill ? 'Bill ' + d.bill : '', qty: dec(d.litres) + ' L',
+    amount: num(d.amount), f: fin[d.id] || {}
+  }));
+  items.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const pays = (s.vendorPayments || []).filter(p => p.vendor === v)
+    .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
+  const row = it => `<tr><td>${fmtDate(it.date)}</td><td>${esc(it.kind)}</td><td>${esc(it.desc)}${it.qty ? ' <span style="color:#555">(' + it.qty + ')</span>' : ''}</td>
+    <td class="n">${money0(it.amount)}</td>
+    <td class="n">${it.f.alloc > 0.5 ? money0(it.f.alloc) : (it.f.final === 'Paid' ? money0(it.amount) : '-')}</td>
+    <td class="n">${it.f.final === 'Paid' ? '0' : money0(it.f.bal != null ? it.f.bal : it.amount)}</td>
+    <td>${it.f.final === 'Paid' ? 'Paid' + (it.f.by ? ' (' + esc(it.f.by) + ')' : '') : (it.f.alloc > 0.5 ? 'Part paid' : 'Unpaid')}</td></tr>`;
+
+  const paidItems = items.filter(it => it.f.final === 'Paid');
+  const dueItems = items.filter(it => it.f.final !== 'Paid');
+
+  return `<div class="bill">
+    ${billHead('Vendor Statement  -  ' + v, dv ? 'Diesel vendor' : 'Site vendor')}
+    ${kpi([
+      ['TOTAL AMOUNT', money0(total)],
+      ['DIRECT PAID', money0(direct)],
+      ['PAYMENTS MADE', money0(payments)],
+      ['TOTAL PAID', money0(direct + payments)],
+      ['REMAINING DUE', money0(remaining)]
+    ])}
+
+    <h2>Payments made (date wise)</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Paid by</th><th>Mode</th><th>Remark</th><th class="n">Amount</th></tr></thead>
+      <tbody>${pays.map(p => `<tr><td>${fmtDate(p.date)}</td><td>${esc(p.paidBy || '-')}</td><td>${esc(p.mode || '-')}</td><td>${esc(p.remark || '')}</td><td class="n">${money0(p.amount)}</td></tr>`).join('')
+        || '<tr><td colspan="5">No payments recorded</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="4">TOTAL PAYMENTS</td><td class="n">${money0(payments)}</td></tr></tfoot>
+    </table>
+
+    <h2>Pending entries (${dueItems.length})</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Head</th><th>Details</th><th class="n">Amount</th><th class="n">Paid</th><th class="n">Balance</th><th>Status</th></tr></thead>
+      <tbody>${dueItems.map(row).join('') || '<tr><td colspan="7">Nothing pending</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="3">TOTAL PENDING</td>
+        <td class="n">${money0(dueItems.reduce((a, i) => a + i.amount, 0))}</td>
+        <td class="n">${money0(dueItems.reduce((a, i) => a + (i.f.alloc || 0), 0))}</td>
+        <td class="n">${money0(dueItems.reduce((a, i) => a + (i.f.bal != null ? i.f.bal : i.amount), 0))}</td><td></td></tr></tfoot>
+    </table>
+
+    <h2>Paid entries (${paidItems.length})</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Head</th><th>Details</th><th class="n">Amount</th><th class="n">Paid</th><th class="n">Balance</th><th>Status</th></tr></thead>
+      <tbody>${paidItems.map(row).join('') || '<tr><td colspan="7">None</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="3">TOTAL PAID</td><td class="n">${money0(paidItems.reduce((a, i) => a + i.amount, 0))}</td><td class="n"></td><td class="n">0</td><td></td></tr></tfoot>
+    </table>
+
+    <table>
+      <tbody>
+        <tr><th>Total work / bills</th><td class="n">${money0(total)}</td></tr>
+        <tr><th>Total paid (direct + payments)</th><td class="n">${money0(direct + payments)}</td></tr>
+        <tr><th>REMAINING DUE</th><td class="n"><b>${money0(remaining)}</b></td></tr>
+      </tbody>
+    </table>
+    <div class="sign"><div>Vendor signature ______________</div><div>For ${esc(site().name)} ______________</div></div>
+  </div>`;
+}
+
+/* ---------------- print screen ---------------- */
+function openBill(html, name) {
+  PRINT_NAME = name || 'report';
+  $('#print').innerHTML = `<div class="prt">${html}</div>
+    <div class="prtbar">
+      <button class="btn" style="flex:1" data-act="prtGo">Print / Save as PDF</button>
+      <button class="btn sec sm" style="flex:0 0 30%" data-act="prtClose">Close</button>
+    </div>`;
+  document.body.style.overflow = 'hidden';
+  window.scrollTo(0, 0);
+}
+let PRINT_NAME = 'report';
+function closeBill() { $('#print').innerHTML = ''; document.body.style.overflow = ''; }
+
+/* ============================================================
+   ACCOUNT — signup / login / forgot password / account screen
+   ============================================================ */
+
+/* Firebase chi key ithe takli ki Google login chalu hoto */
+const CLOUD = { enabled: false, apiKey: '', authDomain: '', projectId: '' };
+
+let ACC = null;                                   /* logged-in account */
+
+const accKey = 'vsms:acc:v1';
+function accSave() {
+  try { ACC ? localStorage.setItem(accKey, '1') : localStorage.removeItem(accKey); } catch (e) { }
+}
+function accLoad() { try { return localStorage.getItem(accKey) === '1'; } catch (e) { return false; } }
+
+const cleanMob = m => String(m || '').replace(/[^\d]/g, '').slice(-10);
+const cleanMail = e => String(e || '').trim().toLowerCase();
+const codeGen = () => {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let o = '';
+  for (let i = 0; i < 10; i++) o += c[Math.floor(Math.random() * c.length)];
+  return o.slice(0, 5) + '-' + o.slice(5);
+};
+
+async function accHash(pw) { return await sha('acc:' + String(pw) + ':' + (DB.account ? DB.account.salt : '')); }
+
+function accLocked() { return !!(DB.account && !ACC); }
+function accNew() { return !DB.account; }
+
+/* ---------------- SIGNUP ---------------- */
+function signupView() {
+  return `
+  <div class="lock">
+    <div class="lockbox">
+      <div class="brand" style="margin-bottom:14px">SITE MANAGER<span>CREATE YOUR ACCOUNT</span></div>
+      <div class="field"><label>Company name<i>कंपनीचे नाव</i></label><input id="a_co" placeholder="Veershree Realty" autocomplete="organization"></div>
+      <div class="field"><label>Your name<i>तुमचे नाव</i></label><input id="a_nm" placeholder="Rushi" autocomplete="name"></div>
+      <div class="field"><label>Email<i>ईमेल</i></label><input id="a_em" type="email" placeholder="name@gmail.com" autocomplete="email" autocapitalize="none"></div>
+      <div class="field"><label>Mobile number<i>मोबाईल नंबर</i></label><input id="a_mo" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" autocomplete="tel"></div>
+      <div class="f2">
+        <div class="field"><label>Password<i>पासवर्ड</i></label><input id="a_p1" type="password" placeholder="min 4"></div>
+        <div class="field"><label>Repeat password<i>पुन्हा</i></label><input id="a_p2" type="password"></div>
+      </div>
+      <div id="a_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
+      <button class="btn" data-act="accSignup">Create account<i>अकाउंट तयार करा</i></button>
+      ${CLOUD.enabled ? '<div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accGoogle">Continue with Google</button></div>' : ''}
+      <div class="tiny" style="margin-top:12px;line-height:1.7">Ha account <b>ya phone var</b> banto. Email pathavnyasathi server nahi, mhanun password visarla tar <b>recovery code</b> lagto &mdash; to pudhchya screen var milel, kuthe tari lihun theva.</div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- LOGIN ---------------- */
+function loginView() {
+  const a = DB.account || {};
+  return `
+  <div class="lock">
+    <div class="lockbox">
+      ${DB.logo ? `<div style="text-align:center;margin-bottom:12px"><img src="${DB.logo}" style="max-height:54px;max-width:170px;object-fit:contain"></div>`
+      : `<div class="brand" style="margin-bottom:14px">SITE MANAGER<span>${esc((a.company || 'ACCOUNT').toUpperCase())}</span></div>`}
+      <div class="field"><label>Email or mobile number<i>ईमेल किंवा मोबाईल</i></label><input id="l_id" placeholder="${esc(a.email || '')}" autocapitalize="none" autocomplete="username"></div>
+      <div class="field"><label>Password<i>पासवर्ड</i></label><input id="l_pw" type="password" autocomplete="current-password"></div>
+      <div id="l_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
+      <button class="btn" data-act="accLogin">Log in<i>लॉग इन</i></button>
+      ${CLOUD.enabled ? '<div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accGoogle">Continue with Google</button></div>' : ''}
+      <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accForgot">Forgot password<i>पासवर्ड विसरलात?</i></button></div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- FORGOT ---------------- */
+function forgotView() {
+  return `
+  <div class="lock">
+    <div class="lockbox">
+      <div class="brand" style="margin-bottom:14px">RESET PASSWORD<span>RECOVERY CODE LAGEL</span></div>
+      <div class="field"><label>Recovery code<i>रिकव्हरी कोड</i></label><input id="f_code" placeholder="XXXXX-XXXXX" autocapitalize="characters"></div>
+      <div class="f2">
+        <div class="field"><label>New password<i>नवीन पासवर्ड</i></label><input id="f_p1" type="password"></div>
+        <div class="field"><label>Repeat<i>पुन्हा</i></label><input id="f_p2" type="password"></div>
+      </div>
+      <div id="f_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
+      <button class="btn" data-act="accReset">Set new password<i>नवीन पासवर्ड ठेवा</i></button>
+      <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="accBack">Back to login</button></div>
+      <div class="tiny" style="margin-top:12px;line-height:1.7">Recovery code haravla asel tar phone varcha data suraksit aahe &mdash; More &rarr; Excel madhun backup gheun app parat set karta yeto.</div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- ACCOUNT TAB ---------------- */
+function accountView(s) {
+  const a = DB.account || {};
+  const sites = DB.sites || [];
+  const rows = sites.reduce((n, x) => n + x.expenseLog.length + x.machineLog.length + x.dieselLog.length + (x.murumLog || []).length + x.vendorPayments.length, 0);
+  let bytes = 0;
+  try { bytes = JSON.stringify(DB).length; } catch (e) { }
+  return `
+  <div class="card"><h3>Account<i>अकाउंट</i></h3>
+    <div class="scroll"><table><tbody>
+      <tr><td class="muted">Company</td><td class="right"><b>${esc(a.company || '-')}</b></td></tr>
+      <tr><td class="muted">Name</td><td class="right"><b>${esc(a.name || '-')}</b></td></tr>
+      <tr><td class="muted">Email</td><td class="right">${esc(a.email || '-')}</td></tr>
+      <tr><td class="muted">Mobile</td><td class="right">${esc(a.mobile || '-')}</td></tr>
+      <tr><td class="muted">Member since</td><td class="right">${a.created ? fmtDate(a.created) : '-'}</td></tr>
+      <tr><td class="muted">Signed in as</td><td class="right">${esc((ACC && ACC.by) || 'this device')}</td></tr>
+    </tbody></table></div>
+    <div class="pad">
+      <div class="btnrow">
+        <button class="btn sec sm" style="flex:1" data-act="accEdit">Edit details<i>माहिती बदला</i></button>
+        <button class="btn sec sm" style="flex:1" data-act="accPass">Change password<i>पासवर्ड बदला</i></button>
+      </div>
+      <div class="btnrow">
+        <button class="btn sec sm" style="flex:1" data-act="accCode">Show recovery code</button>
+        <button class="btn dk sm" style="flex:1" data-act="accLogout">Log out<i>लॉग आऊट</i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><h3>Your data<i>तुमचा डेटा</i></h3>
+    <div class="scroll"><table><tbody>
+      <tr><td class="muted">Sites</td><td class="right"><b>${sites.length}</b></td></tr>
+      <tr><td class="muted">Total entries</td><td class="right"><b>${rows}</b></td></tr>
+      <tr><td class="muted">Data size</td><td class="right">${(bytes / 1024).toFixed(0)} KB</td></tr>
+      <tr><td class="muted">Storage</td><td class="right">${STORAGE_OK ? 'working' : 'NOT saving'}</td></tr>
+      <tr><td class="muted">App version</td><td class="right">${esc(APP_VERSION)}</td></tr>
+    </tbody></table></div>
+    <div class="pad"><button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Backup and Excel<i>बॅकअप</i></button></div>
+  </div>
+
+  <div class="card"><h3>Sign-in with Google<i>गुगल लॉगिन</i></h3><div class="pad">
+    ${CLOUD.enabled
+      ? '<div class="tiny">Google sign-in chalu aahe.</div>'
+      : `<div class="tiny" style="line-height:1.8">Google login sathi <b>Firebase project</b> lagto (Google cha, free). Te banvun tyachi key dili ki ha button chalu hoto. Tya nantar &mdash; email ne password reset, ani ekach account saglya phone var.</div>`}
+  </div></div>
+
+  <div class="card"><h3>Danger zone<i>सावधान</i></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:8px">Account kaadhla tari <b>site cha data rahto</b>. Parat login screen yeil ani navin account banvava lagel.</div>
+    <button class="btn dgr sm" style="width:100%" data-act="accDel">Remove account<i>अकाउंट काढा</i></button>
+  </div></div>`;
+}
+
+/* ============================================================
    FORMS + ACTIONS
    ============================================================ */
 let SHEET = null;
@@ -2768,7 +3099,7 @@ function remForm(s, id) {
   const r = id ? (s.reminders || []).find(x => x.id === id) : null;
   const cur = r || { vendor: '', due: shiftDay(today(), 7), amount: '', note: '', done: false };
   const vs = cur.vendor ? remVendorStats(s, cur.vendor) : null;
-  openSheet(r ? 'Payment date badla' : 'Payment cha divas thevaa', `
+  openSheet(r ? 'Edit payment due date' : 'Add payment due date', `
     <div class="card"><div class="pad">
       <div class="field"><label>Vendor<i>व्हेंडर</i></label><select id="r_v">${selOpts(allVendors(s), cur.vendor, '— vendor nako —')}</select></div>
       <div id="r_bal" class="tiny" style="margin:-4px 0 10px">${vs ? 'Ya vendor chi baki: <b>' + money(vs.remaining) + '</b>' : ''}</div>
@@ -2799,7 +3130,7 @@ function remForm(s, id) {
 async function delHash(pw) { return await sha('del:' + String(pw).trim() + ':' + salt()); }
 
 function delPassForm(change) {
-  openSheet(change ? 'Delete password badla' : 'Delete password set kara', `
+  openSheet(change ? 'Change delete password' : 'Set delete password', `
     <div class="card"><div class="pad">
       ${change ? '<div class="field"><label>Juna password<i>जुना पासवर्ड</i></label><input id="d_old" type="password"></div>' : ''}
       <div class="field"><label>Navin password<i>नवीन पासवर्ड</i></label><input id="d_new" type="password" placeholder="kimaan 4 akshare"></div>
@@ -2828,7 +3159,7 @@ function siteDeleteForm(id) {
   if (!s) return;
   const t = totals(s);
   const set = !!DB.delPass;
-  openSheet('Site delete kara', `
+  openSheet('Delete site', `
     <div class="card"><div class="pad">
       <div class="warn" style="margin-bottom:12px">
         <b>${esc(s.name)}</b> cha sagla data kayamcha jail:<br>
@@ -3262,7 +3593,7 @@ document.addEventListener('click', async e => {
     case 'remEdit': remForm(s, v); break;
     case 'remDone': {
       const r = (s.reminders || []).find(x => x.id === v);
-      if (r) { r.done = !r.done; await save(); render(); toast(r.done ? 'Zala mhanun mark kela' : 'Parat chalu'); }
+      if (r) { r.done = !r.done; await save(); render(); toast(r.done ? 'Marked as done' : 'Reopened'); }
       break;
     }
     case 'remIcs': {
@@ -3290,7 +3621,7 @@ document.addEventListener('click', async e => {
     case 'remEdit': remForm(s, v); break;
     case 'remDone': {
       const r = (s.reminders || []).find(x => x.id === v);
-      if (r) { r.done = !r.done; await save(); render(); toast(r.done ? 'Zala mhanun mark kela' : 'Parat chalu'); }
+      if (r) { r.done = !r.done; await save(); render(); toast(r.done ? 'Marked as done' : 'Reopened'); }
       break;
     }
     case 'remIcs': {
@@ -3350,6 +3681,127 @@ document.addEventListener('click', async e => {
       migrate(); await save(); render(); toast(moved + ' entries badalya');
       break;
     }
+    case 'accSignup': {
+      const co = val('a_co').trim(), nm = val('a_nm').trim();
+      const em = cleanMail(val('a_em')), mo = cleanMob(val('a_mo'));
+      const p1 = val('a_p1'), p2 = val('a_p2');
+      const err = m => { const e = document.getElementById('a_err'); if (e) e.textContent = m; };
+      if (!co) return err('Company name taka');
+      if (!em && !mo) return err('Email kiwa mobile number taka');
+      if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err('Email barobar nahi');
+      if (mo && mo.length !== 10) return err('Mobile number 10 aakdi hava');
+      if (p1.length < 4) return err('Password kimaan 4 akshare');
+      if (p1 !== p2) return err('Donhi password sarkhe nahit');
+      const salt = uid() + uid(), code = codeGen();
+      DB.account = { company: co, name: nm, email: em, mobile: mo, salt, created: today() };
+      DB.account.hash = await sha('acc:' + p1 + ':' + salt);
+      DB.account.code = await sha('code:' + code + ':' + salt);
+      ACC = { by: em || mo }; accSave();
+      await save(); render();
+      alert('Account taiyar!\n\nRECOVERY CODE:  ' + code + '\n\nPassword visarla tar haach lagto. Ha code kuthe tari lihun theva - parat dakhavta yenar nahi (fakt hash thevla jato).');
+      break;
+    }
+    case 'accLogin': {
+      const id = val('l_id').trim(), pw = val('l_pw');
+      const err = m => { const e = document.getElementById('l_err'); if (e) e.textContent = m; };
+      const a = DB.account || {};
+      const ok = cleanMail(id) === (a.email || '') || (cleanMob(id) && cleanMob(id) === (a.mobile || ''));
+      if (!ok) return err('He email/mobile ya account che nahi');
+      if (await sha('acc:' + pw + ':' + a.salt) !== a.hash) return err('Password chukicha');
+      ACC = { by: a.email || a.mobile }; accSave();
+      UI = {}; TAB = 'dash'; render();
+      break;
+    }
+    case 'accForgot': UI.forgot = 1; render(); break;
+    case 'accBack': UI.forgot = 0; render(); break;
+    case 'accReset': {
+      const a = DB.account || {};
+      const code = val('f_code').trim().toUpperCase(), p1 = val('f_p1'), p2 = val('f_p2');
+      const err = m => { const e = document.getElementById('f_err'); if (e) e.textContent = m; };
+      if (await sha('code:' + code + ':' + a.salt) !== a.code) return err('Recovery code chukicha');
+      if (p1.length < 4) return err('Password kimaan 4 akshare');
+      if (p1 !== p2) return err('Donhi password sarkhe nahit');
+      a.hash = await sha('acc:' + p1 + ':' + a.salt);
+      UI.forgot = 0; ACC = { by: a.email || a.mobile }; accSave();
+      await save(); render(); toast('Navin password thevla');
+      break;
+    }
+    case 'accGoogle':
+      alert('Google login sathi Firebase key lagte.\n\nAata email/mobile ani password ne login kara.');
+      break;
+    case 'accLogout':
+      if (!confirm('Log out karaycha? Data phone madhech rahil.')) break;
+      ACC = null; accSave(); UI = {}; render();
+      break;
+    case 'accEdit': {
+      const a = DB.account || {};
+      openSheet('Account details', `
+        <div class="card"><div class="pad">
+          <div class="field"><label>Company name<i>कंपनीचे नाव</i></label><input id="e_co" value="${esc(a.company || '')}"></div>
+          <div class="field"><label>Your name<i>तुमचे नाव</i></label><input id="e_nm" value="${esc(a.name || '')}"></div>
+          <div class="field"><label>Email<i>ईमेल</i></label><input id="e_em" type="email" value="${esc(a.email || '')}" autocapitalize="none"></div>
+          <div class="field"><label>Mobile<i>मोबाईल</i></label><input id="e_mo" type="tel" inputmode="numeric" value="${esc(a.mobile || '')}"></div>
+        </div></div>`,
+        () => {
+          const co = val('e_co').trim();
+          if (!co) return toast('Company name taka');
+          a.company = co; a.name = val('e_nm').trim();
+          a.email = cleanMail(val('e_em')); a.mobile = cleanMob(val('e_mo'));
+          if (!a.email && !a.mobile) return toast('Email kiwa mobile lagto');
+          return true;
+        }, null);
+      break;
+    }
+    case 'accPass': {
+      const a = DB.account || {};
+      openSheet('Change password', `
+        <div class="card"><div class="pad">
+          <div class="field"><label>Juna password<i>जुना पासवर्ड</i></label><input id="c_old" type="password"></div>
+          <div class="field"><label>Navin password<i>नवीन पासवर्ड</i></label><input id="c_p1" type="password"></div>
+          <div class="field"><label>Parat tach<i>पुन्हा</i></label><input id="c_p2" type="password"></div>
+        </div></div>`,
+        () => {
+          const o = val('c_old'), p1 = val('c_p1'), p2 = val('c_p2');
+          if (p1.length < 4) return toast('Kimaan 4 akshare');
+          if (p1 !== p2) return toast('Donhi sarkhe nahit');
+          sha('acc:' + o + ':' + a.salt).then(async h => {
+            if (h !== a.hash) return toast('Juna password chukicha');
+            a.hash = await sha('acc:' + p1 + ':' + a.salt);
+            closeSheet(); await save(); render(); toast('Password badalla');
+          });
+          return false;
+        }, null);
+      break;
+    }
+    case 'accCode': {
+      const a = DB.account || {};
+      const nw = codeGen();
+      if (!confirm('Juna recovery code dakhavta yet nahi (to suraksitpane hash karun thevla aahe).\n\nNavin code banvaycha ka? Juna mag chalnar nahi.')) break;
+      a.code = await sha('code:' + nw + ':' + a.salt);
+      await save();
+      alert('NAVIN RECOVERY CODE:  ' + nw + '\n\nKuthe tari lihun theva.');
+      break;
+    }
+    case 'accDel': {
+      const a = DB.account || {};
+      const pw = prompt('Account kaadhnyasathi password taka:');
+      if (pw == null) break;
+      if (await sha('acc:' + pw + ':' + a.salt) !== a.hash) { toast('Password chukicha'); break; }
+      if (!confirm('Account kaadhtoy. Site cha data rahil, pan parat navin account banvava lagel. Nakki?')) break;
+      delete DB.account; ACC = null; accSave();
+      UI = {}; TAB = 'dash'; await save(); render();
+      break;
+    }
+    case 'mBill':
+      if (!v) { toast('Machine nivda'); break; }
+      openBill(machineBill(s, v), 'machine-' + v);
+      render(); break;
+    case 'vBill':
+      if (!v) break;
+      openBill(vendorBill(s, v), 'vendor-' + v);
+      render(); break;
+    case 'prtGo': try { window.print(); } catch (e) { toast('Print jamla nahi'); } break;
+    case 'prtClose': closeBill(); render(); break;
     case 'mDelOne': {
       const m = s.machines.find(x => x.id === v);
       if (!m) break;
@@ -3477,7 +3929,7 @@ document.addEventListener('change', e => {
 });
 
 /* ---------- go ---------- */
-(async () => { await load(); render(); try { notifyDue(site()); } catch (e) { } })();
+(async () => { await load(); ACC = accLoad() ? { by: (DB.account && (DB.account.email || DB.account.mobile)) || 'device' } : null; render(); try { notifyDue(site()); } catch (e) { } })();
 
 </script>
 </body>
