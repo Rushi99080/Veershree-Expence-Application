@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Manager Book</title>
+<meta name="theme-color" content="#141A1F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Manager Book">
+<link rel="manifest" href="manifest-mgr.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141A1F;
+  --ink-2:#39454F;
+  --steel:#6B7A87;
+  --line:#D6DDE3;
+  --line-2:#EBEFF2;
+  --bg:#EDF1F4;
+  --surface:#FFFFFF;
+  --hivis:#F5B301;
+  --hivis-dk:#C08D00;
+  --paid:#15784B;
+  --paid-bg:#E3F3EA;
+  --due:#C0392B;
+  --due-bg:#FBE9E7;
+  --rent:#2C5F8A;
+  --r:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:15px;line-height:1.45;
+  padding-bottom:calc(118px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Barlow Condensed','Barlow',sans-serif;margin:0;font-weight:700;letter-spacing:.01em}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+button,input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
+button{cursor:pointer}
+a{color:var(--rent)}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 0;
+}
+.tb-row{display:flex;align-items:center;gap:8px;padding-bottom:8px}
+.brand{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;letter-spacing:.02em;line-height:1;flex:0 0 auto}
+.brand span{display:block;font-size:10.5px;font-family:'Barlow',sans-serif;font-weight:500;color:#93A3AF;letter-spacing:.08em;margin-top:2px}
+.sitepick{
+  flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;justify-content:flex-end;
+  background:#222C34;border:1px solid #33414B;border-radius:8px;padding:7px 10px;color:#fff;
+}
+.sitepick b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.sitepick i{font-style:normal;color:var(--hivis);font-size:11px}
+.lockbtn{flex:0 0 auto;background:#222C34;border:1px solid #33414B;color:var(--hivis);border-radius:8px;padding:8px 9px;font-size:10px;font-weight:700;letter-spacing:.06em}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding-bottom:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto;background:none;border:0;color:#93A3AF;padding:9px 11px 10px;
+  font-size:13.5px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;
+}
+.tab.on{color:#fff;border-bottom-color:var(--hivis)}
+
+/* ---------- layout ---------- */
+main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.card>h3{
+  padding:10px 12px;font-size:15px;border-bottom:1px solid var(--line-2);
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.card>h3 small{font-family:'Barlow',sans-serif;font-weight:500;font-size:12px;color:var(--steel)}
+.pad{padding:12px}
+.muted{color:var(--steel);font-size:13px}
+.tiny{font-size:12px;color:var(--steel)}
+.right{text-align:right}
+.center{text-align:center}
+.mt{margin-top:12px}
+
+/* ---------- hero totals ---------- */
+.hero{background:var(--ink);color:#fff;border-radius:var(--r);padding:14px;margin-bottom:12px}
+.hero .lbl{font-size:11px;letter-spacing:.1em;color:#93A3AF;font-weight:600}
+.hero .big{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;line-height:1.05;margin-top:2px}
+.hero .big small{font-size:20px;color:var(--hivis);margin-right:4px;font-weight:600}
+.hsplit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#33414B;border-radius:8px;overflow:hidden;margin-top:12px}
+.hsplit div{background:#1C242B;padding:9px 10px}
+.hsplit .k{font-size:10.5px;color:#93A3AF;font-weight:600;letter-spacing:.04em}
+.hsplit .v{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;margin-top:1px}
+.pendbar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;background:var(--hivis);color:#241C00;border-radius:8px;padding:9px 12px}
+.pendbar b{font-family:'Barlow Condensed',sans-serif;font-size:22px}
+
+/* ---------- kpi grid ---------- */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px}
+.kpi .k{font-size:11px;color:var(--steel);font-weight:600;letter-spacing:.03em}
+.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1}
+.kpi.g .v{color:var(--paid)} .kpi.r .v{color:var(--due)} .kpi.b .v{color:var(--rent)}
+.k3{grid-template-columns:1fr 1fr 1fr}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{
+  text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--steel);
+  padding:7px 10px;border-bottom:1px solid var(--line);background:#F7F9FA;white-space:nowrap;
+}
+td{padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
+.nowrap{white-space:nowrap}
+
+/* ---------- log rows ---------- */
+.row{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.row:last-child{border-bottom:0}
+.row .main{flex:1;min-width:0}
+.row .ttl{font-weight:600;font-size:14.5px;word-break:break-word}
+.row .sub{font-size:12px;color:var(--steel);margin-top:2px}
+.row .amt{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.03em}
+.pill.p{background:var(--paid-bg);color:var(--paid)}
+.pill.u{background:var(--due-bg);color:var(--due)}
+.pill.n{background:#EEF2F5;color:var(--ink-2)}
+.rowbtn{background:none;border:0;padding:6px 2px 0;color:var(--steel);font-size:12px;font-weight:600}
+
+/* ---------- forms ---------- */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.03em;margin-bottom:3px}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--hivis);outline-offset:-1px;border-color:var(--hivis)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;
+  padding:12px;border-radius:9px;border:0;background:var(--hivis);color:#241C00;font-weight:700;font-size:15px;
+}
+.btn:active{background:var(--hivis-dk)}
+.btn.sec{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.dk{background:var(--ink);color:#fff}
+.btn.dgr{background:#fff;border:1px solid #E7B7B1;color:var(--due)}
+.btn.sm{width:auto;padding:8px 12px;font-size:13.5px}
+.btnrow{display:flex;gap:8px;margin-top:8px;align-items:stretch}
+.btnrow > .btn{min-width:0}
+.f2 > *{min-width:0}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{flex:1;border:0;background:#fff;padding:10px 6px;font-size:13.5px;font-weight:600;color:var(--steel)}
+.seg button.on{background:var(--ink);color:#fff}
+.seg.pu button.on[data-v="Paid"]{background:var(--paid)}
+.seg.pu button.on[data-v="Unpaid"]{background:var(--due)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid var(--line-2);scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ---------- bottom nav ---------- */
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(6,1fr);
+  background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+}
+.nav button{background:none;border:0;padding:8px 2px 9px;color:var(--steel);font-size:10.5px;font-weight:600;line-height:1.2}
+.nav button svg{display:block;margin:0 auto 2px;width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{color:var(--ink)}
+.nav button.on svg{stroke:var(--hivis-dk)}
+
+.nav.n7 button,.nav.n8 button{font-size:9.5px;padding:7px 1px 8px}
+.nav.n7 button svg,.nav.n8 button svg{width:19px;height:19px}
+.logo{height:26px;width:auto;max-width:88px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;flex:0 0 auto}
+.logobox{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+
+.prt{position:fixed;inset:0;z-index:100;background:#fff;overflow-y:auto;padding:16px 14px calc(90px + env(safe-area-inset-bottom))}
+.prtbar{position:fixed;left:0;right:0;bottom:0;z-index:101;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+.bill{max-width:760px;margin:0 auto;color:#000;font-size:12.5px}
+.bill h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;margin:0 0 2px}
+.bill .meta{font-size:11.5px;color:#333;margin-bottom:12px;line-height:1.6}
+.bill table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:14px}
+.bill th{background:#EEF2F5;border:1px solid #B9C4CC;padding:5px 6px;text-align:left;font-size:10.5px;letter-spacing:.03em}
+.bill td{border:1px solid #D6DDE3;padding:4px 6px;vertical-align:top}
+.bill td.n,.bill th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bill tfoot td{font-weight:700;background:#F5F7F9}
+.bill .kpi{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.bill .kpi div{border:1px solid #B9C4CC;border-radius:6px;padding:6px 10px;min-width:100px}
+.bill .kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px}
+.bill .kpi span{font-size:9.5px;letter-spacing:.06em;color:#444}
+.bill h2{font-family:'Barlow Condensed',sans-serif;font-size:15px;margin:16px 0 6px;border-bottom:1.5px solid #000;padding-bottom:2px}
+.bill .sign{margin-top:26px;display:flex;justify-content:space-between;font-size:11px;color:#333}
+@media print{
+  body{background:#fff!important;padding:0!important}
+  body > *{display:none!important}
+  body > #print{display:block!important}
+  .prt{position:static;padding:0;overflow:visible}
+  .prtbar{display:none!important}
+  .bill{max-width:none;font-size:11px}
+  @page{margin:12mm}
+}
+
+.arow{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:10px;background:var(--surface);margin-bottom:7px;touch-action:none;user-select:none}
+.arow.drag{background:#FFF7DB;border-color:var(--hivis);box-shadow:0 6px 18px rgba(15,20,25,.16);opacity:.96}
+.arow .hnd{width:26px;flex:0 0 26px;color:var(--steel);font-size:17px;line-height:1;text-align:center;cursor:grab}
+.arow .anm{flex:1;font-weight:600;font-size:14px}
+.arow .asub{font-weight:400;font-size:11px;color:var(--steel);display:block}
+.arow .abtn{width:34px;height:32px;flex:0 0 34px;border:1px solid var(--line);border-radius:8px;
+  background:#F7F9FA;font-size:14px;color:var(--ink)}
+
+/* ---------- sheet / modal ---------- */
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(15,20,25,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{
+  background:var(--bg);width:100%;max-width:820px;max-height:92vh;overflow-y:auto;
+  border-radius:16px 16px 0 0;padding:14px 12px calc(20px + env(safe-area-inset-bottom));
+}
+.sheet h3{font-size:18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.x{background:none;border:0;font-size:22px;line-height:1;color:var(--steel);padding:0 4px}
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:90;
+  background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;font-weight:600;
+  box-shadow:0 6px 20px rgba(15,20,25,.3);
+}
+.empty{padding:26px 16px;text-align:center;color:var(--steel);font-size:13.5px}
+.warn{background:#FFF8E1;border:1px solid #F0D48A;color:#6B5300;padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:12px}
+.bar{height:5px;background:var(--line-2);border-radius:99px;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:var(--rent)}
+.lockwrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 18px;background:var(--ink)}
+.lock{width:100%;max-width:380px;color:#fff}
+.lock .lg{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;line-height:1.1}
+.lock .sm2{color:#93A3AF;font-size:13px;margin-top:6px;line-height:1.6}
+.lock input{width:100%;padding:14px;border-radius:10px;border:1px solid #33414B;background:#1C242B;color:#fff;font-size:18px;letter-spacing:.25em;text-align:center;margin-top:14px}
+.lock input::placeholder{letter-spacing:normal;color:#5C6B77}
+.lock .btn{margin-top:12px}
+.lock .err{background:#3A1D1A;border:1px solid #6B2C24;color:#FFB4A8;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-top:12px}
+.lock .skip{display:block;text-align:center;color:#93A3AF;font-size:12.5px;margin-top:16px;text-decoration:underline}
+.lockbtn{flex:0 0 auto;background:#222C34;border:1px solid #33414B;border-radius:8px;color:#93A3AF;padding:7px 9px;font-size:15px;line-height:1}
+.robar{background:var(--rent);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:5px 12px;text-align:center}
+/* fakt baghnyachya mode madhe: badal karnyache buttons lapavaayche,
+   pan entries chya rows disaylach havyat */
+body.ro button[data-act$="Add"],body.ro button[data-act="xlAllDone"],body.ro button[data-act="xlReset"],
+body.ro button[data-act="impJson"],body.ro button[data-act="snapList"],body.ro button[data-act="snapBack"],
+body.ro button[data-act="xlCopy"],body.ro button[data-act="siteEdit"],body.ro .rowbtn{display:none !important}
+/* English var, Hindi khali */
+label i,h3 i,.kpi .k i,.hsplit .k i,.btn i,.chip i,.empty i,.tab i,.row .ttl i{
+  display:block;font-style:normal;font-weight:500;font-size:10.5px;color:var(--steel);letter-spacing:0;margin-top:1px;line-height:1.3}
+h3 i{font-family:'Barlow',sans-serif;font-weight:500}
+.hero .lbl i,.hsplit .k i{color:#7C8B98}
+.btn i{color:rgba(36,28,0,.62);font-size:10px}
+.btn.dk i,.btn.sec i,.btn.dgr i{color:var(--steel)}
+.tab i{font-size:9.5px;color:#6B7A87}
+.seg button i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--steel)}
+.seg button.on i{color:rgba(255,255,255,.7)}
+.searchwrap{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:45;
+  background:var(--surface);border-top:1px solid var(--line);padding:7px 10px;display:flex;gap:8px;align-items:center}
+.searchwrap input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:99px;background:#F4F7F9;font-size:15px}
+.searchwrap input:focus{outline:2px solid var(--hivis);outline-offset:-1px;background:#fff}
+.searchwrap button{flex:0 0 auto;background:none;border:0;color:var(--steel);font-size:13px;font-weight:700;padding:6px 8px}
+.spanel{position:fixed;left:0;right:0;top:0;bottom:calc(112px + env(safe-area-inset-bottom));z-index:44;
+  background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px 20px}
+.shead{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--steel);padding:10px 2px 6px}
+.brandlogo{height:30px;max-width:130px;object-fit:contain;display:block}
+@media (min-width:640px){ .kpis{grid-template-columns:repeat(4,1fr)} .k3{grid-template-columns:repeat(3,1fr)} }
+@media (prefers-reduced-motion:no-preference){ .sheet .box{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px)}} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<script>
+(function(){ try {
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations)
+    navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ try{ r.unregister(); }catch(e){} }); }).catch(function(){});
+  if (window.caches && caches.keys) caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }).catch(function(){});
+} catch(e){} })();
+window.onerror = function (msg, src, line) {
+  try {
+    document.getElementById('app').innerHTML =
+      '<div style="padding:24px;font-family:system-ui"><div style="font-weight:700;font-size:18px;margin-bottom:8px">App madhe error</div>' +
+      '<div style="font-size:13px;color:#555;line-height:1.6">' + String(msg) + '<br>line ' + line + '</div></div>';
+  } catch (e) { }
+};
+/* ============================================================
+   MANAGER APP — paise milale, kharch, shillak
+   ============================================================ */
+const MGR_VERSION = 'v1 · 11-09-2026';
+const KEY = 'vmgr:db:v1';
+const SKEY = 'vmgr:me:v1';
+
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const num = v => { if (typeof v === 'string') v = v.replace(/[,\s\u20B9]/g, ''); const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const has = v => v !== '' && v != null;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const today = () => new Date().toISOString().slice(0, 10);
+const fmtDate = d => { if (!d) return '—'; const p = String(d).slice(0, 10).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0].slice(2) : d; };
+const money = n => '₹' + Math.round(num(n)).toLocaleString('en-IN');
+const val = id => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+const numVal = id => num(val(id));
+
+let DB = { name: '', mobile: '', sites: [], categories: [], funds: [], expenses: [], sent: {}, auth: null };
+let ME = null, TAB = 'home', UI = {}, SHEET = null, STORAGE_OK = true;
+
+/* ---------- storage ---------- */
+const IDB = {
+  db: null,
+  open() {
+    return new Promise((res, rej) => {
+      if (IDB.db) return res(IDB.db);
+      const rq = indexedDB.open('vmgr', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+      rq.onsuccess = () => { IDB.db = rq.result; res(IDB.db); };
+      rq.onerror = () => rej(rq.error);
+    });
+  },
+  async get(k) { const db = await IDB.open(); return new Promise(r => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => r(q.result); q.onerror = () => r(null); }); },
+  async set(k, v) { const db = await IDB.open(); return new Promise(r => { const q = db.transaction('kv', 'readwrite').objectStore('kv').put(v, k); q.onsuccess = () => r(1); q.onerror = () => r(0); }); },
+  async keys() { const db = await IDB.open(); return new Promise(r => { const q = db.transaction('kv').objectStore('kv').getAllKeys(); q.onsuccess = () => r(q.result || []); q.onerror = () => r([]); }); }
+};
+
+async function snapshot(json) {
+  try {
+    await IDB.set('snap:' + today(), json);
+    const ks = (await IDB.keys()).filter(k => String(k).startsWith('snap:')).sort();
+    for (const k of ks.slice(0, Math.max(0, ks.length - 21))) {
+      const db = await IDB.open();
+      db.transaction('kv', 'readwrite').objectStore('kv').delete(k);
+    }
+  } catch (e) { }
+}
+
+let saveT = null;
+function save() {
+  return new Promise(res => {
+    clearTimeout(saveT);
+    saveT = setTimeout(async () => {
+      const snapNeeded = DB.lastSnap !== today();
+      if (snapNeeded) DB.lastSnap = today();
+      const json = JSON.stringify(DB);
+      try { await IDB.set(KEY, json); STORAGE_OK = true; } catch (e) { STORAGE_OK = false; }
+      try { localStorage.setItem(KEY, json); } catch (e) { }
+      if (snapNeeded) await snapshot(json);
+      res();
+    }, 100);
+  });
+}
+
+async function loadDB() {
+  let raw = null;
+  try { raw = await IDB.get(KEY); } catch (e) { }
+  if (!raw) { try { raw = localStorage.getItem(KEY); } catch (e) { } }
+  if (raw) { try { DB = Object.assign(DB, JSON.parse(raw)); } catch (e) { } }
+  ['sites', 'categories', 'funds', 'expenses'].forEach(k => { if (!Array.isArray(DB[k])) DB[k] = []; });
+  if (!DB.sent || typeof DB.sent !== 'object') DB.sent = {};
+  try { const m = localStorage.getItem(SKEY); if (m && DB.auth) ME = JSON.parse(m); } catch (e) { }
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
+}
+function saveSession() { try { ME ? localStorage.setItem(SKEY, JSON.stringify(ME)) : localStorage.removeItem(SKEY); } catch (e) { } }
+
+/* ---------- auth ---------- */
+async function sha(t) {
+  try {
+    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+    return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+  } catch (e) { let h = 5381; for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) >>> 0; return 'x' + h; }
+}
+const hasLogin = () => !!(DB.auth && DB.auth.users && DB.auth.users.length);
+async function checkLogin(id, pw) {
+  const u = DB.auth.users.find(x => x.userId.toLowerCase() === String(id).trim().toLowerCase());
+  if (!u) return null;
+  return (await sha(pw + ':' + DB.auth.salt)) === u.hash ? u : null;
+}
+
+/* ---------- hishob ---------- */
+const totalFunds = () => DB.funds.reduce((a, f) => a + num(f.amount), 0);
+const totalExp = () => DB.expenses.reduce((a, e) => a + num(e.amount), 0);
+const balance = () => totalFunds() - totalExp();
+const unsent = () => DB.funds.filter(f => !f.sent).length + DB.expenses.filter(e => !e.sent).length;
+const bySite = () => {
+  const o = {};
+  DB.expenses.forEach(e => { o[e.site || '—'] = (o[e.site || '—'] || 0) + num(e.amount); });
+  return Object.keys(o).map(k => ({ site: k, amount: o[k] })).sort((a, b) => b.amount - a.amount);
+};
+
+
+/* ============================ VIEWS ============================ */
+function render() {
+  if (!hasLogin()) { $('#app').innerHTML = firstRunView(); return; }
+  if (!ME) { $('#app').innerHTML = loginView(); return; }
+  const V = { home: homeView, fund: fundView, exp: expView, hist: histView, send: sendView, setup: setupView };
+  $('#app').innerHTML = `
+  <div class="topbar"><div class="tb-row">
+    <div class="brand">MANAGER BOOK<span>${esc((DB.name || ME.name || '').toUpperCase())}</span></div>
+    <button class="sitepick" data-act="logout"><b>Log out</b></button>
+  </div></div>
+  <main>${STORAGE_OK ? '' : '<div class="warn">He phone data save karat nahi. Setup madhun backup ghya.</div>'}
+    ${(V[TAB] || homeView)()}
+  </main>
+  <nav class="nav n6" style="grid-template-columns:repeat(6,1fr)">
+    ${[['home', 'Home'], ['fund', 'Paise'], ['exp', 'Kharch'], ['hist', 'History'], ['send', 'Send'], ['setup', 'Setup']]
+      .map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}
+  </nav>`;
+  window.scrollTo(0, 0);
+}
+
+function firstRunView() {
+  return `<div class="lock"><div class="lockbox">
+    <div class="brand" style="margin-bottom:14px">MANAGER BOOK<span>FIRST TIME SETUP</span></div>
+    <div class="field"><label>Tumcha naav<i>तुमचे नाव</i></label><input id="s_nm" placeholder="Suhas Sir"></div>
+    <div class="field"><label>Login ID<i>लॉगिन आयडी</i></label><input id="s_id" placeholder="suhas" autocapitalize="none"></div>
+    <div class="f2">
+      <div class="field"><label>Password<i>पासवर्ड</i></label><input id="s_p1" type="password"></div>
+      <div class="field"><label>Parat<i>पुन्हा</i></label><input id="s_p2" type="password"></div>
+    </div>
+    <div id="s_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
+    <button class="btn" data-act="mkLogin">Suru kara<i>सुरू करा</i></button>
+    <div class="tiny" style="margin-top:12px;line-height:1.7">Ha login <b>ekdach</b> takaycha. Nantar app direct ughadto &mdash; log out kelyavarach parat lagto.</div>
+  </div></div>`;
+}
+
+function loginView() {
+  return `<div class="lock"><div class="lockbox">
+    <div class="brand" style="margin-bottom:14px">MANAGER BOOK<span>${esc((DB.name || '').toUpperCase())}</span></div>
+    <div class="field"><label>Login ID<i>लॉगिन आयडी</i></label><input id="l_id" autocapitalize="none"></div>
+    <div class="field"><label>Password<i>पासवर्ड</i></label><input id="l_pw" type="password"></div>
+    <div id="l_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
+    <button class="btn" data-act="login">Log in<i>लॉग इन</i></button>
+  </div></div>`;
+}
+
+function homeView() {
+  const b = balance(), sites = bySite();
+  const n = unsent();
+  return `
+  <div class="hero">
+    <div class="lbl">SHILLAK<i>शिल्लक</i></div>
+    <div class="big"><small>₹</small>${money(b).replace('₹', '')}</div>
+    <div class="hsplit">
+      <div><div class="k">MILALE<i>मिळालेले</i></div><div class="v num">${money(totalFunds())}</div></div>
+      <div><div class="k">KHARCH<i>खर्च</i></div><div class="v num">${money(totalExp())}</div></div>
+      <div><div class="k">ENTRIES</div><div class="v num">${DB.funds.length + DB.expenses.length}</div></div>
+    </div>
+  </div>
+  ${n ? `<div class="card" style="border-color:var(--hivis)"><div class="pad">
+    <div class="tiny" style="margin-bottom:8px"><b>${n}</b> entries ajun office la pathavlelya nahit.</div>
+    <button class="btn sm" style="width:100%" data-act="tab" data-v="send">Office la pathva<i>पाठवा</i></button>
+  </div></div>` : ''}
+  <div class="btnrow" style="margin:0 0 12px">
+    <button class="btn" style="flex:1" data-act="fAdd">+ Paise milale<i>पैसे मिळाले</i></button>
+    <button class="btn" style="flex:1" data-act="eAdd">+ Kharch<i>खर्च</i></button>
+  </div>
+  ${sites.length ? `<div class="card"><h3>Site-wise kharch<i>साइटनुसार</i></h3><div class="scroll"><table>
+    <thead><tr><th>Site</th><th class="n">Amount</th></tr></thead>
+    <tbody>${sites.map(o => `<tr><td>${esc(o.site)}</td><td class="n">${money(o.amount)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>TOTAL</td><td class="n">${money(totalExp())}</td></tr></tfoot>
+  </table></div></div>` : ''}
+  <div class="card"><h3>Shevatchya entries<i>शेवटच्या नोंदी</i></h3>
+    ${recentRows(8) || '<div class="empty">Ajun kahi nahi.</div>'}
+  </div>`;
+}
+
+function recentRows(n) {
+  const all = DB.funds.map(f => ({ t: 'f', r: f })).concat(DB.expenses.map(e => ({ t: 'e', r: e })));
+  all.sort((a, b) => String(b.r.date).localeCompare(String(a.r.date)));
+  return all.slice(0, n).map(o => o.t === 'f'
+    ? `<div class="row" data-act="fEdit" data-v="${o.r.id}"><div class="main"><div class="ttl">Paise milale ${o.r.sent ? '<span class="pill p">sent</span>' : ''}</div>
+       <div class="sub">${fmtDate(o.r.date)}${o.r.from ? ' · ' + esc(o.r.from) : ''}</div></div>
+       <div class="amt" style="color:var(--paid)">+${money(o.r.amount)}</div></div>`
+    : `<div class="row" data-act="eEdit" data-v="${o.r.id}"><div class="main"><div class="ttl">${esc(o.r.desc || o.r.category)} ${o.r.sent ? '<span class="pill p">sent</span>' : ''}</div>
+       <div class="sub">${fmtDate(o.r.date)} · ${esc(o.r.site || '—')} · ${esc(o.r.category || '')}</div></div>
+       <div class="amt">−${money(o.r.amount)}</div></div>`).join('');
+}
+
+function fundView() {
+  const rows = DB.funds.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return `
+  <button class="btn" data-act="fAdd">+ Paise milale<i>पैसे मिळाले</i></button>
+  <div class="kpis k3 mt">
+    <div class="kpi b"><div class="k">EKUN MILALE<i>एकूण</i></div><div class="v num">${money(totalFunds())}</div></div>
+    <div class="kpi"><div class="k">ENTRIES</div><div class="v num">${rows.length}</div></div>
+    <div class="kpi"><div class="k">SHILLAK<i>शिल्लक</i></div><div class="v num">${money(balance())}</div></div>
+  </div>
+  <div class="card mt"><h3>Milalele paise<i>मिळालेले पैसे</i><small>${rows.length}</small></h3>
+    ${rows.length ? rows.map(f => `<div class="row" data-act="fEdit" data-v="${f.id}">
+      <div class="main"><div class="ttl">${fmtDate(f.date)} ${f.sent ? '<span class="pill p">sent</span>' : ''}</div>
+      <div class="sub">${esc(f.from || '')}${f.mode ? ' · ' + esc(f.mode) : ''}${f.remark ? ' · ' + esc(f.remark) : ''}</div></div>
+      <div class="amt" style="color:var(--paid)">+${money(f.amount)}</div></div>`).join('')
+      : '<div class="empty">Ajun kahi nahi.<i>अजून काही नाही</i></div>'}
+  </div>
+  <div class="card"><div class="pad tiny" style="line-height:1.8">Ithe <b>site nivadaychi nahi</b> &mdash; paise saglya site sathi ekatra miltat. Kharch takatana matra site nivadaychi.</div></div>`;
+}
+
+function expView() {
+  const f = UI.site || '';
+  let rows = DB.expenses.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  if (f) rows = rows.filter(e => e.site === f);
+  const tot = rows.reduce((a, e) => a + num(e.amount), 0);
+  return `
+  <button class="btn" data-act="eAdd">+ Kharch<i>खर्च</i></button>
+  ${DB.sites.length ? `<div class="card mt"><div class="chips">
+    <button class="chip ${!f ? 'on' : ''}" data-act="siteFilter" data-v="">Sagle</button>
+    ${DB.sites.map(x => `<button class="chip ${f === x ? 'on' : ''}" data-act="siteFilter" data-v="${esc(x)}">${esc(x)}</button>`).join('')}
+  </div></div>` : '<div class="card mt"><div class="empty">Aadhi Setup madhe site cha naav taka.<i>साइट टाका</i></div></div>'}
+  <div class="kpis k3 mt">
+    <div class="kpi"><div class="k">ENTRIES</div><div class="v num">${rows.length}</div></div>
+    <div class="kpi b"><div class="k">KHARCH<i>खर्च</i></div><div class="v num">${money(tot)}</div></div>
+    <div class="kpi"><div class="k">SHILLAK<i>शिल्लक</i></div><div class="v num">${money(balance())}</div></div>
+  </div>
+  <div class="card mt"><h3>Kharch<i>खर्च</i><small>${rows.length}</small></h3>
+    ${rows.length ? rows.map(e => `<div class="row" data-act="eEdit" data-v="${e.id}">
+      <div class="main"><div class="ttl">${esc(e.desc || e.category)} ${e.sent ? '<span class="pill p">sent</span>' : ''}</div>
+      <div class="sub">${fmtDate(e.date)} · ${esc(e.site || '—')} · ${esc(e.category || '')}${e.vendor ? ' · ' + esc(e.vendor) : ''}</div></div>
+      <div class="amt">${money(e.amount)}</div></div>`).join('')
+      : '<div class="empty">Ajun kharch nahi.<i>अजून खर्च नाही</i></div>'}
+  </div>`;
+}
+
+function histView() {
+  const days = [...new Set(DB.funds.map(f => f.date).concat(DB.expenses.map(e => e.date)))].filter(Boolean).sort().reverse();
+  return `<div class="card"><h3>Divas-nihay<i>दिवसानुसार</i><small>${days.length}</small></h3>
+    ${days.length ? days.map(d => {
+      const fu = DB.funds.filter(f => f.date === d), ex = DB.expenses.filter(e => e.date === d);
+      const fa = fu.reduce((a, x) => a + num(x.amount), 0), ea = ex.reduce((a, x) => a + num(x.amount), 0);
+      const sent = fu.every(x => x.sent) && ex.every(x => x.sent);
+      return `<div class="row"><div class="main"><div class="ttl">${fmtDate(d)} ${sent ? '<span class="pill p">sent</span>' : '<span class="pill u">pathvaycha</span>'}</div>
+        <div class="sub">${fu.length ? 'milale ' + money(fa) + ' · ' : ''}${ex.length ? ex.length + ' kharch ' + money(ea) : ''}</div></div>
+        <div class="amt">${money(fa - ea)}</div></div>`;
+    }).join('') : '<div class="empty">Ajun kahi nahi.</div>'}
+  </div>`;
+}
+
+function sendView() {
+  const n = unsent();
+  return `
+  <div class="card"><h3>Office la pathva<i>ऑफिसला पाठवा</i></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">${n ? '<b>' + n + '</b> navin entries pathvaychya aahet.' : 'Sagla pathavla aahe. Parat pathavla tari office la duplicate jat nahi.'}</div>
+    <div class="field"><label>Kaay pathvaycha<i>काय पाठवायचे</i></label>
+      <select id="sc">
+        <option value="new">Fakt navin entries</option>
+        <option value="all">Sagla data</option>
+      </select></div>
+    <button class="btn" data-act="sendJson">Data file pathva<i>फाईल पाठवा</i></button>
+    <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="sendWa">WhatsApp message<i>मेसेज</i></button></div>
+    <div class="tiny" style="margin-top:10px">Data file office chya app madhe import hote &mdash; kharch tya-tya site chya hishobat jato.</div>
+  </div></div>
+  <div class="card"><h3>Aatapuratcha hishob<i>आजचा हिशोब</i></h3><div class="scroll"><table><tbody>
+    <tr><td class="muted">Ekun milale</td><td class="right n"><b>${money(totalFunds())}</b></td></tr>
+    <tr><td class="muted">Ekun kharch</td><td class="right n"><b>${money(totalExp())}</b></td></tr>
+    <tr><td class="muted"><b>SHILLAK</b></td><td class="right n"><b>${money(balance())}</b></td></tr>
+  </tbody></table></div></div>`;
+}
+
+function setupView() {
+  return `
+  <div class="card"><h3>Tumchi mahiti<i>तुमची माहिती</i></h3><div class="pad">
+    <div class="field"><label>Naav<i>नाव</i></label><input id="st_nm" value="${esc(DB.name || '')}"></div>
+    <div class="field"><label>Mobile<i>मोबाईल</i></label><input id="st_mo" type="tel" inputmode="numeric" value="${esc(DB.mobile || '')}"></div>
+    <button class="btn sec sm" style="width:100%" data-act="saveMe">Save<i>सेव्ह</i></button>
+    <div class="tiny" style="margin-top:8px">He naav office chya app madhlya tumchya naavashi jullaayla hava.</div>
+  </div></div>
+  ${listCard('Sites<i>साइट</i>', 'sites', DB.sites, 'Jya site var tumhi kaam karta tya. Kharch takatana hyatunach nivadaychi.')}
+  ${listCard('Kharchache prakar<i>खर्चाचे प्रकार</i>', 'categories', DB.categories, 'Udaharan: Labour, Material, Transport, Food, Fuel.')}
+  <div class="card"><h3>Data safety<i>डेटा सुरक्षा</i></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Data ya phone madhech rahto. Mahinyatun ekda backup gheun theva.</div>
+    <div class="btnrow">
+      <button class="btn sec sm" style="flex:1" data-act="bkDown">Backup download</button>
+      <button class="btn sec sm" style="flex:1" data-act="bkUp">Backup import</button>
+    </div>
+    <div class="tiny" style="margin-top:10px;text-align:center;color:var(--steel)">App version <b>${MGR_VERSION}</b></div>
+  </div></div>`;
+}
+
+function listCard(title, key, items, note) {
+  return `<div class="card"><h3>${title}<small>${items.length}</small></h3>
+    ${items.map((v, i) => `<div class="row"><div class="main"><div class="ttl">${esc(v)}</div></div>
+      <button class="rowbtn" data-act="liEdit" data-v="${key}:${i}">Edit</button></div>`).join('')}
+    <div class="pad">
+      <button class="btn sec sm" style="width:100%" data-act="liAdd" data-v="${key}">+ Add</button>
+      <div class="tiny" style="margin-top:8px">${note}</div>
+    </div></div>`;
+}
+
+
+/* ============================ SHEETS + EVENTS ============================ */
+function openSheet(title, body, onSave, onDelete) {
+  SHEET = { onSave, onDelete };
+  $('#modal').innerHTML = `<div class="sheetbg" data-act="sheetBg"></div>
+    <div class="sheet"><div class="sheethead"><b>${title}</b><button class="x" data-act="sheetClose">&times;</button></div>
+    <div class="sheetbody">${body}</div>
+    <div class="sheetfoot">
+      ${onDelete ? '<button class="btn dgr sm" style="flex:0 0 34%" data-act="sheetDelete">Delete</button>' : ''}
+      <button class="btn" style="flex:1" data-act="sheetSave">Save<i>सेव्ह</i></button>
+    </div></div>`;
+  document.body.style.overflow = 'hidden';
+}
+function closeSheet() { SHEET = null; $('#modal').innerHTML = ''; document.body.style.overflow = ''; }
+function toast(m) { $('#toast').innerHTML = `<div class="toast">${esc(m)}</div>`; setTimeout(() => { $('#toast').innerHTML = ''; }, 2200); }
+const selOpts = (list, cur, ph) => `<option value="">${ph || '— nivda —'}</option>` +
+  (list || []).map(v => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(v)}</option>`).join('');
+
+function fundForm(rec) {
+  const r = rec || { date: today(), amount: '', from: '', mode: '', remark: '' };
+  openSheet(rec ? 'Paise milale' : 'Paise milale', `
+    <div class="card"><div class="pad">
+      <div class="f2">
+        <div class="field"><label>Tarikh<i>तारीख</i></label><input type="date" id="f_d" value="${r.date}"></div>
+        <div class="field"><label>Rakkam (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="f_a" value="${has(r.amount) ? r.amount : ''}"></div>
+      </div>
+      <div class="f2">
+        <div class="field"><label>Konakadun<i>कोणाकडून</i></label><input id="f_f" value="${esc(r.from)}" placeholder="office / sir"></div>
+        <div class="field"><label>Kase<i>पद्धत</i></label><input id="f_m" value="${esc(r.mode)}" placeholder="Cash / RTGS"></div>
+      </div>
+      <div class="field"><label>Shera<i>शेरा</i></label><input id="f_r" value="${esc(r.remark)}"></div>
+      <div class="tiny">Ithe site nivadaychi nahi.</div>
+    </div></div>`,
+    () => {
+      const a = numVal('f_a');
+      if (!a) return toast('Rakkam taka');
+      const o = { date: val('f_d'), amount: a, from: val('f_f'), mode: val('f_m'), remark: val('f_r') };
+      if (rec) Object.assign(rec, o, { sent: false });
+      else DB.funds.push({ id: uid(), sent: false, ...o });
+      return true;
+    },
+    rec ? () => { DB.funds = DB.funds.filter(x => x.id !== rec.id); } : null);
+}
+
+function expForm(rec) {
+  const r = rec || { date: today(), site: UI.site || DB.sites[0] || '', category: '', desc: '', vendor: '', amount: '', remark: '' };
+  openSheet(rec ? 'Kharch' : 'Navin kharch', `
+    <div class="card"><div class="pad">
+      <div class="f2">
+        <div class="field"><label>Tarikh<i>तारीख</i></label><input type="date" id="e_d" value="${r.date}"></div>
+        <div class="field"><label>Rakkam (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="e_a" value="${has(r.amount) ? r.amount : ''}"></div>
+      </div>
+      <div class="field"><label>Site<i>साइट</i></label><select id="e_s">${selOpts(DB.sites, r.site, '— site nivda —')}</select></div>
+      <div class="field"><label>Prakar<i>प्रकार</i></label><select id="e_c">${selOpts(DB.categories, r.category, '— prakar —')}</select></div>
+      <div class="field"><label>Kashasathi<i>कशासाठी</i></label><input id="e_t" value="${esc(r.desc)}" placeholder="udaharan: labour payment"></div>
+      <div class="f2">
+        <div class="field"><label>Konala dile<i>कोणाला दिले</i></label><input id="e_v" value="${esc(r.vendor)}" placeholder="vendor / naav"></div>
+        <div class="field"><label>Shera<i>शेरा</i></label><input id="e_r" value="${esc(r.remark)}"></div>
+      </div>
+      <div class="tiny">Ha kharch office chya app madhe ya site chya Expense log madhe jail.</div>
+    </div></div>`,
+    () => {
+      const a = numVal('e_a');
+      if (!a) return toast('Rakkam taka');
+      if (!val('e_s')) return toast('Site nivda');
+      const o = { date: val('e_d'), site: val('e_s'), category: val('e_c') || 'Miscellaneous',
+        desc: val('e_t'), vendor: val('e_v'), amount: a, remark: val('e_r') };
+      if (rec) Object.assign(rec, o, { sent: false });
+      else DB.expenses.push({ id: uid(), sent: false, ...o });
+      return true;
+    },
+    rec ? () => { DB.expenses = DB.expenses.filter(x => x.id !== rec.id); } : null);
+}
+
+function listForm(key, idx) {
+  const isNew = idx == null;
+  const cur = isNew ? '' : DB[key][idx];
+  openSheet(isNew ? 'Add' : 'Edit', `
+    <div class="card"><div class="pad">
+      <div class="field"><label>Naav<i>नाव</i></label><input id="li_v" value="${esc(cur)}"></div>
+    </div></div>`,
+    () => {
+      const v = val('li_v');
+      if (!v) return toast('Naav taka');
+      if (isNew) { if (!DB[key].includes(v)) DB[key].push(v); }
+      else {
+        const old = DB[key][idx];
+        DB[key][idx] = v;
+        if (key === 'sites') DB.expenses.forEach(e => { if (e.site === old) e.site = v; });
+        if (key === 'categories') DB.expenses.forEach(e => { if (e.category === old) e.category = v; });
+      }
+      return true;
+    },
+    isNew ? null : () => { DB[key] = DB[key].filter((x, i) => i !== idx); });
+}
+
+/* ---------- export ---------- */
+function download(name, text, type) {
+  const b = new Blob([text], { type: type || 'application/json' });
+  const u = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href = u; a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 1500);
+}
+
+function packData(scope) {
+  const fu = scope === 'all' ? DB.funds : DB.funds.filter(f => !f.sent);
+  const ex = scope === 'all' ? DB.expenses : DB.expenses.filter(e => !e.sent);
+  return {
+    type: 'mgr-log', v: 1, manager: DB.name || (ME && ME.name) || '', mobile: DB.mobile || '', made: today(),
+    funds: fu.map(f => ({ date: f.date, amount: num(f.amount), from: f.from, mode: f.mode, remark: f.remark })),
+    expenses: ex.map(e => ({ date: e.date, site: e.site, category: e.category, desc: e.desc, vendor: e.vendor, amount: num(e.amount), remark: e.remark })),
+    counts: { funds: fu.length, expenses: ex.length }
+  };
+}
+
+function waText(scope) {
+  const p = packData(scope);
+  const fa = p.funds.reduce((a, x) => a + x.amount, 0);
+  const ea = p.expenses.reduce((a, x) => a + x.amount, 0);
+  const bySiteTxt = {};
+  p.expenses.forEach(e => { bySiteTxt[e.site || '—'] = (bySiteTxt[e.site || '—'] || 0) + e.amount; });
+  return ['*' + (p.manager || 'Manager') + ' - ' + fmtDate(today()) + '*', '',
+    'Milale: ' + money(fa) + ' (' + p.funds.length + ')',
+    'Kharch: ' + money(ea) + ' (' + p.expenses.length + ')', '']
+    .concat(Object.keys(bySiteTxt).map(k => k + ': ' + money(bySiteTxt[k])))
+    .concat(['', 'Ekun shillak: ' + money(balance())]).join('\n');
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const a = el.dataset.act, v = el.dataset.v;
+
+  if (a === 'sheetBg' || a === 'sheetClose') { closeSheet(); return; }
+  if (a === 'sheetSave') {
+    if (SHEET && SHEET.onSave) { const ok = SHEET.onSave(); if (ok === false || ok === undefined) return; }
+    closeSheet(); await save(); render(); toast('Save zala'); return;
+  }
+  if (a === 'sheetDelete') {
+    if (!confirm('Delete karaycha?')) return;
+    if (SHEET && SHEET.onDelete) SHEET.onDelete();
+    closeSheet(); await save(); render(); toast('Delete zala'); return;
+  }
+
+  switch (a) {
+    case 'tab': TAB = v; UI = {}; render(); break;
+    case 'siteFilter': UI.site = v; render(); break;
+    case 'mkLogin': {
+      const nm = val('s_nm'), id = val('s_id'), p1 = val('s_p1'), p2 = val('s_p2');
+      const err = m => { const x = document.getElementById('s_err'); if (x) x.textContent = m; };
+      if (!nm) return err('Naav taka');
+      if (!id) return err('Login ID taka');
+      if (p1.length < 4) return err('Password kimaan 4 akshare');
+      if (p1 !== p2) return err('Donhi password sarkhe nahit');
+      const salt = uid() + uid();
+      DB.auth = { salt, users: [{ userId: id, name: nm, hash: await sha(p1 + ':' + salt) }] };
+      DB.name = nm;
+      ME = { userId: id, name: nm }; saveSession();
+      await save(); render(); toast('Zala! Aata Setup madhe site cha naav taka');
+      break;
+    }
+    case 'login': {
+      const u = await checkLogin(val('l_id'), val('l_pw'));
+      const err = m => { const x = document.getElementById('l_err'); if (x) x.textContent = m; };
+      if (!u) return err('ID kiwa password chukicha');
+      ME = { userId: u.userId, name: u.name }; saveSession();
+      TAB = 'home'; render(); break;
+    }
+    case 'logout':
+      if (!confirm('Log out karaycha? Data phone madhech rahil.')) break;
+      ME = null; saveSession(); render(); break;
+    case 'fAdd': fundForm(null); break;
+    case 'fEdit': fundForm(DB.funds.find(x => x.id === v)); break;
+    case 'eAdd': expForm(null); break;
+    case 'eEdit': expForm(DB.expenses.find(x => x.id === v)); break;
+    case 'liAdd': listForm(v, null); break;
+    case 'liEdit': { const [k, i] = String(v).split(':'); listForm(k, +i); break; }
+    case 'saveMe':
+      DB.name = val('st_nm'); DB.mobile = val('st_mo');
+      await save(); render(); toast('Save zala'); break;
+    case 'sendJson': {
+      const scope = (document.getElementById('sc') || {}).value || 'new';
+      const p = packData(scope);
+      if (!p.funds.length && !p.expenses.length) { toast('Pathvaysathi kahi nahi'); break; }
+      download('manager-' + (p.manager || 'data').replace(/[^\w]+/g, '_') + '-' + today() + '.json', JSON.stringify(p));
+      DB.funds.forEach(f => f.sent = true);
+      DB.expenses.forEach(x => x.sent = true);
+      await save(); render();
+      toast('File taiyar - office la WhatsApp kara');
+      break;
+    }
+    case 'sendWa': {
+      const scope = (document.getElementById('sc') || {}).value || 'new';
+      window.open('https://wa.me/?text=' + encodeURIComponent(waText(scope)), '_blank');
+      break;
+    }
+    case 'bkDown': download('manager-backup-' + today() + '.json', JSON.stringify(DB)); toast('Backup ghetla'); break;
+    case 'bkUp': {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = '.json';
+      inp.onchange = () => {
+        const f = inp.files[0]; if (!f) return;
+        const rd = new FileReader();
+        rd.onload = async () => {
+          try {
+            const d = JSON.parse(rd.result);
+            if (!d || (!d.funds && !d.expenses)) return alert('Hi ya app chi backup file nahi.');
+            if (!confirm('Aatacha data ya file ne badalaycha?')) return;
+            DB = Object.assign(DB, d);
+            await save(); render(); toast('Import zala');
+          } catch (er) { alert('File vachta ali nahi.'); }
+        };
+        rd.readAsText(f);
+      };
+      inp.click();
+      break;
+    }
+  }
+});
+
+(async () => { await loadDB(); render(); })();
+
+</script>
+</body>
+</html>

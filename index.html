@@ -457,7 +457,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v28 · 11-09-2026';
+const APP_VERSION = 'v29 · 11-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -576,9 +576,59 @@ function normSite(s) {
   return s;
 }
 
+function mgrLink() {
+  try {
+    const u = location.href.split('#')[0].split('?')[0];
+    return u.replace(/[^\/]*$/, '') + 'manager.html';
+  } catch (e) { return 'manager.html'; }
+}
+
+/* ---------- MANAGERS (site-nirapeksh) ---------- */
+function mgrList() { return (DB.managers || []); }
+function mgrFunds() { return (DB.mfunds || []); }
+
+/* manager la kiti milale, kiti kharch kela, kiti shillak */
+function mgrStats(name) {
+  const rec = mgrFunds().filter(f => f.manager === name).reduce((a, f) => a + num(f.amount), 0);
+  let exp = 0, cnt = 0;
+  (DB.sites || []).forEach(s => {
+    s.expenseLog.forEach(e => { if (e.paidBy === name && st(e) === 'Paid') { exp += num(e.amount); cnt++; } });
+    (s.murumLog || []).forEach(m => { if (m.paidBy === name && st(m) === 'Paid') { exp += mAmt(m); cnt++; } });
+    s.dieselLog.forEach(d => { if (d.paidBy === name && st(d) === 'Paid') { exp += num(d.amount); cnt++; } });
+    (s.vendorPayments || []).forEach(p => { if (p.paidBy === name) { exp += num(p.amount); cnt++; } });
+    (s.ownerPayments || []).forEach(p => { if (p.paidBy === name) { exp += num(p.amount); cnt++; } });
+  });
+  return { received: rec, spent: exp, entries: cnt, balance: rec - exp };
+}
+
+/* manager ne kontya site var kiti kharch kela */
+function mgrBySite(name) {
+  return (DB.sites || []).map(s => {
+    let amt = 0, n = 0;
+    s.expenseLog.forEach(e => { if (e.paidBy === name && st(e) === 'Paid') { amt += num(e.amount); n++; } });
+    (s.murumLog || []).forEach(m => { if (m.paidBy === name && st(m) === 'Paid') { amt += mAmt(m); n++; } });
+    s.dieselLog.forEach(d => { if (d.paidBy === name && st(d) === 'Paid') { amt += num(d.amount); n++; } });
+    (s.vendorPayments || []).forEach(p => { if (p.paidBy === name) { amt += num(p.amount); n++; } });
+    return { site: s, amount: amt, entries: n };
+  }).filter(x => x.entries);
+}
+
+function siteByName(nm) {
+  const t = String(nm || '').trim().toLowerCase();
+  if (!t) return null;
+  return (DB.sites || []).find(s => s.name.trim().toLowerCase() === t)
+    || (DB.sites || []).find(s => s.name.trim().toLowerCase().indexOf(t) >= 0 || t.indexOf(s.name.trim().toLowerCase()) >= 0)
+    || null;
+}
+
 function migrate() {
   if (!DB || typeof DB !== 'object') DB = { sites: [], activeId: null };
   if (!Array.isArray(DB.sites)) DB.sites = [];
+  if (!Array.isArray(DB.managers)) DB.managers = [];
+  if (!Array.isArray(DB.mfunds)) DB.mfunds = [];
+  DB.managers = DB.managers.filter(m => m && m.name).map(m => ({ id: m.id || uid(), name: String(m.name).trim(), mobile: String(m.mobile || '').trim() }));
+  DB.mfunds = DB.mfunds.filter(f => f && f.manager).map(f => ({ id: f.id || uid(), manager: String(f.manager).trim(),
+    date: String(f.date || '').slice(0, 10), amount: num(f.amount), from: String(f.from || ''), mode: String(f.mode || ''), remark: String(f.remark || '') }));
   DB.sites = DB.sites.map(normSite).filter(Boolean);
   /* ekach id don sites la asel tar navin id */
   const ids = {};
@@ -1105,7 +1155,7 @@ function navItems(s) {
 function subsFor(s, t) {
   const m = s.mods || {};
   if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary'], ['rent', 'Rent']].concat(m.owner ? [['owner', 'Owner']] : []).concat([['mast', 'Machines']]);
-  if (t === 'more') return [['excel', 'Excel']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
+  if (t === 'more') return [['mgr', 'Managers'], ['excel', 'Excel']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
   return SUBS[t];
 }
 const SUBS = {
@@ -1586,7 +1636,7 @@ function vendorSumView(s) {
 
 /* ---------------- MORE ---------------- */
 VIEW.stock = s => stockView(s);
-VIEW.more = s => { const k = sub('more'); return k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
+VIEW.more = s => { const k = sub('more'); return k === 'mgr' ? mgrView(s) : k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
 
 /* ---------------- EXCEL SYNC ---------------- */
 function excelView(s) {
@@ -1887,6 +1937,98 @@ function stockView(s) {
     <b>Stock</b> = opening + ekun aalela &minus; ekun bharlela<br>
     Udaharan: 3000 L aala, 2500 L bharla &rarr; 500 L shillak. Dusrya divshi 3000 aala ani 3500 bharla &rarr; tya divshi &minus;500, mhanje junya stock madhun 500 vaparla.
   </div></div>`;
+}
+
+/* ---------------- MANAGERS ---------------- */
+function mgrView(s) {
+  const list = mgrList();
+  const tot = list.reduce((a, m) => {
+    const x = mgrStats(m.name);
+    return { r: a.r + x.received, s: a.s + x.spent, b: a.b + x.balance };
+  }, { r: 0, s: 0, b: 0 });
+  return `
+  <div class="hero">
+    <div class="lbl">MANAGERS SHILLAK<i>मॅनेजरकडे शिल्लक</i></div>
+    <div class="big"><small>₹</small>${money(tot.b).replace('₹', '')}</div>
+    <div class="hsplit">
+      <div><div class="k">RECEIVED<i>दिलेले</i></div><div class="v num">${money0(tot.r)}</div></div>
+      <div><div class="k">SPENT<i>खर्च</i></div><div class="v num">${money0(tot.s)}</div></div>
+      <div><div class="k">MANAGERS</div><div class="v num">${list.length}</div></div>
+    </div>
+  </div>
+
+  <div class="btnrow" style="margin:0 0 12px">
+    <button class="btn" style="flex:1" data-act="mgAdd">+ Add manager<i>मॅनेजर जोडा</i></button>
+    <button class="btn sec" style="flex:1" data-act="mgImport">Import files<i>फाईल घ्या</i></button>
+  </div>
+
+  <div class="card"><h3>Manager account<i>मॅनेजरचा हिशोब</i><small>${list.length}</small></h3>
+    ${list.length ? list.map(m => {
+      const x = mgrStats(m.name);
+      return `<div class="row" data-act="mgOpen" data-v="${m.id}">
+        <div class="main"><div class="ttl">${esc(m.name)}</div>
+        <div class="sub">milale ${money(x.received)} &middot; kharch ${money(x.spent)} &middot; ${x.entries} entries</div></div>
+        <div class="amt" style="color:${x.balance < 0 ? 'var(--due)' : 'inherit'}">${money0(x.balance)}
+          <div class="tiny" style="font-weight:500">shillak</div></div></div>`;
+    }).join('') : '<div class="empty">Ajun ek pn manager nahi.<i>मॅनेजर जोडा</i></div>'}
+  </div>
+
+  <div class="card"><h3>Manager app<i>मॅनेजरचा अ‍ॅप</i></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Ha link pratek manager la WhatsApp var pathva. To tyat roj paise milale ani kharch bharel, ani sandhyakali <b>data file</b> pathvel &mdash; ti ithe "Import files" madhun ghya.</div>
+    <div class="field"><label>Link<i>लिंक</i></label><input id="f_mgrlink" value="${esc(mgrLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
+    <div class="btnrow">
+      <button class="btn sec sm" style="flex:1" data-act="mgLinkCopy">Copy link</button>
+      <button class="btn sec sm" style="flex:1" data-act="mgLinkWa">WhatsApp</button>
+    </div>
+  </div></div>
+
+  <div class="card"><h3>He kase chalta<i>हे कसे चालते</i></h3><div class="pad tiny" style="line-height:1.9">
+    <b>1.</b> Ithe manager add kara, mag tyala varcha link pathva.<br>
+    <b>2.</b> To tyachya app madhe swatacha login banavto.<br>
+    <b>3.</b> Paise milale ti entry &mdash; <b>site nako</b>. Kharch &mdash; <b>site nivadaycha</b>.<br>
+    <b>4.</b> Roj "Send data file" &rarr; tumhala WhatsApp var file.<br>
+    <b>5.</b> Ithe "Import files" &mdash; kharch tya-tya <b>site chya Expense log</b> madhe jato ani milalele paise ya manager chya khatyat.
+  </div></div>`;
+}
+
+function mgrDetailSheet(id) {
+  const m = mgrList().find(x => x.id === id);
+  if (!m) return;
+  const x = mgrStats(m.name);
+  const sites = mgrBySite(m.name);
+  const funds = mgrFunds().filter(f => f.manager === m.name).sort(byDateDesc);
+  const exps = [];
+  (DB.sites || []).forEach(s => s.expenseLog.forEach(e => { if (e.paidBy === m.name && st(e) === 'Paid') exps.push({ e, s }); }));
+  exps.sort((a, b) => String(b.e.date).localeCompare(String(a.e.date)));
+  openSheet(m.name, `
+    <div class="card"><div class="scroll"><table><tbody>
+      <tr><td class="muted">Milale<i>मिळालेले</i></td><td class="right n"><b>${money(x.received)}</b></td></tr>
+      <tr><td class="muted">Kharch<i>खर्च</i></td><td class="right n"><b>${money(x.spent)}</b></td></tr>
+      <tr><td class="muted"><b>SHILLAK</b></td><td class="right n"><b style="color:${x.balance < 0 ? 'var(--due)' : 'var(--paid)'}">${money(x.balance)}</b></td></tr>
+    </tbody></table></div>
+    <div class="pad"><div class="btnrow">
+      <button class="btn sm" style="flex:1" data-act="mgFund" data-v="${m.id}">+ Paise dile<i>पैसे दिले</i></button>
+      <button class="btn sec sm" style="flex:1" data-act="mgEdit" data-v="${m.id}">Edit / remove</button>
+    </div></div></div>
+
+    ${sites.length ? `<div class="card"><h3>Site-wise kharch</h3><div class="scroll"><table>
+      <thead><tr><th>Site</th><th class="n">Entries</th><th class="n">Amount</th></tr></thead>
+      <tbody>${sites.map(o => `<tr><td>${esc(o.site.name)}</td><td class="n">${o.entries}</td><td class="n">${money0(o.amount)}</td></tr>`).join('')}</tbody>
+    </table></div></div>` : ''}
+
+    <div class="card"><h3>Paise milale<small>${funds.length}</small></h3>
+      ${funds.length ? funds.slice(0, 25).map(f => `<div class="row" data-act="mgFundEdit" data-v="${f.id}">
+        <div class="main"><div class="ttl">${fmtDate(f.date)}</div>
+        <div class="sub">${esc(f.from || '')}${f.mode ? ' &middot; ' + esc(f.mode) : ''}${f.remark ? ' &middot; ' + esc(f.remark) : ''}</div></div>
+        <div class="amt">${money0(f.amount)}</div></div>`).join('') : '<div class="empty">Ajun kahi nahi.</div>'}
+    </div>
+
+    <div class="card"><h3>Kharch<small>${exps.length}</small></h3>
+      ${exps.length ? exps.slice(0, 40).map(o => `<div class="row"><div class="main">
+        <div class="ttl">${esc(o.e.desc || o.e.category)}</div>
+        <div class="sub">${fmtDate(o.e.date)} &middot; ${esc(o.s.name)} &middot; ${esc(o.e.category)}</div></div>
+        <div class="amt">${money0(o.e.amount)}</div></div>`).join('') : '<div class="empty">Ajun kharch nahi.</div>'}
+    </div>`, null, null);
 }
 
 /* ============================================================
@@ -3798,6 +3940,78 @@ document.addEventListener('click', async e => {
         </div>`, null, null);
       break;
     }
+    case 'mgAdd': case 'mgEdit': {
+      const m = a === 'mgEdit' ? mgrList().find(x => x.id === v) : null;
+      openSheet(m ? 'Manager' : 'New manager', `
+        <div class="card"><div class="pad">
+          <div class="field"><label>Manager cha naav<i>मॅनेजरचे नाव</i></label><input id="g_nm" value="${m ? esc(m.name) : ''}" placeholder="udaharan: Suhas Sir"></div>
+          <div class="field"><label>Mobile (optional)<i>मोबाईल</i></label><input id="g_mo" type="tel" inputmode="numeric" value="${m ? esc(m.mobile || '') : ''}"></div>
+          <div class="tiny">Ha naav tya manager chya app madhlya naavashi jullaayla hava, mhanje tyacha data barobar jodla jail.</div>
+        </div></div>`,
+        () => {
+          const nm = val('g_nm').trim();
+          if (!nm) return toast('Naav taka');
+          if (mgrList().some(x => x.name.toLowerCase() === nm.toLowerCase() && (!m || x.id !== m.id))) return toast('Ha manager aadhich aahe');
+          if (m) {
+            if (m.name !== nm) {
+              mgrFunds().forEach(f => { if (f.manager === m.name) f.manager = nm; });
+              (DB.sites || []).forEach(s2 => {
+                ['expenseLog', 'murumLog', 'dieselLog', 'vendorPayments', 'ownerPayments'].forEach(k =>
+                  (s2[k] || []).forEach(r => { if (r.paidBy === m.name) r.paidBy = nm; }));
+              });
+            }
+            m.name = nm; m.mobile = val('g_mo').trim();
+          } else DB.managers.push({ id: uid(), name: nm, mobile: val('g_mo').trim() });
+          return true;
+        },
+        m ? () => {
+          const x = mgrStats(m.name);
+          if (x.entries || x.received) { alert('Ya manager cha data aahe (' + x.entries + ' entries, ' + money(x.received) + ' milale). Aadhi to data baghun ghya - manager kaadhla tari entries rahtil.'); }
+          if (!confirm(m.name + ' la yaadi madhun kaadhaycha?')) return false;
+          DB.managers = DB.managers.filter(x2 => x2.id !== m.id);
+        } : null);
+      break;
+    }
+    case 'mgOpen': mgrDetailSheet(v); break;
+    case 'mgFund': case 'mgFundEdit': {
+      const f = a === 'mgFundEdit' ? mgrFunds().find(x => x.id === v) : null;
+      const mgr = f ? f.manager : (mgrList().find(x => x.id === v) || {}).name;
+      if (!mgr) break;
+      openSheet(f ? 'Paise dile' : 'Manager la paise dile', `
+        <div class="card"><div class="pad">
+          <div class="tiny" style="margin-bottom:10px">Manager: <b>${esc(mgr)}</b></div>
+          <div class="f2">
+            <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="g_d" value="${f ? f.date : today()}"></div>
+            <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="g_a" value="${f ? f.amount : ''}"></div>
+          </div>
+          <div class="f2">
+            <div class="field"><label>Konakadun<i>कोणाकडून</i></label><input id="g_f" value="${f ? esc(f.from) : ''}" placeholder="office / Rushi"></div>
+            <div class="field"><label>Mode<i>पद्धत</i></label><input id="g_md" value="${f ? esc(f.mode) : ''}" placeholder="Cash / RTGS"></div>
+          </div>
+          <div class="field"><label>Remark<i>शेरा</i></label><input id="g_r" value="${f ? esc(f.remark) : ''}"></div>
+          <div class="tiny">Ithe site nivadaychi garaj nahi &mdash; paise saglya site sathi ekatra miltat.</div>
+        </div></div>`,
+        () => {
+          const amt = numVal('g_a');
+          if (!amt) return toast('Amount taka');
+          if (f) { f.date = val('g_d'); f.amount = amt; f.from = val('g_f'); f.mode = val('g_md'); f.remark = val('g_r'); }
+          else DB.mfunds.push({ id: uid(), manager: mgr, date: val('g_d'), amount: amt, from: val('g_f'), mode: val('g_md'), remark: val('g_r') });
+          return true;
+        },
+        f ? () => { DB.mfunds = DB.mfunds.filter(x => x.id !== f.id); } : null);
+      break;
+    }
+    case 'mgLinkCopy': {
+      const box = document.getElementById('f_mgrlink');
+      try { box.focus(); box.setSelectionRange(0, box.value.length); } catch (er) { }
+      try { await navigator.clipboard.writeText(mgrLink()); toast('Link copy zala'); }
+      catch (er) { toast('Link select zala - long press karun copy kara'); }
+      break;
+    }
+    case 'mgLinkWa':
+      window.open('https://wa.me/?text=' + encodeURIComponent('Manager app - roj paise milale ani kharch ithe bhara:\n' + mgrLink()), '_blank');
+      break;
+    case 'mgImport': importManager(); break;
     case 'mArrange': arrangeForm(s); break;
     case 'aUp': case 'aDn': {
       const i = +v, j = a === 'aUp' ? i - 1 : i + 1;
@@ -3956,6 +4170,91 @@ document.addEventListener('change', e => {
 
 /* ---------- go ---------- */
 (async () => { await load(); render(); try { notifyDue(site()); } catch (e) { } })();
+
+/* ---------- manager chya app madhlya files (ekach velela kitihi) ---------- */
+function importManager() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json,application/json'; inp.multiple = true;
+  inp.onchange = async () => {
+    const files = Array.from(inp.files || []);
+    if (!files.length) return;
+    files.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    toast(files.length + ' file vachtoy...');
+
+    const packs = [], bad = [];
+    for (const f of files) {
+      let d = null;
+      try { d = JSON.parse(await readFileText(f)); } catch (e) { bad.push(f.name); continue; }
+      if (!d || d.type !== 'mgr-log' || !d.manager) { bad.push(f.name); continue; }
+      const fu = d.funds || [], ex = d.expenses || [];
+      if (!fu.length && !ex.length) { bad.push(f.name); continue; }
+      packs.push({ name: f.name, d, fu, ex });
+    }
+    if (!packs.length) return alert('Ek pn manager chi file sapadli nahi.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+
+    const mgrs = [...new Set(packs.map(p => p.d.manager))];
+    const fTot = packs.reduce((a, p) => a + p.fu.length, 0);
+    const eTot = packs.reduce((a, p) => a + p.ex.length, 0);
+    const eAmt = packs.reduce((a, p) => a + p.ex.reduce((x, r) => x + num(r.amount), 0), 0);
+    const fAmt = packs.reduce((a, p) => a + p.fu.reduce((x, r) => x + num(r.amount), 0), 0);
+    /* kontya site madhe jail te aadhi dakhva */
+    const siteMap = {}, missing = [];
+    packs.forEach(p => p.ex.forEach(r => {
+      const s2 = siteByName(r.site);
+      if (s2) siteMap[s2.name] = (siteMap[s2.name] || 0) + 1;
+      else if (!missing.includes(r.site || '(site nahi)')) missing.push(r.site || '(site nahi)');
+    }));
+    const msg = packs.length + ' file  |  Manager: ' + mgrs.join(', ') + '\n' +
+      fTot + ' paise milale (' + money(fAmt) + ')\n' +
+      eTot + ' kharch entries (' + money(eAmt) + ')\n\n' +
+      'Site-wise: ' + (Object.keys(siteMap).map(k => k + ' ' + siteMap[k]).join(', ') || 'kahi nahi') + '\n' +
+      (missing.length ? '\nHya site sapadlya nahit: ' + missing.join(', ') + '\n(tya entries sodlya jatil)\n' : '') +
+      (bad.length ? '\n' + bad.length + ' file chalali nahi.\n' : '') + '\nGhyaychya?';
+    if (!confirm(msg)) return;
+
+    try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
+
+    let fAdd = 0, fDup = 0, eAdd = 0, eDup = 0, skip = 0, newMgr = 0;
+    packs.forEach(p => {
+      const mgr = String(p.d.manager).trim();
+      if (!DB.managers.some(m => m.name.toLowerCase() === mgr.toLowerCase())) {
+        DB.managers.push({ id: uid(), name: mgr, mobile: String(p.d.mobile || '') }); newMgr++;
+      }
+      p.fu.forEach(r => {
+        const key = x => x.manager + '|' + x.date + '|' + num(x.amount) + '|' + (x.from || '');
+        const k = key({ manager: mgr, date: r.date, amount: r.amount, from: r.from });
+        if (DB.mfunds.some(x => key(x) === k)) { fDup++; return; }
+        DB.mfunds.push({ id: uid(), manager: mgr, date: String(r.date || '').slice(0, 10), amount: num(r.amount),
+          from: String(r.from || ''), mode: String(r.mode || ''), remark: String(r.remark || '') });
+        fAdd++;
+      });
+      p.ex.forEach(r => {
+        const s2 = siteByName(r.site);
+        if (!s2) { skip++; return; }
+        const dup = s2.expenseLog.some(e => e.date === String(r.date || '').slice(0, 10)
+          && num(e.amount) === num(r.amount) && (e.desc || '') === String(r.desc || '') && e.paidBy === mgr);
+        if (dup) { eDup++; return; }
+        const cat = String(r.category || 'Miscellaneous').trim();
+        if (cat && !s2.categories.includes(cat)) s2.categories.push(cat);
+        if (!s2.people.includes(mgr)) s2.people.push(mgr);
+        if (r.vendor && !s2.vendors.includes(r.vendor)) s2.vendors.push(r.vendor);
+        s2.expenseLog.push({ id: uid(), date: String(r.date || '').slice(0, 10), category: cat,
+          desc: String(r.desc || ''), vendor: String(r.vendor || ''), amount: num(r.amount),
+          status: 'Paid', paidBy: mgr, remark: String(r.remark || '') });
+        eAdd++;
+      });
+    });
+    migrate();
+    await save(); render();
+    alert(packs.length + ' file ghetlya.\n\n' +
+      fAdd + ' paise-milale entries ani ' + eAdd + ' kharch entries add zalya.' +
+      ((fDup || eDup) ? '\n' + (fDup + eDup) + ' aadhich hote, te sodle.' : '') +
+      (skip ? '\n' + skip + ' entries chi site sapadli nahi, tya sodlya.' : '') +
+      (newMgr ? '\n' + newMgr + ' navin manager add zale.' : '') +
+      (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+  };
+  inp.click();
+}
 
 </script>
 </body>
