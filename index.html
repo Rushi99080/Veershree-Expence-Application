@@ -455,7 +455,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v25 · 11-09-2026';
+const APP_VERSION = 'v26 · 11-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -1228,10 +1228,17 @@ VIEW.machine = s => {
 
 function machineLogView(s) {
   const f = UI.mlFilter || '';
+  const day = UI.mlDate || '';
   let rows = s.machineLog.slice().sort(byDateDesc);
+  if (day) rows = rows.filter(r => r.date === day);            /* aadhi tarikh */
+  const dayRows = rows.slice();                                 /* tya tarkhechi sagli */
   if (f === '__none') rows = rows.filter(r => !r.machineNo);
   else if (f) rows = rows.filter(r => r.machineNo === f);
-  const noMachine = s.machineLog.filter(r => !r.machineNo).length;
+  const noMachine = dayRows.filter(r => !r.machineNo).length;
+  /* tarikh nivadli asel tar fakt tya divshi chalalelya machine dakhva */
+  const chipList = day
+    ? s.machines.filter(m => dayRows.some(r => sameNo(r.machineNo, m.no)))
+    : s.machines;
   const shown = rows.slice(0, UI.mlMore || 60);
   const hrs = rows.reduce((a, r) => a + hoursOf(r), 0), dsl = rows.reduce((a, r) => a + num(r.diesel), 0);
   const lph = hrs ? dsl / hrs : 0;
@@ -1243,11 +1250,20 @@ function machineLogView(s) {
     <div class="kpi"><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(dsl)}</div></div>
     <div class="kpi b"><div class="k">DIESEL / HOUR<i>तासाला डिझेल</i></div><div class="v num">${lph ? dec(lph, 2) : '—'}</div></div>
   </div>
+  <div class="card"><div class="pad" style="padding-bottom:10px">
+    <div class="f2" style="align-items:end">
+      <div class="field" style="margin:0"><label>Date<i>तारीख</i></label>
+        <input type="date" id="ml_date" value="${esc(day)}" data-act="mlDateIn"></div>
+      <div class="field" style="margin:0">
+        <button class="btn sec sm" style="width:100%" data-act="mlDateClear">${day ? 'Sagle divas dakhva' : 'Aaj cha divas'}<i>${day ? 'सर्व दिवस' : 'आजचा दिवस'}</i></button></div>
+    </div>
+    ${day ? `<div class="tiny" style="margin-top:8px">${fmtDate(day)} &mdash; <b>${chipList.length}</b> machine chalalya, ${dayRows.length} entries.</div>` : ''}
+  </div></div>
   <div class="card">
     <div class="chips">
-      <button class="chip ${!f ? 'on' : ''}" data-act="mlFilter" data-v="">All</button>
+      <button class="chip ${!f ? 'on' : ''}" data-act="mlFilter" data-v="">All${day ? ' (' + dayRows.length + ')' : ''}</button>
       ${noMachine ? `<button class="chip ${f === '__none' ? 'on' : ''}" data-act="mlFilter" data-v="__none">No machine (${noMachine})</button>` : ''}
-      ${s.machines.map(m => `<button class="chip ${f === m.no ? 'on' : ''}" data-act="mlFilter" data-v="${esc(m.no)}">${esc(m.no)}</button>`).join('')}
+      ${chipList.map(m => `<button class="chip ${f === m.no ? 'on' : ''}" data-act="mlFilter" data-v="${esc(m.no)}">${esc(m.no)}${day ? ' (' + dayRows.filter(r => sameNo(r.machineNo, m.no)).length + ')' : ''}</button>`).join('')}
     </div>
     ${shown.length ? shown.map(r => {
       const h = hoursOf(r);
@@ -3569,6 +3585,10 @@ document.addEventListener('click', async e => {
     case 'sub': UI[el.dataset.t || TAB] = v; if (el.dataset.t) TAB = el.dataset.t; render(); break;
     case 'mlFilter': UI.mlFilter = v; UI.mlMore = 60; render(); break;
     case 'mlMore': UI.mlMore = (UI.mlMore || 60) + 100; render(); break;
+    case 'mlDateClear':
+      UI.mlDate = UI.mlDate ? '' : today();
+      UI.mlFilter = ''; UI.mlMore = 0;
+      render(); break;
     case 'mlDelAll': {
       const list = v === '__none' ? s.machineLog.filter(r => !r.machineNo) : s.machineLog.filter(r => r.machineNo === v);
       if (!list.length) break;
@@ -3899,6 +3919,8 @@ document.addEventListener('click', async e => {
 });
 
 document.addEventListener('change', e => {
+  const md = e.target.closest('[data-act="mlDateIn"]');
+  if (md) { UI.mlDate = md.value || ''; UI.mlFilter = ''; UI.mlMore = 0; render(); return; }
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act;
   if (a === 'xlRow') { const s = site(); s.xlRows[el.dataset.k] = num(el.value) || XL[el.dataset.k].first; save(); render(); }
