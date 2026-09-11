@@ -91,7 +91,8 @@ main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
 .hero .big{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;line-height:1.05;margin-top:2px}
 .hero .big small{font-size:20px;color:var(--hivis);margin-right:4px;font-weight:600}
 .hsplit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#33414B;border-radius:8px;overflow:hidden;margin-top:12px}
-.hsplit div{background:#1C242B;padding:9px 10px}
+.hsplit div{background:#1C242B;padding:9px 10px;min-width:0}
+.hsplit .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hsplit .k{font-size:10.5px;color:#93A3AF;font-weight:600;letter-spacing:.04em}
 .hsplit .v{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;margin-top:1px}
 .pendbar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;background:var(--hivis);color:#241C00;border-radius:8px;padding:9px 12px}
@@ -101,12 +102,13 @@ main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px}
 .kpi .k{font-size:11px;color:var(--steel);font-weight:600;letter-spacing:.03em}
-.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1}
+.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kpi{min-width:0}
 .kpi.g .v{color:var(--paid)} .kpi.r .v{color:var(--due)} .kpi.b .v{color:var(--rent)}
 .k3{grid-template-columns:1fr 1fr 1fr}
 
 /* ---------- tables ---------- */
-.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th{
   text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--steel);
@@ -119,17 +121,19 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .nowrap{white-space:nowrap}
 
 /* ---------- log rows ---------- */
-.row{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.row{display:flex;flex-wrap:wrap;gap:8px 10px;padding:11px 12px;border-bottom:1px solid var(--line-2);align-items:center}
 .row:last-child{border-bottom:0}
-.row .main{flex:1;min-width:0}
+.row .main{flex:1 1 58%;min-width:0}
 .row .ttl{font-weight:600;font-size:14.5px;word-break:break-word}
 .row .sub{font-size:12px;color:var(--steel);margin-top:2px}
-.row .amt{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+.row .amt{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
 .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.03em}
 .pill.p{background:var(--paid-bg);color:var(--paid)}
 .pill.u{background:var(--due-bg);color:var(--due)}
 .pill.n{background:#EEF2F5;color:var(--ink-2)}
-.rowbtn{background:none;border:0;padding:6px 2px 0;color:var(--steel);font-size:12px;font-weight:600}
+.rowbtn{flex:0 0 auto;background:#F7F9FA;border:1px solid var(--line);border-radius:8px;
+  padding:6px 10px;color:var(--ink-2);font-size:12px;font-weight:600;line-height:1.1}
+.rowbtn:active{background:var(--line)}
 
 /* ---------- forms ---------- */
 .field{margin-bottom:10px}
@@ -172,8 +176,9 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .nav button.on{color:var(--ink)}
 .nav button.on svg{stroke:var(--hivis-dk)}
 
-.nav.n7 button,.nav.n8 button{font-size:9.5px;padding:7px 1px 8px}
-.nav.n7 button svg,.nav.n8 button svg{width:19px;height:19px}
+.nav.n7 button,.nav.n8 button{font-size:9px;padding:7px 0 8px;letter-spacing:-.01em}
+.nav.n7 button svg,.nav.n8 button svg{width:18px;height:18px}
+.nav button{min-width:0;overflow:hidden}
 .logo{height:26px;width:auto;max-width:88px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;flex:0 0 auto}
 .logobox{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 
@@ -246,8 +251,7 @@ body.ro button[data-act$="Add"],body.ro button[data-act="xlAllDone"],body.ro but
 body.ro button[data-act="impJson"],body.ro button[data-act="snapList"],body.ro button[data-act="snapBack"],
 body.ro button[data-act="xlCopy"],body.ro button[data-act="siteEdit"],body.ro .rowbtn{display:none !important}
 /* English var, Hindi khali */
-label i,h3 i,.kpi .k i,.hsplit .k i,.btn i,.chip i,.empty i,.tab i,.row .ttl i{
-  display:block;font-style:normal;font-weight:500;font-size:10.5px;color:var(--steel);letter-spacing:0;margin-top:1px;line-height:1.3}
+
 h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 .hero .lbl i,.hsplit .k i{color:#7C8B98}
 .btn i{color:rgba(36,28,0,.62);font-size:10px}
@@ -457,7 +461,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v29 · 11-09-2026';
+const APP_VERSION = 'v32 · 11-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -922,7 +926,7 @@ function settle(s) {
     if (x.st === 'Paid') map[x.id] = { final: 'Paid', paid: x.amount, by: x.by || '' };
     else if (!x.vendor) map[x.id] = { final: 'Unpaid', paid: 0, by: '' };
   });
-  /* urleli udhaari: junya tarkhे pasun payment lavaychi */
+  /* urleli udhaari: junya tarkh pasun payment lavaychi */
   const open = ledger.filter(x => x.st !== 'Paid' && x.vendor)
     .sort((a, b) => String(a.date || '9999').localeCompare(String(b.date || '9999')) || a.kind - b.kind || a.ord - b.ord);
   open.forEach(x => {
@@ -1167,6 +1171,22 @@ const SUBS = {
 };
 const sub = t => { const l = subsFor(site(), t); return (l && l.some(x => x[0] === UI[t])) ? UI[t] : (l ? l[0][0] : ''); };
 
+
+/* ---------- browser chya naav suggestions band ---------- */
+function noSuggest(root) {
+  try {
+    (root || document).querySelectorAll('input, textarea').forEach(el => {
+      const t = (el.type || 'text').toLowerCase();
+      if (t === 'date' || t === 'checkbox' || t === 'radio') return;
+      el.setAttribute('autocomplete', 'off');
+      el.setAttribute('autocorrect', 'off');
+      el.setAttribute('spellcheck', 'false');
+      el.setAttribute('autocapitalize', el.getAttribute('autocapitalize') || 'sentences');
+      if (!el.name) el.name = 'f' + Math.random().toString(36).slice(2, 8);   /* Chrome la autofill olakhu naye */
+    });
+  } catch (e) { }
+}
+
 function render() {
   const s = site();
   const nav = navItems(s);
@@ -1188,6 +1208,7 @@ function render() {
   </main>
   <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}">${ICON[k]}${l}</button>`).join('')}</nav>`;
   try { renderSearch(); } catch (e) { }
+  noSuggest($('#app'));
   window.scrollTo(0, 0);
 }
 
@@ -1200,19 +1221,19 @@ VIEW.dash = s => {
   const people = s.people.map(p => ({ p, ps: personStats(s, p) }));
   return `
   <div class="hero">
-    <div class="lbl">TOTAL PLOT EXPENSE<i>एकूण खर्च</i></div>
+    <div class="lbl">TOTAL PLOT EXPENSE</div>
     <div class="big"><small>&#8377;</small>${money0(t.grand)}</div>
     <div class="hsplit" style="grid-template-columns:repeat(${3 + (s.mods.murum ? 1 : 0)},1fr)">
-      <div><div class="k">SITE<i>साइट</i></div><div class="v num">${money0(t.expTotal)}</div></div>
-      ${s.mods.murum ? `<div><div class="k">MURUM<i>मुरुम</i></div><div class="v num">${money0(t.muTotal)}</div></div>` : ''}
-      <div><div class="k">DIESEL<i>डिझेल</i></div><div class="v num">${money0(t.dsTotal)}</div></div>
-      <div><div class="k">MACHINE RENT<i>मशीन भाडे</i></div><div class="v num">${money0(t.rent)}</div></div>
+      <div><div class="k">SITE</div><div class="v num">${money0(t.expTotal)}</div></div>
+      ${s.mods.murum ? `<div><div class="k">MURUM</div><div class="v num">${money0(t.muTotal)}</div></div>` : ''}
+      <div><div class="k">DIESEL</div><div class="v num">${money0(t.dsTotal)}</div></div>
+      <div><div class="k">MACHINE RENT</div><div class="v num">${money0(t.rent)}</div></div>
     </div>
-    <div class="pendbar"><span style="font-size:12px;font-weight:700;letter-spacing:.04em">NET PENDING<i>बाकी</i></span><b class="num">${money(t.netPending)}</b></div>
+    <div class="pendbar"><span style="font-size:12px;font-weight:700;letter-spacing:.04em">NET PENDING</span><b class="num">${money(t.netPending)}</b></div>
   </div>
 
   <div class="card">
-    <h3>Expense head-wise<i>हेड नुसार खर्च</i></h3>
+    <h3>Expense head-wise</h3>
     <div class="scroll"><table>
       <thead><tr><th>Head</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Pending</th></tr></thead>
       <tbody>
@@ -1226,22 +1247,22 @@ VIEW.dash = s => {
   </div>
 
   <div class="card">
-    <h3>Manager-wise spending<i>मॅनेजर नुसार खर्च</i></h3>
+    <h3>Manager-wise spending</h3>
     <div class="scroll"><table>
       <thead><tr><th>Name</th>${s.mods.funds ? '<th class="n">Received</th>' : ''}<th class="n">Site</th><th class="n">Diesel</th><th class="n">Vendor</th><th class="n">Total</th>${s.mods.funds ? '<th class="n">Balance</th>' : ''}</tr></thead>
-      <tbody>${people.map(x => `<tr><td class="nowrap">${esc(x.p)}</td>${s.mods.funds ? `<td class="n">${x.ps.getsAdvance ? money0(x.ps.received) : '<span class="tiny">—</span>'}</td>` : ''}<td class="n">${money0(x.ps.site + x.ps.mu)}</td><td class="n">${money0(x.ps.dsl)}</td><td class="n">${money0(x.ps.vp + x.ps.op)}</td><td class="n"><b>${money0(x.ps.total)}</b></td>${s.mods.funds ? `<td class="n">${x.ps.getsAdvance ? '<b style="color:' + (x.ps.balance < 0 ? 'var(--due)' : 'var(--paid)') + '">' + money0(x.ps.balance) + '</b>' : '<span class="tiny">—</span>'}</td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="muted">Add names in Masters.<i>मास्टरमध्ये नाव जोडा</i></td></tr>'}</tbody>
-      <tfoot><tr><td>TOTAL<i>एकूण</i></td>${s.mods.funds ? `<td class="n">${money0(people.reduce((a, x) => a + (x.ps.getsAdvance ? x.ps.received : 0), 0))}</td>` : ''}<td class="n">${money0(people.reduce((a, x) => a + x.ps.site + x.ps.mu, 0))}</td><td class="n">${money0(people.reduce((a, x) => a + x.ps.dsl, 0))}</td><td class="n">${money0(people.reduce((a, x) => a + x.ps.vp + x.ps.op, 0))}</td><td class="n">${money0(people.reduce((a, x) => a + x.ps.total, 0))}</td>${s.mods.funds ? `<td class="n">${money0(people.reduce((a, x) => a + (x.ps.getsAdvance ? x.ps.balance : 0), 0))}</td>` : ''}</tr></tfoot>
+      <tbody>${people.map(x => `<tr><td class="nowrap">${esc(x.p)}</td>${s.mods.funds ? `<td class="n">${x.ps.getsAdvance ? money0(x.ps.received) : '<span class="tiny">—</span>'}</td>` : ''}<td class="n">${money0(x.ps.site + x.ps.mu)}</td><td class="n">${money0(x.ps.dsl)}</td><td class="n">${money0(x.ps.vp + x.ps.op)}</td><td class="n"><b>${money0(x.ps.total)}</b></td>${s.mods.funds ? `<td class="n">${x.ps.getsAdvance ? '<b style="color:' + (x.ps.balance < 0 ? 'var(--due)' : 'var(--paid)') + '">' + money0(x.ps.balance) + '</b>' : '<span class="tiny">—</span>'}</td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="muted">Add names in Masters.</td></tr>'}</tbody>
+      <tfoot><tr><td>TOTAL</td>${s.mods.funds ? `<td class="n">${money0(people.reduce((a, x) => a + (x.ps.getsAdvance ? x.ps.received : 0), 0))}</td>` : ''}<td class="n">${money0(people.reduce((a, x) => a + x.ps.site + x.ps.mu, 0))}</td><td class="n">${money0(people.reduce((a, x) => a + x.ps.dsl, 0))}</td><td class="n">${money0(people.reduce((a, x) => a + x.ps.vp + x.ps.op, 0))}</td><td class="n">${money0(people.reduce((a, x) => a + x.ps.total, 0))}</td>${s.mods.funds ? `<td class="n">${money0(people.reduce((a, x) => a + (x.ps.getsAdvance ? x.ps.balance : 0), 0))}</td>` : ''}</tr></tfoot>
     </table></div>
   </div>
 
   <div class="card">
-    <h3>Machine-wise<i>मशीन नुसार</i> rent<i>मशीन नुसार भाडे</i><small>from machine log hours</small></h3>
+    <h3>Machine-wise rent<small>from machine log hours</small></h3>
     ${rentRows.length ? `<div class="scroll"><table>
       <thead><tr><th>Machine</th><th>Basis</th><th class="n">Rate</th><th class="n">Hr / days</th><th class="n">Rent</th></tr></thead>
       <tbody>${rentRows.map(x => `<tr><td class="nowrap"><b>${esc(x.m.no)}</b><div class="tiny">${esc(x.m.type)}</div></td><td class="tiny">${esc(x.r.basis)}</td><td class="n">${x.r.unit ? dec(x.r.unit, 0) : '<span class="tiny">no rate</span>'}</td><td class="n">${dec(x.r.qty)}</td><td class="n"><b>${money0(x.r.rent)}</b></td></tr>`).join('')}</tbody>
       <tfoot><tr><td colspan="4">TOTAL RENT</td><td class="n">${money0(t.rent)}</td></tr></tfoot>
-    </table></div>` : '<div class="empty">Rent appears here once machine log entries are added.<i>मशीन लॉग भरल्यावर भाडे दिसेल</i></div>'}
-    ${t.rent === 0 && s.machineLog.length ? '<div class="pad tiny">Rent shows 0 because no rates are filled in the Rate Master. Add them under <b>Machine &rarr; Machines</b>.<i>रेट मास्टरमध्ये रेट भरा</i></div>' : ''}
+    </table></div>` : '<div class="empty">Rent appears here once machine log entries are added.</div>'}
+    ${t.rent === 0 && s.machineLog.length ? '<div class="pad tiny">Rent shows 0 because no rates are filled in the Rate Master. Add them under <b>Machine &rarr; Machines</b>.</div>' : ''}
   </div>
 
   ${(() => {
@@ -1249,22 +1270,22 @@ VIEW.dash = s => {
     if (!d.length) return '';
     const late = d.filter(dueLate);
     return `<div class="card" style="border-color:${late.length ? 'var(--due)' : 'var(--hivis)'}">
-      <h3>${late.length ? 'Payment cha divas talun gela' : 'Payment cha divas aala'}<i>${late.length ? 'तारीख उलटली' : 'पेमेंटची तारीख'}</i><small>${d.length}</small></h3>
+      <h3>${late.length ? 'Payment due date talun gela' : 'Payment due date aala'}<small>${d.length}</small></h3>
       ${d.slice(0, 6).map(r => `<div class="row" data-act="remEdit" data-v="${r.id}">
         <div class="main"><div class="ttl">${esc(r.vendor || r.note || 'Payment')} ${dueLate(r) ? '<span class="pill u">talun gela</span>' : '<span class="pill n">' + fmtDate(r.due) + '</span>'}</div>
         <div class="sub">${dueLate(r) ? fmtDate(r.due) + ' &middot; ' : ''}${r.vendor ? 'baki ' + money(remVendorStats(s, r.vendor).remaining) : ''}${r.note ? ' &middot; ' + esc(r.note) : ''}</div></div>
         <div class="amt">${num(r.amount) ? money0(r.amount) : ''}</div></div>`).join('')}
-      <div class="pad"><button class="btn sm" style="width:100%" data-act="sub" data-v="due" data-t="vendor">View all<i>सगळे बघा</i></button></div>
+      <div class="pad"><button class="btn sm" style="width:100%" data-act="sub" data-v="due" data-t="vendor">View all</button></div>
     </div>`;
   })()}
-  ${DB.lastBackup === today() ? '' : `<div class="card"><h3>Daily backup<i>आजचा बॅकअप</i></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:8px">Roj ek tap &mdash; file phone chya <b>Downloads</b> madhe tarkhesakat save hote.</div>
-    <button class="btn sm" style="width:100%" data-act="dayBackup">Download today's backup<i>बॅकअप घ्या</i></button>
+  ${DB.lastBackup === today() ? '' : `<div class="card"><h3>Daily backup</h3><div class="pad">
+    <div class="tiny" style="margin-bottom:8px">Roj ek tap &mdash; file phone chya <b>Downloads</b> with the date in the name.</div>
+    <button class="btn sm" style="width:100%" data-act="dayBackup">Download today's backup</button>
   </div></div>`}
-  ${pendingCount(s) ? `<div class="card"><h3>Excel sync<i>एक्सेल सिंक</i><small>${pendingCount(s)} new entries</small></h3><div class="pad"><div class="tiny" style="margin-bottom:8px">These entries have not gone into your Excel sheet yet.</div><button class="btn sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Add to Excel<i>एक्सेलमध्ये टाका</i></button></div></div>` : ''}
+  ${pendingCount(s) ? `<div class="card"><h3>Excel sync<small>${pendingCount(s)} new entries</small></h3><div class="pad"><div class="tiny" style="margin-bottom:8px">These entries have not gone into your Excel sheet yet.</div><button class="btn sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Add to Excel</button></div></div>` : ''}
   <div class="btnrow" style="margin-bottom:12px">
-    <button class="btn sec sm" style="flex:1" data-act="share">Share summary<i>सारांश पाठवा</i></button>
-    <button class="btn sec sm" style="flex:1" data-act="dayReg">Daily report<i>दिवसाचा हिशोब</i></button>
+    <button class="btn sec sm" style="flex:1" data-act="share">Share summary</button>
+    <button class="btn sec sm" style="flex:1" data-act="dayReg">Daily report</button>
   </div>`;
 };
 
@@ -1295,17 +1316,17 @@ function machineLogView(s) {
   const hrs = rows.reduce((a, r) => a + hoursOf(r), 0), dsl = rows.reduce((a, r) => a + num(r.diesel), 0);
   const lph = hrs ? dsl / hrs : 0;
   return `
-  <button class="btn" data-act="mlAdd">+ Machine entry<i>मशीन एंट्री</i></button>
+  <button class="btn" data-act="mlAdd">+ Machine entry</button>
   <div class="kpis mt">
-    <div class="kpi"><div class="k">ENTRIES<i>एंट्री</i></div><div class="v num">${rows.length}</div></div>
-    <div class="kpi b"><div class="k">TOTAL HOURS<i>एकूण तास</i></div><div class="v num">${dec(hrs)}</div></div>
-    <div class="kpi"><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(dsl)}</div></div>
-    <div class="kpi b"><div class="k">DIESEL / HOUR<i>तासाला डिझेल</i></div><div class="v num">${lph ? dec(lph, 2) : '—'}</div></div>
+    <div class="kpi"><div class="k">ENTRIES</div><div class="v num">${rows.length}</div></div>
+    <div class="kpi b"><div class="k">TOTAL HOURS</div><div class="v num">${dec(hrs)}</div></div>
+    <div class="kpi"><div class="k">DIESEL (L)</div><div class="v num">${dec(dsl)}</div></div>
+    <div class="kpi b"><div class="k">DIESEL / HOUR</div><div class="v num">${lph ? dec(lph, 2) : '—'}</div></div>
   </div>
   <div class="card"><div class="pad">
-    <div class="field" style="margin:0 0 10px"><label>Date<i>तारीख</i></label>
+    <div class="field" style="margin:0 0 10px"><label>Date</label>
       <input type="date" id="ml_date" value="${esc(day)}" data-act="mlDateIn"></div>
-    <button class="btn sec sm" style="width:100%" data-act="mlDateClear">${day ? 'Show all days' : "Today's entries"}<i>${day ? 'सर्व दिवस' : 'आजचा दिवस'}</i></button>
+    <button class="btn sec sm" style="width:100%" data-act="mlDateClear">${day ? 'Show all days' : "Today's entries"}</button>
     ${day ? `<div class="tiny" style="margin-top:10px">${fmtDate(day)} &mdash; <b>${chipList.length}</b> machine chalalya, ${dayRows.length} entries.</div>` : ''}
   </div></div>
   <div class="card">
@@ -1323,12 +1344,12 @@ function machineLogView(s) {
         </div>
         <div class="amt">${dec(h)}<div class="tiny" style="font-weight:500">hr</div>${(h > 0 && num(r.diesel) > 0) ? `<div class="tiny" style="font-weight:700;color:var(--rent)">${dec(num(r.diesel) / h, 2)} L/hr</div>` : ''}</div>
       </div>`;
-    }).join('') : '<div class="empty">No entries yet. Tap "+ Machine entry" above to start.<i>अजून एंट्री नाही</i></div>'}
+    }).join('') : '<div class="empty">No entries yet. Tap "+ Machine entry" above to start.</div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="mlMore">Ajun ${rows.length - shown.length} entries dakhva</button></div>` : ''}
   </div>
   ${(f && rows.length) ? `<div class="card"><div class="pad">
     <div class="tiny" style="margin-bottom:8px;line-height:1.7"><b>${esc(f === '__none' ? 'Machine no nasleli' : f)}</b> chya <b>${rows.length}</b> entries (${dec(rows.reduce((a, r) => a + hoursOf(r), 0))} hours, ${dec(rows.reduce((a, r) => a + num(r.diesel), 0))} L diesel) ekach velela delete karta yetat.</div>
-    <button class="btn dgr sm" style="width:100%" data-act="mlDelAll" data-v="${esc(f)}">Delete all entries of this machine<i>सगळ्या एन्ट्री डिलीट</i></button>
+    <button class="btn dgr sm" style="width:100%" data-act="mlDelAll" data-v="${esc(f)}">Delete all entries of this machine</button>
     <div class="tiny" style="margin-top:8px">Machine Master madhli machine rahil, fakt entries jatil.</div>
   </div></div>` : ''}`;
 }
@@ -1344,21 +1365,21 @@ function machineSumView(s) {
   const unassigned = s.machineLog.filter(r => !r.machineNo);
   return `
   <div class="kpis">
-    <div class="kpi"><div class="k">MACHINES<i>मशीन</i></div><div class="v num">${s.machines.length}</div></div>
-    <div class="kpi"><div class="k">LOG ENTRIES<i>एंट्री</i></div><div class="v num">${tot.e}</div></div>
-    <div class="kpi b"><div class="k">TOTAL HOURS<i>एकूण तास</i></div><div class="v num">${dec(tot.h)}</div></div>
-    <div class="kpi"><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(tot.d)}</div></div>
-    <div class="kpi b"><div class="k">DIESEL / HOUR<i>तासाला डिझेल</i></div><div class="v num">${tot.h ? dec(tot.d / tot.h, 2) : '—'}</div></div>
+    <div class="kpi"><div class="k">MACHINES</div><div class="v num">${s.machines.length}</div></div>
+    <div class="kpi"><div class="k">LOG ENTRIES</div><div class="v num">${tot.e}</div></div>
+    <div class="kpi b"><div class="k">TOTAL HOURS</div><div class="v num">${dec(tot.h)}</div></div>
+    <div class="kpi"><div class="k">DIESEL (L)</div><div class="v num">${dec(tot.d)}</div></div>
+    <div class="kpi b"><div class="k">DIESEL / HOUR</div><div class="v num">${tot.h ? dec(tot.d / tot.h, 2) : '—'}</div></div>
   </div>
   ${unassigned.length ? `<div class="warn">${unassigned.length} entries have no machine number — their ${dec(unassigned.reduce((a, r) => a + hoursOf(r), 0))} hours are not counted in any machine rent. Fix them under <b>Daily log &rarr; No machine</b>.</div>` : ''}
-  <div class="card"><h3>Type-wise<i>प्रकार नुसार</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Type-wise</h3><div class="scroll"><table>
     <thead><tr><th>Type</th><th class="n">Count</th><th class="n">Hours</th><th class="n">Diesel</th><th class="n">L / hr</th><th class="n">Rent</th></tr></thead>
     <tbody>${types.map(t => {
       const list = rows.filter(x => x.m.type === t);
       const th = list.reduce((a, x) => a + x.r.hours, 0), tdz = list.reduce((a, x) => a + x.r.diesel, 0);
       return `<tr><td>${esc(t)}</td><td class="n">${list.length}</td><td class="n">${dec(th)}</td><td class="n">${dec(tdz)}</td><td class="n"><b style="color:var(--rent)">${th ? dec(tdz / th, 2) : '—'}</b></td><td class="n">${money0(list.reduce((a, x) => a + x.r.rent, 0))}</td></tr>`;
     }).join('')}</tbody></table></div></div>
-  <div class="card"><h3>Machine-wise<i>मशीन नुसार</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Machine-wise</h3><div class="scroll"><table>
     <thead><tr><th>Machine</th><th class="n">Hours</th><th class="n">Diesel (L)</th><th class="n">L / hr</th><th class="n">Rent</th></tr></thead>
     <tbody>${rows.filter(x => x.r.entries).sort((a, b) => b.r.hours - a.r.hours).map(x => `<tr><td class="nowrap"><b>${esc(x.m.no)}</b><div class="tiny">${esc(x.m.type)}${x.m.owner ? ' \u00b7 ' + esc(x.m.owner) : ''}</div></td><td class="n">${dec(x.r.hours)}<div class="tiny">${x.r.entries} entries</div></td><td class="n">${dec(x.r.diesel)}</td><td class="n"><b style="color:var(--rent)">${x.r.hours ? dec(x.r.diesel / x.r.hours, 2) : '—'}</b></td><td class="n">${money0(x.r.rent)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No log entries.</td></tr>'}</tbody>
   </table></div></div>`;
@@ -1370,13 +1391,13 @@ function machineRentView(s) {
   const m = machineOf(s, no); const r = no ? machineRent(s, no, from, to) : null;
   const logs = no ? s.machineLog.filter(x => x.machineNo === no && inRange(x.date, from, to)).sort(byDateDesc) : [];
   return `
-  <div class="card"><h3>Select machine and period<i>मशीन आणि कालावधी निवडा</i></h3><div class="pad">
-    <div class="field"><label>Machine no<i>मशीन नंबर</i></label><select data-act="rentMachine">${s.machines.map(x => `<option ${x.no === no ? 'selected' : ''}>${esc(x.no)}</option>`).join('')}</select></div>
+  <div class="card"><h3>Select machine and period</h3><div class="pad">
+    <div class="field"><label>Machine no</label><select data-act="rentMachine">${s.machines.map(x => `<option ${x.no === no ? 'selected' : ''}>${esc(x.no)}</option>`).join('')}</select></div>
     <div class="f2">
-      <div class="field"><label>From date<i>पासून तारीख</i></label><input type="date" value="${from}" data-act="rentFrom"></div>
-      <div class="field"><label>To date<i>पर्यंत तारीख</i></label><input type="date" value="${to}" data-act="rentTo"></div>
+      <div class="field"><label>From date</label><input type="date" value="${from}" data-act="rentFrom"></div>
+      <div class="field"><label>To date</label><input type="date" value="${to}" data-act="rentTo"></div>
     </div>
-    <div class="tiny">Leave the dates empty to see everything from the beginning until today.<i>तारीख रिकामी ठेवली तर पूर्ण हिशोब दिसेल</i></div>
+    <div class="tiny">Leave the dates empty to see everything from the beginning until today.</div>
   </div></div>
   ${!m ? '<div class="empty">Add machines in Machine Master.</div>' : `
   <div class="hero">
@@ -1385,11 +1406,11 @@ function machineRentView(s) {
     <div class="hsplit">
       <div><div class="k">${r.basis === 'Daily' ? 'DAYS' : 'HOURS'}</div><div class="v num">${dec(r.qty)}</div></div>
       <div><div class="k">RATE / ${r.basis === 'Daily' ? 'DAY' : 'HR'}</div><div class="v num">${dec(r.unit, 0)}</div></div>
-      <div><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(r.diesel)}</div></div>
+      <div><div class="k">DIESEL (L)</div><div class="v num">${dec(r.diesel)}</div></div>
     </div>
   </div>
-  <div class="card"><div class="pad"><button class="btn sec sm" style="width:100%" data-act="mBill" data-v="${esc(UI.rentMachine || '')}">Machine report PDF<i>मशीन रिपोर्ट</i></button></div></div>
-  <div class="card"><h3>Machine details<i>मशीन माहिती</i></h3><div class="scroll"><table><tbody>
+  <div class="card"><div class="pad"><button class="btn sec sm" style="width:100%" data-act="mBill" data-v="${esc(UI.rentMachine || '')}">Machine report PDF</button></div></div>
+  <div class="card"><h3>Machine details</h3><div class="scroll"><table><tbody>
     <tr><td class="muted">Type</td><td class="right"><b>${esc(m.type || '—')}</b></td></tr>
     <tr><td class="muted">Owner</td><td class="right"><b>${esc(m.owner || '—')}</b></td></tr>
     <tr><td class="muted">Operator</td><td class="right"><b>${esc(m.operator || '—')}</b></td></tr>
@@ -1398,7 +1419,7 @@ function machineRentView(s) {
     <tr><td class="muted">Package Rate</td><td class="right n"><b>${money0(r.rate)}</b> / ${r.units} ${r.basis === 'Daily' ? 'days' : 'hr'}</td></tr>
     <tr><td class="muted">Entries in period</td><td class="right n"><b>${r.entries}</b></td></tr>
   </tbody></table></div></div>
-  <div class="card"><h3>Entries<i>एंट्री</i> for this machine<i>या मशीनच्या एंट्री</i><small>${logs.length}</small></h3>
+  <div class="card"><h3>Entries for this machine<small>${logs.length}</small></h3>
     ${logs.slice(0, 40).map(x => `<div class="row"><div class="main"><div class="ttl">${fmtDate(x.date)}</div><div class="sub">${has(x.inR) ? dec(x.inR, 1) : '—'} &rarr; ${has(x.outR) ? dec(x.outR, 1) : '—'}${x.diesel ? ' &middot; ' + dec(x.diesel) + ' L' : ''}</div></div><div class="amt">${dec(hoursOf(x))}<div class="tiny" style="font-weight:500">hr</div></div></div>`).join('') || '<div class="empty">No entries in this period.</div>'}
   </div>`}`;
 }
@@ -1406,36 +1427,36 @@ function machineRentView(s) {
 function machineMasterView(s) {
   return `
   <div class="btnrow" style="margin:0 0 12px">
-    <button class="btn" style="flex:1" data-act="mAdd">+ Add machine<i>मशीन जोडा</i></button>
-    <button class="btn sec" style="flex:1" data-act="mArrange">Arrange order<i>क्रम बदला</i></button>
+    <button class="btn" style="flex:1" data-act="mAdd">+ Add machine</button>
+    <button class="btn sec" style="flex:1" data-act="mArrange">Arrange order</button>
   </div>
   ${(() => {
     const g = machineGroups(s);
     if (!g.length) return '';
-    return `<div class="card mt" style="border-color:var(--hivis)"><h3>Same machine, different names<i>एकच मशीन, वेगळे नाव</i><small>${g.length} group</small></h3>
-      <div class="pad" style="padding-bottom:6px"><div class="tiny" style="line-height:1.7">Khalche naav ekach machine che disat aahet (udaharan <b>PC.o5</b> ani <b>PC.05</b>). "Ek kara" dabla ki saglya entries ekach naavavar jatil.</div></div>
+    return `<div class="card mt" style="border-color:var(--hivis)"><h3>Same machine, different names<small>${g.length} group</small></h3>
+      <div class="pad" style="padding-bottom:6px"><div class="tiny" style="line-height:1.7">These look like the same machine (example <b>PC.o5</b> ani <b>PC.05</b>). "Merge" dabla ki saglya entries ekach naavavar jatil.</div></div>
       ${g.slice(0, 12).map(o => `<div class="row" style="display:block">
         <div class="ttl">${esc(o.target)} <span class="tiny">&larr; ${o.items.length} naav, ${o.total} entries</span></div>
         <div class="sub">${o.items.map(x => esc(x.no) + ' (' + x.n + ')').join('  ·  ')}</div>
         <div class="btnrow" style="margin-top:8px">
-          <button class="btn sm" style="flex:1" data-act="mgMerge" data-v="${esc(o.key)}">Merge into ${esc(o.target)}<i>एक करा</i></button>
+          <button class="btn sm" style="flex:1" data-act="mgMerge" data-v="${esc(o.key)}">Merge into ${esc(o.target)}</button>
           <button class="btn sec sm" style="flex:0 0 32%" data-act="mgEdit" data-v="${esc(o.key)}">Rename</button>
         </div>
       </div>`).join('')}
       ${g.length > 12 ? `<div class="pad tiny">ani ${g.length - 12} ajun...</div>` : ''}
-      <div class="pad"><button class="btn dk sm" style="width:100%" data-act="mgAll">Merge all ${g.length} groups<i>सगळे एक करा</i></button>
-      <div class="tiny" style="margin-top:8px">Badalnyaadhi juna data snapshot madhe jato &mdash; chukla tar Data safety madhun parat aanta yeto.</div></div>
+      <div class="pad"><button class="btn dk sm" style="width:100%" data-act="mgAll">Merge all ${g.length} groups</button>
+      <div class="tiny" style="margin-top:8px">A snapshot is taken before any change &mdash; you can restore it from Data safety.</div></div>
     </div>`;
   })()}
-  <div class="card mt"><h3>Rate master<i>रेट मास्टर</i><small>fill rates here</small></h3><div class="scroll"><table>
+  <div class="card mt"><h3>Rate master<small>fill rates here</small></h3><div class="scroll"><table>
     <thead><tr><th>Type</th><th>Basis</th><th class="n">Package Rate</th><th class="n">Units</th><th class="n">Per Hr/Day</th></tr></thead>
     <tbody>${s.rateMaster.map((r, i) => `<tr data-act="rmEdit" data-v="${i}"><td><b>${esc(r.type)}</b></td><td class="tiny">${esc(r.basis)}</td><td class="n">${r.packageRate ? money0(r.packageRate) : '<span class="pill u">to fill</span>'}</td><td class="n">${r.packageUnits}</td><td class="n">${r.packageRate ? dec(num(r.packageRate) / (num(r.packageUnits) || 1), 0) : '—'}</td></tr>`).join('')}</tbody>
   </table></div>
   <div class="pad">
-    <button class="btn sec sm" style="width:100%" data-act="rmAdd">+ Add machine type<i>नवीन प्रकार</i></button>
-    <div class="tiny" style="margin-top:8px">Type var tap kela ki tyacha rate badalta yeto. Ekhadya machine cha vegla rate asel tar ti machine ughadun tithe taka.</div>
+    <button class="btn sec sm" style="width:100%" data-act="rmAdd">+ Add machine type</button>
+    <div class="tiny" style="margin-top:8px">Tap a type to change its rate. For a machine with its own rate, open that machine and set it there.</div>
   </div></div>
-  <div class="card"><h3>Machines<i>मशीन</i><small>${s.machines.length}</small></h3>
+  <div class="card"><h3>Machines<small>${s.machines.length}</small></h3>
     ${s.machines.map(m => `<div class="row" data-act="mEdit" data-v="${m.id}">
       <div class="main"><div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
       <div class="sub">${esc(m.owner || 'no owner')}${m.operator ? ' &middot; ' + esc(m.operator) : ''}${(() => { const q = machineRent(s, m.no); return q.hours ? ' &middot; <b>' + dec(q.diesel / q.hours, 2) + ' L/hr</b>' : ''; })()}</div></div>
@@ -1443,7 +1464,7 @@ function machineMasterView(s) {
       <button class="rowbtn" data-act="mRename" data-v="${m.id}">Rename</button>
       <button class="rowbtn" data-act="mBill" data-v="${esc(m.no)}" style="color:var(--hivis-dk)">PDF</button>
       <button class="rowbtn" data-act="mDelOne" data-v="${m.id}" style="color:var(--due)">Delete</button>
-    </div>`).join('') || '<div class="empty">No machines yet.<i>अजून मशीन नाही</i></div>'}
+    </div>`).join('') || '<div class="empty">No machines yet.</div>'}
   </div>`;
 }
 
@@ -1456,16 +1477,16 @@ function dieselLogView(s) {
   const shown = rows.slice(0, UI.dlMore || 50);
   const t = totals(s);
   return `
-  <button class="btn" data-act="dAdd">+ Diesel entry<i>डिझेल एंट्री</i></button>
+  <button class="btn" data-act="dAdd">+ Diesel entry</button>
   <div class="kpis k3 mt">
-    <div class="kpi"><div class="k">TOTAL DIESEL<i>एकूण डिझेल</i></div><div class="v num">${dec(t.dsLitres)} L</div></div>
-    <div class="kpi g"><div class="k">PAID<i>दिले</i></div><div class="v num">${money0(t.dsPaidFinal)}</div></div>
-    <div class="kpi r"><div class="k">BAKI<i>बाकी</i></div><div class="v num">${money0(t.dsUnpaidFinal)}</div></div>
+    <div class="kpi"><div class="k">TOTAL DIESEL</div><div class="v num">${dec(t.dsLitres)} L</div></div>
+    <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(t.dsPaidFinal)}</div></div>
+    <div class="kpi r"><div class="k">BAKI</div><div class="v num">${money0(t.dsUnpaidFinal)}</div></div>
   </div>
   <div class="card">${shown.length ? shown.map(d => `<div class="row" data-act="dEdit" data-v="${d.id}">
       <div class="main"><div class="ttl">${esc(d.vendor)} <span class="pill ${fin[d.id] && fin[d.id].final === 'Paid' ? 'p' : 'u'}">${fin[d.id] && fin[d.id].final === 'Paid' ? (st(d) === 'Paid' ? 'Paid' : 'Paid (payment)') : 'Unpaid'}</span></div>
       <div class="sub">${fmtDate(d.date)} &middot; ${dec(d.litres)} L${num(d.litres) ? ' @ ' + dec(num(d.amount) / num(d.litres), 2) : ''}${d.paidBy ? ' &middot; ' + esc(d.paidBy) : ''}${d.bill && d.bill !== '-' ? ' &middot; Bill ' + esc(d.bill) : ''}</div></div>
-      <div class="amt">${money0(d.amount)}${(fin[d.id] && fin[d.id].final === 'Unpaid' && fin[d.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[d.id].paid)} dile</div>` : ''}</div></div>`).join('') : '<div class="empty">No diesel entries yet.<i>अजून डिझेल एंट्री नाही</i></div>'}
+      <div class="amt">${money0(d.amount)}${(fin[d.id] && fin[d.id].final === 'Unpaid' && fin[d.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[d.id].paid)} dile</div>` : ''}</div></div>`).join('') : '<div class="empty">No diesel entries yet.</div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="dlMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
   </div>`;
 }
@@ -1475,16 +1496,16 @@ function dieselSumView(s) {
   const avg = t.dsLitres ? t.dsTotal / t.dsLitres : 0;
   return `
   <div class="kpis">
-    <div class="kpi"><div class="k">TOTAL LITRES<i>एकूण लिटर</i></div><div class="v num">${dec(t.dsLitres)}</div></div>
-    <div class="kpi"><div class="k">TOTAL AMOUNT<i>एकूण रक्कम</i></div><div class="v num">${money0(t.dsTotal)}</div></div>
-    <div class="kpi"><div class="k">AVG RATE / L<i>सरासरी रेट</i></div><div class="v num">${dec(avg, 2)}</div></div>
-    <div class="kpi r"><div class="k">UNPAID<i>बाकी</i></div><div class="v num">${money0(t.dsUnpaid)}</div></div>
+    <div class="kpi"><div class="k">TOTAL LITRES</div><div class="v num">${dec(t.dsLitres)}</div></div>
+    <div class="kpi"><div class="k">TOTAL AMOUNT</div><div class="v num">${money0(t.dsTotal)}</div></div>
+    <div class="kpi"><div class="k">AVG RATE / L</div><div class="v num">${dec(avg, 2)}</div></div>
+    <div class="kpi r"><div class="k">UNPAID</div><div class="v num">${money0(t.dsUnpaid)}</div></div>
   </div>
-  <div class="card"><h3>Vendor-wise<i>व्हेंडर नुसार</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Vendor-wise</h3><div class="scroll"><table>
     <thead><tr><th>Vendor</th><th class="n">Litres</th><th class="n">Amount</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Baki</th></tr></thead>
     <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr data-act="vBill" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div></td><td class="n">${dec(x.litres)}</td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>`; }).join('') || '<tr><td colspan="6" class="muted">Add a diesel vendor.</td></tr>'}</tbody>
   </table></div></div>
-  <div class="card"><h3>Machine-wise<i>मशीन नुसार</i> diesel</h3><div class="scroll"><table>
+  <div class="card"><h3>Machine-wise diesel</h3><div class="scroll"><table>
     <thead><tr><th>Machine</th><th class="n">Diesel (L)</th><th class="n">Hours</th><th class="n">L / hr</th></tr></thead>
     <tbody>${s.machines.map(m => ({ m, r: machineRent(s, m.no) })).filter(x => x.r.diesel > 0).sort((a, b) => b.r.diesel - a.r.diesel).map(x => `<tr><td class="nowrap"><b>${esc(x.m.no)}</b></td><td class="n">${dec(x.r.diesel)}</td><td class="n">${dec(x.r.hours)}</td><td class="n">${x.r.hours ? dec(x.r.diesel / x.r.hours, 2) : '—'}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Appears once diesel is filled in the machine log.</td></tr>'}</tbody>
   </table></div></div>`;
@@ -1504,11 +1525,11 @@ function expenseLogView(s) {
   const t = totals(s);
   const tm = s.expenseLog.filter(e => monthKey(e.date) === monthKey(today())).reduce((a, e) => a + num(e.amount), 0);
   return `
-  <button class="btn" data-act="eAdd">+ New expense<i>नवीन खर्च</i></button>
+  <button class="btn" data-act="eAdd">+ New expense</button>
   <div class="kpis k3 mt">
-    <div class="kpi"><div class="k">TOTAL<i>एकूण</i></div><div class="v num">${money0(t.expTotal)}</div></div>
-    <div class="kpi"><div class="k">THIS MONTH<i>या महिन्यात</i></div><div class="v num">${money0(tm)}</div></div>
-    <div class="kpi r"><div class="k">PENDING<i>बाकी</i></div><div class="v num">${money0(t.expUnpaidFinal)}</div></div>
+    <div class="kpi"><div class="k">TOTAL</div><div class="v num">${money0(t.expTotal)}</div></div>
+    <div class="kpi"><div class="k">THIS MONTH</div><div class="v num">${money0(tm)}</div></div>
+    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(t.expUnpaidFinal)}</div></div>
   </div>
   <div class="card">
     <div class="chips">
@@ -1523,7 +1544,7 @@ function expenseLogView(s) {
         <div class="main"><div class="ttl">${esc(e.desc || e.category)} <span class="pill ${fs.final === 'Paid' ? 'p' : 'u'}">${fs.final}</span></div>
         <div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}${e.vendor ? ' &middot; ' + esc(e.vendor) : ''}${fs.by ? ' &middot; ' + esc(fs.by) : ''}</div></div>
         <div class="amt">${money0(e.amount)}${(fs.final === 'Unpaid' && fs.paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fs.paid)} dile</div><div class="tiny" style="font-weight:700;color:var(--due)">baki ${money0(fs.bal)}</div>` : ''}</div></div>`;
-    }).join('') : '<div class="empty">Nothing here.<i>इथे काही नाही</i></div>'}
+    }).join('') : '<div class="empty">Nothing here.</div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="exMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
   </div>`;
 }
@@ -1536,19 +1557,19 @@ function expenseSumView(s) {
   const tday = s.expenseLog.filter(e => e.date === today()).reduce((a, e) => a + num(e.amount), 0);
   return `
   <div class="kpis">
-    <div class="kpi"><div class="k">TOTAL<i>एकूण</i></div><div class="v num">${money0(t.expTotal)}</div></div>
-    <div class="kpi g"><div class="k">PAID<i>दिले</i></div><div class="v num">${money0(t.expPaidFinal)}</div></div>
-    <div class="kpi r"><div class="k">PENDING<i>बाकी</i></div><div class="v num">${money0(t.expUnpaidFinal)}</div></div>
-    <div class="kpi"><div class="k">TODAY'S EXPENSE<i>आजचा खर्च</i></div><div class="v num">${money0(tday)}</div></div>
+    <div class="kpi"><div class="k">TOTAL</div><div class="v num">${money0(t.expTotal)}</div></div>
+    <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(t.expPaidFinal)}</div></div>
+    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(t.expUnpaidFinal)}</div></div>
+    <div class="kpi"><div class="k">TODAY'S EXPENSE</div><div class="v num">${money0(tday)}</div></div>
   </div>
-  <div class="card"><h3>Category-wise<i>प्रकार नुसार</i></h3>
+  <div class="card"><h3>Category-wise</h3>
     ${cats.map(o => `<div class="row" style="display:block">
       <div style="display:flex;justify-content:space-between;gap:8px"><div class="ttl">${esc(o.c)}</div><div class="amt">${money0(o.x.total)}</div></div>
       <div class="bar"><i style="width:${(o.x.total / max * 100).toFixed(1)}%"></i></div>
       <div class="sub">${o.x.entries} entries &middot; paid ${money0(o.x.paid)}${o.x.unpaid ? ' &middot; <b style="color:var(--due)">pending ' + money0(o.x.unpaid) + '</b>' : ''} &middot; ${(o.x.total / (t.expTotal || 1) * 100).toFixed(1)}%</div>
     </div>`).join('') || '<div class="empty">Summary appears once expenses are added.</div>'}
   </div>
-  <div class="card"><h3>Month-wise<i>महिना नुसार</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Month-wise</h3><div class="scroll"><table>
     <thead><tr><th>Month</th><th class="n">Site</th><th class="n">Diesel</th><th class="n">Paid</th><th class="n">Pending</th></tr></thead>
     <tbody>${months.map(m => `<tr><td class="nowrap">${monthName(m.k)}</td><td class="n">${money0(m.total)}</td><td class="n">${money0(m.diesel)}</td><td class="n">${money0(m.paid)}</td><td class="n" style="color:${m.unpaid ? 'var(--due)' : 'inherit'}">${money0(m.unpaid)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No data.</td></tr>'}</tbody>
   </table></div></div>`;
@@ -1565,32 +1586,32 @@ function vendorPendView(s) {
   const total = pend.reduce((a, e) => a + num(e.amount), 0);
   return `
   <div class="kpis">
-    <div class="kpi r"><div class="k">SITE PENDING<i>साइट बाकी</i></div><div class="v num">${money0(total)}</div></div>
-    <div class="kpi r"><div class="k">DIESEL PENDING<i>डिझेल बाकी</i></div><div class="v num">${money0(dieselPend.reduce((a, d) => a + num(d.amount), 0))}</div></div>
+    <div class="kpi r"><div class="k">SITE PENDING</div><div class="v num">${money0(total)}</div></div>
+    <div class="kpi r"><div class="k">DIESEL PENDING</div><div class="v num">${money0(dieselPend.reduce((a, d) => a + num(d.amount), 0))}</div></div>
   </div>
   ${Object.keys(byV).sort().map(v => {
     const list = byV[v]; const vs = v === '(no vendor)' ? null : vendorStats(s, v);
     return `<div class="card"><h3>${esc(v)}<small>balance ${money(list.reduce((a, e) => a + num(e.amount), 0))}</small></h3>
       ${list.map(e => `<div class="row" data-act="eEdit" data-v="${e.id}"><div class="main"><div class="ttl">${esc(e.desc || e.category)}</div><div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}</div></div>
         <div class="amt">${money0(e.amount)}${(fin[e.id] && fin[e.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[e.id].paid)}</div><div class="tiny" style="font-weight:700;color:var(--due)">baki ${money0(fin[e.id].bal)}</div>` : ''}</div></div>`).join('')}
-      ${vs ? `<div class="pad"><button class="btn sm" data-act="vpAdd" data-v="${esc(v)}">Make payment<i>पेमेंट करा</i></button></div>` : ''}
+      ${vs ? `<div class="pad"><button class="btn sm" data-act="vpAdd" data-v="${esc(v)}">Make payment</button></div>` : ''}
     </div>`;
-  }).join('') || '<div class="card"><div class="empty">No pending vendor credit.<i>कोणाची उधारी बाकी नाही</i></div></div>'}
+  }).join('') || '<div class="card"><div class="empty">No pending vendor credit.</div></div>'}
   ${(() => {
     const dv = (s.dieselVendors || []).map(v => ({ v, x: dieselVendorStats(s, v) })).filter(o => o.x.remaining > 0.5);
     if (!dv.length) return '';
     return dv.map(o => {
       const bills = s.dieselLog.filter(d => d.vendor === o.v && fin[d.id] && fin[d.id].final === 'Unpaid').sort(byDateDesc);
-      return `<div class="card"><h3>${esc(o.v)}<i>डिझेल</i><small>baki ${money(o.x.remaining)}</small></h3>
+      return `<div class="card"><h3>${esc(o.v)}<small>baki ${money(o.x.remaining)}</small></h3>
         <div class="scroll"><table><tbody>
           <tr><td class="muted">Ekun bill</td><td class="right n"><b>${money(o.x.amount)}</b></td></tr>
-          <tr><td class="muted">Direct dile</td><td class="right n">${money(o.x.direct)}</td></tr>
+          <tr><td class="muted">Paid directly</td><td class="right n">${money(o.x.direct)}</td></tr>
           <tr><td class="muted">Payment kele</td><td class="right n">${money(o.x.payments)}</td></tr>
           <tr><td class="muted"><b>BAKI</b></td><td class="right n"><b style="color:var(--due)">${money(o.x.remaining)}</b></td></tr>
         </tbody></table></div>
         ${bills.slice(0, 12).map(d => `<div class="row" data-act="dEdit" data-v="${d.id}"><div class="main"><div class="ttl">${fmtDate(d.date)}</div>
           <div class="sub">${dec(d.litres)} L${d.bill ? ' &middot; bill ' + esc(d.bill) : ''}</div></div><div class="amt">${money0(d.amount)}</div></div>`).join('')}
-        <div class="pad"><button class="btn sm" style="width:100%" data-act="vpAdd" data-v="${esc(o.v)}">Make payment<i>पेमेंट करा</i></button></div>
+        <div class="pad"><button class="btn sm" style="width:100%" data-act="vpAdd" data-v="${esc(o.v)}">Make payment</button></div>
       </div>`;
     }).join('');
   })()}`;
@@ -1601,33 +1622,33 @@ function vendorPayView(s) {
   const due = allVendors(s).map(v => ({ v, x: remVendorStats(s, v), d: isDieselVendor(s, v) }))
     .filter(o => o.x.remaining > 0.5).sort((a, b) => b.x.remaining - a.x.remaining);
   return `
-  <button class="btn" data-act="vpAdd">+ Vendor payment<i>व्हेंडर पेमेंट</i></button>
-  ${due.length ? `<div class="card mt"><h3>Who to pay<i>कोणाला किती द्यायचे</i><small>${money(due.reduce((a, o) => a + o.x.remaining, 0))}</small></h3>
+  <button class="btn" data-act="vpAdd">+ Vendor payment</button>
+  ${due.length ? `<div class="card mt"><h3>Who to pay<small>${money(due.reduce((a, o) => a + o.x.remaining, 0))}</small></h3>
     ${due.map(o => `<div class="row">
       <div class="main"><div class="ttl">${esc(o.v)} ${o.d ? '<span class="pill n">diesel</span>' : ''}</div>
       <div class="sub">ekun ${money(o.x.total || o.x.amount)} &middot; dile ${money((o.x.direct || 0) + (o.x.paid || o.x.payments || 0))}</div></div>
       <div class="amt" style="color:var(--due)">${money0(o.x.remaining)}</div>
       <button class="rowbtn" data-act="vpAdd" data-v="${esc(o.v)}" style="color:var(--hivis-dk)">Payment</button></div>`).join('')}
-    <div class="pad tiny">Payment takla ki tya vendor che junya bill pasun apoap Paid hotat &mdash; diesel bills pn.</div>
+    <div class="pad tiny">A payment clears that vendor’s oldest bills first &mdash; diesel bills too.</div>
   </div>` : ''}
   <div class="kpis mt" style="grid-template-columns:1fr">
-    <div class="kpi g"><div class="k">TOTAL PAID OUT<i>एकूण पेमेंट</i></div><div class="v num">${money0(rows.reduce((a, p) => a + num(p.amount), 0))}</div></div>
+    <div class="kpi g"><div class="k">TOTAL PAID OUT</div><div class="v num">${money0(rows.reduce((a, p) => a + num(p.amount), 0))}</div></div>
   </div>
   <div class="card">${rows.map(p => `<div class="row" data-act="vpEdit" data-v="${p.id}">
     <div class="main"><div class="ttl">${esc(p.vendor)}</div><div class="sub">${fmtDate(p.date)}${p.paidBy ? ' &middot; ' + esc(p.paidBy) : ''}${p.mode ? ' &middot; ' + esc(p.mode) : ''}${p.remark ? ' &middot; ' + esc(p.remark) : ''}</div></div>
-    <div class="amt">${money0(p.amount)}</div></div>`).join('') || '<div class="empty">No payments yet.<i>अजून पेमेंट नाही</i></div>'}</div>`;
+    <div class="amt">${money0(p.amount)}</div></div>`).join('') || '<div class="empty">No payments yet.</div>'}</div>`;
 }
 
 function vendorSumView(s) {
   const rows = allVendors(s).map(v => ({ v, x: vendorStats(s, v) })).filter(o => o.x.total || o.x.paid);
   const T = rows.reduce((a, o) => ({ t: a.t + o.x.total, d: a.d + o.x.direct, p: a.p + o.x.paid, r: a.r + o.x.remaining }), { t: 0, d: 0, p: 0, r: 0 });
   return `
-  <div class="card"><h3>Vendor-wise account<i>व्हेंडर नुसार हिशोब</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Vendor-wise account</h3><div class="scroll"><table>
     <thead><tr><th>Vendor</th><th class="n">Total</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Remaining</th></tr></thead>
     <tbody>${rows.sort((a, b) => b.x.remaining - a.x.remaining).map(o => `<tr data-act="vBill" data-v="${esc(o.v)}"><td class="nowrap">${esc(o.v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div></td><td class="n">${money0(o.x.total)}</td><td class="n">${money0(o.x.direct)}</td><td class="n">${money0(o.x.paid)}</td><td class="n"><b style="color:${o.x.remaining > 0 ? 'var(--due)' : 'var(--paid)'}">${money0(o.x.remaining)}</b></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No vendor entries.</td></tr>'}</tbody>
-    <tfoot><tr><td>TOTAL<i>एकूण</i></td><td class="n">${money0(T.t)}</td><td class="n">${money0(T.d)}</td><td class="n">${money0(T.p)}</td><td class="n">${money0(T.r)}</td></tr></tfoot>
+    <tfoot><tr><td>TOTAL</td><td class="n">${money0(T.t)}</td><td class="n">${money0(T.d)}</td><td class="n">${money0(T.p)}</td><td class="n">${money0(T.r)}</td></tr></tfoot>
   </table></div></div>
-  <div class="card"><h3>Diesel vendors<i>डिझेल पंप</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Diesel vendors</h3><div class="scroll"><table>
     <thead><tr><th>Vendor</th><th class="n">Total</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Balance</th></tr></thead>
     <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr data-act="vBill" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div><div class="tiny">${x.bills} bill</div></td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>
       <tr><td colspan="5" style="padding-top:0"><div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="vpAdd" data-v="${esc(v)}">Make payment</button><button class="btn sec sm" style="flex:1" data-act="pdfVendor" data-v="${esc(v)}">PDF bill</button></div></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted">No diesel vendors.</td></tr>'}</tbody>
@@ -1647,26 +1668,26 @@ function excelView(s) {
     return rows.length ? `<div class="row"><div class="main"><div class="ttl">${x.sheet}</div><div class="sub">${rows.length} new rows &middot; cell B${start} to paste into (${x.cols})</div></div><button class="rowbtn" data-act="xlCopy" data-k="${k}">Copy</button></div>` : '';
   }).join('');
   return `
-  <div class="card"><h3>Complete Excel file<i>पूर्ण एक्सेल फाइल</i><small>ready to use</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">You get a fresh Excel file — Dashboard, Manager Account, Machine Log, Machine Rent, Diesel, ${s.mods.murum ? 'Murum, ' : ''}Expense Log, Vendor Payment${s.mods.owner ? ', Owner Payment' : ''}${s.mods.funds ? ', Paise Milale' : ''}, Masters. Every sheet has <b>live formulas and dropdowns</b>, so the dashboards keep working even if you type the next entries in Excel itself.<i>सर्व शीटमध्ये फॉर्मुला तयार</i></div>
-    <button class="btn" data-act="xlsx">Download Excel file<i>एक्सेल डाउनलोड</i></button>
-    <div class="tiny" style="margin-top:8px">All figures calculate automatically when you open the file.<i>फाइल उघडली की हिशोब आपोआप</i></div>
+  <div class="card"><h3>Complete Excel file<small>ready to use</small></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">You get a fresh Excel file — Dashboard, Manager Account, Machine Log, Machine Rent, Diesel, ${s.mods.murum ? 'Murum, ' : ''}Expense Log, Vendor Payment${s.mods.owner ? ', Owner Payment' : ''}${s.mods.funds ? ', Paise Received' : ''}, Masters. Every sheet has <b>live formulas and dropdowns</b>, so the dashboards keep working even if you type the next entries in Excel itself.</div>
+    <button class="btn" data-act="xlsx">Download Excel file</button>
+    <div class="tiny" style="margin-top:8px">All figures calculate automatically when you open the file.</div>
   </div></div>
-  ${tot ? `<div class="card"><h3>Paste rows into your old sheet<i>जुन्या शीटमध्ये पेस्ट करा</i><small>${tot} navin</small></h3>
+  ${tot ? `<div class="card"><h3>Paste rows into your old sheet<small>${tot} navin</small></h3>
     ${cards}
     <div class="pad"><div class="tiny">Use this if you still work in your old Veershree_industrial_park.xlsx — only the new rows are copied.</div>
-    <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="xlAllDone">All pasted - mark done<i>पेस्ट झाले</i></button></div></div>
+    <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="xlAllDone">All pasted - mark done</button></div></div>
   </div>` : ''}
-  <div class="card"><h3>Supervisor data<i>सुपरवायझरचा डेटा</i><small>Reading Book app madhun</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Supervisor ne pathavlelya <b>site-data-....json</b> files ithe ghya &mdash; <b>ekach velela kitihi files</b> nivadta yetat &mdash; machine reading ani diesel bills apoap Machine Log ani Diesel Purchase madhe jatil. Ekda ghetleli entry parat ghetli jat nahi.</div>
-    <button class="btn sec sm" style="width:100%" data-act="impSup">Import reading files<i>फाईल इम्पोर्ट</i></button>
+  <div class="card"><h3>Supervisor data<small>Reading Book app madhun</small></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Supervisor ne pathavlelya <b>site-data-....json</b> files here &mdash; <b>ekach velela kitihi files</b> nivadta yetat &mdash; machine reading ani diesel bills apoap Machine Log ani Diesel Purchase madhe jatil. Ekda ghetleli entry parat ghetli jat nahi.</div>
+    <button class="btn sec sm" style="width:100%" data-act="impSup">Import reading files</button>
   </div></div>
-  <div class="card"><h3>Data safety<i>डेटा सुरक्षा</i><small>${Store.mode === 'device' ? (PERSIST ? 'saved on this phone' : 'on this phone') : 'in Claude'}</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Data ${Store.mode === 'device' ? 'is kept in this phone in two places, plus one snapshot per day' : 'is kept in your Claude account'}. ${PERSIST ? 'The browser has been asked to keep this data permanently.' : ''} Even so, download a backup once a month and keep it on Drive.<i>महिन्यातून एकदा बॅकअप घ्या</i></div>
-    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="expJson">Download backup<i>बॅकअप डाउनलोड</i></button><button class="btn sec sm" style="flex:1" data-act="impJson">Import backup<i>बॅकअप इम्पोर्ट</i></button></div>
+  <div class="card"><h3>Data safety<small>${Store.mode === 'device' ? (PERSIST ? 'saved on this phone' : 'on this phone') : 'in Claude'}</small></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Data ${Store.mode === 'device' ? 'is kept in this phone in two places, plus one snapshot per day' : 'is kept in your Claude account'}. ${PERSIST ? 'The browser has been asked to keep this data permanently.' : ''} Even so, download a backup once a month and keep it on Drive.</div>
+    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="expJson">Download backup</button><button class="btn sec sm" style="flex:1" data-act="impJson">Import backup</button></div>
     ${(UI.snaps && UI.snaps.length) ? `<div class="tiny" style="margin:12px 0 6px"><b>Snapshots of earlier days</b> — restore from here if something goes wrong:</div>
-      ${UI.snaps.map(k => `<div class="row" style="padding:8px 0"><div class="main"><div class="ttl">${fmtDate(k.slice(5))}</div></div><button class="rowbtn" data-act="snapBack" data-v="${k}">Restore<i>परत आणा</i></button></div>`).join('')}`
-      : `<div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="snapList">Show old snapshots<i>जुने स्नॅपशॉट</i></button></div>`}
+      ${UI.snaps.map(k => `<div class="row" style="padding:8px 0"><div class="main"><div class="ttl">${fmtDate(k.slice(5))}</div></div><button class="rowbtn" data-act="snapBack" data-v="${k}">Restore</button></div>`).join('')}`
+      : `<div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="snapList">Show old snapshots</button></div>`}
   </div></div>`;
 }
 
@@ -1674,42 +1695,42 @@ function personView(s) {
   const name = UI.person || s.people[0] || '';
   const ps = name ? personStats(s, name) : null;
   return `
-  <div class="card"><div class="chips">${s.people.map(p => `<button class="chip ${p === name ? 'on' : ''}" data-act="person" data-v="${esc(p)}">${esc(p)}</button>`).join('') || '<span class="muted">Add names in Masters.<i>मास्टरमध्ये नाव जोडा</i></span>'}</div></div>
+  <div class="card"><div class="chips">${s.people.map(p => `<button class="chip ${p === name ? 'on' : ''}" data-act="person" data-v="${esc(p)}">${esc(p)}</button>`).join('') || '<span class="muted">Add names in Masters.</span>'}</div></div>
   ${!ps ? '' : `
   <div class="hero"><div class="lbl">${esc(name).toUpperCase()} &mdash; TOTAL SPENT</div>
     <div class="big"><small>&#8377;</small>${money0(ps.total)}</div>
     <div class="hsplit">
-      <div><div class="k">SITE EXPENSE<i>साइट खर्च</i></div><div class="v num">${money0(ps.site)}</div></div>
-      <div><div class="k">DIESEL<i>डिझेल</i></div><div class="v num">${money0(ps.dsl)}</div></div>
-      <div><div class="k">VENDOR PAYMENT<i>व्हेंडर पेमेंट</i></div><div class="v num">${money0(ps.vp)}</div></div>
+      <div><div class="k">SITE EXPENSE</div><div class="v num">${money0(ps.site)}</div></div>
+      <div><div class="k">DIESEL</div><div class="v num">${money0(ps.dsl)}</div></div>
+      <div><div class="k">VENDOR PAYMENT</div><div class="v num">${money0(ps.vp)}</div></div>
     </div>
   </div>
-  <div class="card"><h3>Site expenses<i>साइट खर्च</i><small>${ps.siteExp.length}</small></h3>
+  <div class="card"><h3>Site expenses<small>${ps.siteExp.length}</small></h3>
     ${ps.siteExp.slice().sort(byDateDesc).slice(0, 40).map(e => `<div class="row" data-act="eEdit" data-v="${e.id}"><div class="main"><div class="ttl">${esc(e.desc || e.category)}</div><div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}</div></div><div class="amt">${money0(e.amount)}</div></div>`).join('') || '<div class="empty">No entries.</div>'}</div>
-  <div class="card"><h3>Diesel payments<i>डिझेल पेमेंट</i><small>${ps.diesel.length}</small></h3>
+  <div class="card"><h3>Diesel payments<small>${ps.diesel.length}</small></h3>
     ${ps.diesel.slice().sort(byDateDesc).slice(0, 30).map(d => `<div class="row" data-act="dEdit" data-v="${d.id}"><div class="main"><div class="ttl">${esc(d.vendor)}</div><div class="sub">${fmtDate(d.date)} &middot; ${dec(d.litres)} L</div></div><div class="amt">${money0(d.amount)}</div></div>`).join('') || '<div class="empty">No entries.</div>'}</div>
-  <div class="card"><h3>Vendor payments<i>व्हेंडर पेमेंट</i><small>${ps.vpay.length}</small></h3>
+  <div class="card"><h3>Vendor payments<small>${ps.vpay.length}</small></h3>
     ${ps.vpay.slice().sort(byDateDesc).map(p => `<div class="row" data-act="vpEdit" data-v="${p.id}"><div class="main"><div class="ttl">${esc(p.vendor)}</div><div class="sub">${fmtDate(p.date)}${p.mode ? ' &middot; ' + esc(p.mode) : ''}</div></div><div class="amt">${money0(p.amount)}</div></div>`).join('') || '<div class="empty">No entries.</div>'}</div>`}`;
 }
 
 function listCard(title, key, items, note) {
   return `<div class="card"><h3>${title}<small>${items.length}</small></h3>
-    <div class="pad" style="padding-bottom:0"><div class="btnrow"><button class="btn sec sm" data-act="listAdd" data-v="${key}">+ Add<i>जोडा</i></button></div></div>
-    ${items.map((v, i) => `<div class="row"><div class="main"><div class="ttl">${esc(v)}</div></div><button class="rowbtn" data-act="listEdit" data-v="${key}:${i}">Edit</button></div>`).join('') || '<div class="empty">Nothing here yet.<i>अजून काही नाही</i></div>'}
+    <div class="pad" style="padding-bottom:0"><div class="btnrow"><button class="btn sec sm" data-act="listAdd" data-v="${key}">+ Add</button></div></div>
+    ${items.map((v, i) => `<div class="row"><div class="main"><div class="ttl">${esc(v)}</div></div><button class="rowbtn" data-act="listEdit" data-v="${key}:${i}">Edit</button></div>`).join('') || '<div class="empty">Nothing here yet.</div>'}
     ${note ? `<div class="pad tiny">${note}</div>` : ''}</div>`;
 }
 
 function mastersView(s) {
-  return listCard('Expense categories<i>खर्चाचे प्रकार</i>', 'categories', s.categories)
-    + listCard('Paid by (names)<i>कोणी दिले</i>', 'people', s.people, 'Each name here gets its own account under Person-wise.<i>प्रत्येक नावाचा वेगळा हिशोब</i>')
-    + listCard('Site vendors<i>व्हेंडर</i>', 'vendors', s.vendors, 'Do not put diesel pumps here.<i>डिझेल पंप इथे टाकू नका</i>')
-    + listCard('Diesel vendors / pumps<i>डिझेल पंप</i>', 'dieselVendors', s.dieselVendors)
-    + `<div class="card"><h3>Machines<i>मशीन</i> and rates<i>मशीन आणि रेट</i></h3><div class="pad"><button class="btn sec sm" data-act="sub" data-v="mast" data-t="machine">Open machine master<i>मशीन मास्टर</i></button></div></div>`;
+  return listCard('Expense categories', 'categories', s.categories)
+    + listCard('Paid by (names)', 'people', s.people, 'Each name here gets its own account under Person-wise.')
+    + listCard('Site vendors', 'vendors', s.vendors, 'Do not put diesel pumps here.')
+    + listCard('Diesel vendors / pumps', 'dieselVendors', s.dieselVendors)
+    + `<div class="card"><h3>Machines and rates</h3><div class="pad"><button class="btn sec sm" data-act="sub" data-v="mast" data-t="machine">Open machine master</button></div></div>`;
 }
 
 function sitesView(s) {
   return `
-  <div class="card"><h3>Sites<i>साइट</i><small>${DB.sites.length}</small></h3>
+  <div class="card"><h3>Sites<small>${DB.sites.length}</small></h3>
     ${DB.sites.map(x => {
       const t = totals(x);
       return `<div class="row"><div class="main" data-act="siteGo" data-v="${x.id}">
@@ -1718,45 +1739,45 @@ function sitesView(s) {
         <button class="rowbtn" data-act="siteEdit" data-v="${x.id}">Edit</button>
         <button class="rowbtn" data-act="siteDel" data-v="${x.id}" style="color:var(--due)">Delete</button></div>`;
     }).join('')}
-    <div class="pad"><button class="btn" data-act="siteAdd">+ New site<i>नवीन साइट</i></button></div>
+    <div class="pad"><button class="btn" data-act="siteAdd">+ New site</button></div>
   </div>
   <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
-  <div class="card"><h3>Supervisor app<i>सुपरवायझरचा अ‍ॅप</i></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Reading Book cha link supervisor la WhatsApp var pathva. Tyane tach link ughadun "Add to Home screen" karaycha.<br><span style="color:var(--steel)">हा लिंक सुपरवायझरला पाठवा.</span></div>
-    <div class="field"><label>Link<i>लिंक</i></label><input id="f_suplink" value="${esc(supLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
+  <div class="card"><h3>Supervisor app</h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Send this Reading Book link to the supervisor on WhatsApp. They open it and use "Add to Home screen".</div>
+    <div class="field"><label>Link</label><input id="f_suplink" value="${esc(supLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
     <div class="btnrow">
-      <button class="btn sec sm" style="flex:1" data-act="supLinkCopy">Copy link<i>लिंक कॉपी</i></button>
+      <button class="btn sec sm" style="flex:1" data-act="supLinkCopy">Copy link</button>
       <button class="btn sec sm" style="flex:1" data-act="supLinkWa">WhatsApp</button>
     </div>
-    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="supOpen">Open Reading Book<i>अ‍ॅप उघडा</i></button></div>
+    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="supOpen">Open Reading Book</button></div>
   </div></div>
-  <div class="card"><h3>Company logo<i>कंपनीचा लोगो</i></h3><div class="pad">
+  <div class="card"><h3>Company logo</h3><div class="pad">
     ${DB.logo ? `<div style="background:var(--ink);border-radius:10px;padding:12px;text-align:center;margin-bottom:10px"><img src="${DB.logo}" style="height:38px;max-width:70%;object-fit:contain"></div>` : '<div class="tiny" style="margin-bottom:10px">Logo takla ki var davikade "SITE MANAGER" chya jaagi to disel.</div>'}
     <div class="btnrow">
-      <button class="btn sec sm" style="flex:1" data-act="logoPick">${DB.logo ? 'Logo badla' : 'Logo taka'}<i>लोगो निवडा</i></button>
+      <button class="btn sec sm" style="flex:1" data-act="logoPick">${DB.logo ? 'Logo badla' : 'Logo taka'}</button>
       ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoOff">Remove</button>' : ''}
     </div>
-    <div class="tiny" style="margin-top:8px">PNG kiwa JPG chalel. App apoap chhota karun thevto, mhanun jaaga vaajat nahi.</div>
+    <div class="tiny" style="margin-top:8px">PNG or JPG. The app shrinks it automatically, so it takes very little space.</div>
   </div></div>
-  <div class="card"><h3>Site delete password<i>साइट डिलीट पासवर्ड</i><small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Site delete karayla ha password lagto, mhanje chukun kunachihi site jaat nahi. Pahilya velela delete kartana to set karta yeto.<br><span style="color:var(--steel)">साइट डिलीट करायला हा पासवर्ड लागतो.</span></div>
-    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password<i>पासवर्ड बदला</i></button><div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password - reset<i>विसरलात? रिसेट करा</i></button></div>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password<i>पासवर्ड ठेवा</i></button>'}
+  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">This password is needed to delete a site, so nothing is deleted by mistake. You can set it the first time you delete.</div>
+    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password</button><div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password — reset</button></div>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password</button>'}
   </div></div>
-  <div class="card"><h3>Backup and Excel<i>बॅकअप आणि एक्सेल</i></h3><div class="pad">
+  <div class="card"><h3>Backup and Excel</h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px">Take the Excel file and backup from <b>More &rarr; Excel</b>.</div>
-    <button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Open Excel and backup<i>एक्सेल आणि बॅकअप</i></button>
+    <button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Open Excel and backup</button>
   </div></div>
   <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
-  <div class="card"><h3>Site delete password<i>साइट डिलीट पासवर्ड</i><small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Site delete karayla ha password lagto, mhanje chukun kunachihi site jaat nahi. Pahilya velela delete kartana to set karta yeto.<br><span style="color:var(--steel)">साइट डिलीट करायला हा पासवर्ड लागतो.</span></div>
-    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password<i>पासवर्ड बदला</i></button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password<i>पासवर्ड ठेवा</i></button>'}
+  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">This password is needed to delete a site, so nothing is deleted by mistake. You can set it the first time you delete.</div>
+    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password</button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password</button>'}
   </div></div>
-  <div class="card"><h3>Backup and Excel<i>बॅकअप आणि एक्सेल</i></h3><div class="pad">
+  <div class="card"><h3>Backup and Excel</h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px">Take the Excel file and backup from <b>More &rarr; Excel</b>.</div>
-    <button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Open Excel and backup<i>एक्सेल आणि बॅकअप</i></button>
+    <button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Open Excel and backup</button>
   </div></div>
 
-  <div class="card"><h3>How this app works<i>अ‍ॅप कसा चालवायचा</i></h3><div class="pad tiny" style="line-height:1.6">
+  <div class="card"><h3>How this app works</h3><div class="pad tiny" style="line-height:1.6">
     <b>1. Expenses:</b> Expense &rarr; New expense. If the money was paid, mark Paid and pick the name; if it is on credit, leave it Unpaid and pick the vendor.<br>
     <b>2. Credit:</b> An unpaid entry moves to Vendor &rarr; Pending by itself, and turns Paid once you record the payment.<br>
     <b>3. Machine:</b> Enter In/Out readings daily — hours are automatic. Rate x hours = rent.<br>
@@ -1773,20 +1794,20 @@ VIEW.murum = s => {
   const sups = [...new Set((s.murumLog || []).map(r => r.vendor).filter(Boolean))];
   const avg = t.muQty ? t.muTotal / t.muQty : 0;
   return `
-  <button class="btn" data-act="muAdd">+ Murum entry<i>मुरुम एंट्री</i></button>
+  <button class="btn" data-act="muAdd">+ Murum entry</button>
   <div class="kpis mt">
     <div class="kpi"><div class="k">TOTAL ${esc((s.murumUnit || 'Brass').toUpperCase())}</div><div class="v num">${dec(t.muQty)}</div></div>
-    <div class="kpi"><div class="k">TOTAL AMOUNT<i>एकूण रक्कम</i></div><div class="v num">${money0(t.muTotal)}</div></div>
-    <div class="kpi"><div class="k">AVG RATE<i>सरासरी रेट</i></div><div class="v num">${dec(avg, 0)}</div></div>
-    <div class="kpi r"><div class="k">PENDING<i>बाकी</i></div><div class="v num">${money0(t.muUnpaid)}</div></div>
+    <div class="kpi"><div class="k">TOTAL AMOUNT</div><div class="v num">${money0(t.muTotal)}</div></div>
+    <div class="kpi"><div class="k">AVG RATE</div><div class="v num">${dec(avg, 0)}</div></div>
+    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(t.muUnpaid)}</div></div>
   </div>
   <div class="card">${shown.length ? shown.map(r => `<div class="row" data-act="muEdit" data-v="${r.id}">
       <div class="main"><div class="ttl">${esc(r.vendor || 'no supplier')} <span class="pill ${st(r) === 'Paid' ? 'p' : 'u'}">${st(r)}</span></div>
       <div class="sub">${fmtDate(r.date)} &middot; ${dec(r.qty)} ${esc(s.murumUnit || 'Brass')}${num(r.rate) ? ' @ ' + dec(r.rate, 0) : ''}${r.trips ? ' &middot; ' + dec(r.trips) + ' trip' : ''}${r.paidBy ? ' &middot; ' + esc(r.paidBy) : ''}${r.remark ? ' &middot; ' + esc(r.remark) : ''}</div></div>
-      <div class="amt">${money0(mAmt(r))}</div></div>`).join('') : '<div class="empty">No murum entries yet.<i>अजून मुरुम एंट्री नाही</i></div>'}
+      <div class="amt">${money0(mAmt(r))}</div></div>`).join('') : '<div class="empty">No murum entries yet.</div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="muMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
   </div>
-  ${sups.length ? `<div class="card"><h3>Supplier-wise<i>सप्लायर नुसार</i></h3><div class="scroll"><table>
+  ${sups.length ? `<div class="card"><h3>Supplier-wise</h3><div class="scroll"><table>
     <thead><tr><th>Supplier</th><th class="n">${esc(s.murumUnit || 'Brass')}</th><th class="n">Trips</th><th class="n">Amount</th><th class="n">Balance</th></tr></thead>
     <tbody>${sups.map(v => {
       const list = s.murumLog.filter(r => r.vendor === v);
@@ -1796,24 +1817,24 @@ VIEW.murum = s => {
     }).join('')}</tbody></table></div></div>` : ''}`;
 };
 
-/* ---------------- PAISE MILALE (funds) ---------------- */
+/* ---------------- PAISE RECEIVED (funds) ---------------- */
 function fundsView(s) {
   const rows = (s.funds || []).slice().sort(byDateDesc);
   const t = totals(s);
   const names = (s.advance || []).length ? s.advance : s.people;
   return `
-  <button class="btn" data-act="fnAdd">+ Money received<i>पैसे मिळाले</i></button>
+  <button class="btn" data-act="fnAdd">+ Money received</button>
   <div class="kpis k3 mt">
-    <div class="kpi g"><div class="k">TOTAL RECEIVED<i>एकूण मिळाले</i></div><div class="v num">${money0(t.funds)}</div></div>
-    <div class="kpi"><div class="k">SPENT<i>खर्च</i></div><div class="v num">${money0(names.reduce((a, p) => a + personStats(s, p).total, 0))}</div></div>
-    <div class="kpi b"><div class="k">BALANCE<i>बाकी</i></div><div class="v num">${money0(names.reduce((a, p) => a + personStats(s, p).balance, 0))}</div></div>
+    <div class="kpi g"><div class="k">TOTAL RECEIVED</div><div class="v num">${money0(t.funds)}</div></div>
+    <div class="kpi"><div class="k">SPENT</div><div class="v num">${money0(names.reduce((a, p) => a + personStats(s, p).total, 0))}</div></div>
+    <div class="kpi b"><div class="k">BALANCE</div><div class="v num">${money0(names.reduce((a, p) => a + personStats(s, p).balance, 0))}</div></div>
   </div>
-  <div class="card"><h3>Person-wise account<i>व्यक्ती नुसार हिशोब</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Person-wise account</h3><div class="scroll"><table>
     <thead><tr><th>Name</th><th class="n">Received</th><th class="n">Spent</th><th class="n">Balance</th></tr></thead>
-    <tbody>${names.map(p => { const x = personStats(s, p); return `<tr><td class="nowrap">${esc(p)}</td><td class="n">${money0(x.received)}</td><td class="n">${money0(x.total)}</td><td class="n"><b style="color:${x.balance < 0 ? 'var(--due)' : 'var(--paid)'}">${money0(x.balance)}</b></td></tr>`; }).join('') || '<tr><td colspan="4" class="muted">Select names in site setup.<i>साइट सेटअपमध्ये नाव निवडा</i></td></tr>'}</tbody>
+    <tbody>${names.map(p => { const x = personStats(s, p); return `<tr><td class="nowrap">${esc(p)}</td><td class="n">${money0(x.received)}</td><td class="n">${money0(x.total)}</td><td class="n"><b style="color:${x.balance < 0 ? 'var(--due)' : 'var(--paid)'}">${money0(x.balance)}</b></td></tr>`; }).join('') || '<tr><td colspan="4" class="muted">Select names in site setup.</td></tr>'}</tbody>
   </table></div><div class="pad tiny">Only the names marked as receiving advances appear here.</div></div>
-  <div class="card"><h3>Entries<i>एंट्री</i><small>${rows.length}</small></h3>
-    ${rows.map(f => `<div class="row" data-act="fnEdit" data-v="${f.id}"><div class="main"><div class="ttl">${esc(f.person)}</div><div class="sub">${fmtDate(f.date)}${f.from ? ' &middot; ' + esc(f.from) : ''}${f.mode ? ' &middot; ' + esc(f.mode) : ''}${f.remark ? ' &middot; ' + esc(f.remark) : ''}</div></div><div class="amt" style="color:var(--paid)">+${money0(f.amount)}</div></div>`).join('') || '<div class="empty">No entries yet.<i>अजून एंट्री नाही</i></div>'}
+  <div class="card"><h3>Entries<small>${rows.length}</small></h3>
+    ${rows.map(f => `<div class="row" data-act="fnEdit" data-v="${f.id}"><div class="main"><div class="ttl">${esc(f.person)}</div><div class="sub">${fmtDate(f.date)}${f.from ? ' &middot; ' + esc(f.from) : ''}${f.mode ? ' &middot; ' + esc(f.mode) : ''}${f.remark ? ' &middot; ' + esc(f.remark) : ''}</div></div><div class="amt" style="color:var(--paid)">+${money0(f.amount)}</div></div>`).join('') || '<div class="empty">No entries yet.</div>'}
   </div>`;
 }
 
@@ -1823,19 +1844,19 @@ function ownerView(s) {
   const pays = (s.ownerPayments || []).slice().sort(byDateDesc);
   const T = owners.reduce((a, o) => { const x = ownerStats(s, o); return { r: a.r + x.rent, p: a.p + x.paid, b: a.b + x.balance }; }, { r: 0, p: 0, b: 0 });
   return `
-  <button class="btn" data-act="opAdd">+ Owner payment<i>मालक पेमेंट</i></button>
+  <button class="btn" data-act="opAdd">+ Owner payment</button>
   <div class="kpis k3 mt">
-    <div class="kpi"><div class="k">RENT PAYABLE<i>देय भाडे</i></div><div class="v num">${money0(T.r)}</div></div>
-    <div class="kpi g"><div class="k">PAID<i>दिले</i></div><div class="v num">${money0(T.p)}</div></div>
-    <div class="kpi r"><div class="k">BALANCE<i>बाकी</i></div><div class="v num">${money0(T.b)}</div></div>
+    <div class="kpi"><div class="k">RENT PAYABLE</div><div class="v num">${money0(T.r)}</div></div>
+    <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(T.p)}</div></div>
+    <div class="kpi r"><div class="k">BALANCE</div><div class="v num">${money0(T.b)}</div></div>
   </div>
-  <div class="card"><h3>Owner-wise<i>मालक नुसार</i></h3><div class="scroll"><table>
+  <div class="card"><h3>Owner-wise</h3><div class="scroll"><table>
     <thead><tr><th>Owner</th><th class="n">Machines</th><th class="n">Rent</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead>
     <tbody>${owners.map(o => { const x = ownerStats(s, o); return `<tr><td class="nowrap">${esc(o)}</td><td class="n">${x.machines.length}</td><td class="n">${money0(x.rent)}</td><td class="n">${money0(x.paid)}</td><td class="n"><b style="color:${x.balance > 0 ? 'var(--due)' : 'var(--paid)'}">${money0(x.balance)}</b></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted">Fill owner names in Machine Master.</td></tr>'}</tbody>
-    <tfoot><tr><td>TOTAL<i>एकूण</i></td><td class="n">${s.machines.length}</td><td class="n">${money0(T.r)}</td><td class="n">${money0(T.p)}</td><td class="n">${money0(T.b)}</td></tr></tfoot>
+    <tfoot><tr><td>TOTAL</td><td class="n">${s.machines.length}</td><td class="n">${money0(T.r)}</td><td class="n">${money0(T.p)}</td><td class="n">${money0(T.b)}</td></tr></tfoot>
   </table></div></div>
-  <div class="card"><h3>Payments<i>पेमेंट</i><small>${pays.length}</small></h3>
-    ${pays.map(p => `<div class="row" data-act="opEdit" data-v="${p.id}"><div class="main"><div class="ttl">${esc(p.owner)}</div><div class="sub">${fmtDate(p.date)}${p.paidBy ? ' &middot; ' + esc(p.paidBy) : ''}${p.mode ? ' &middot; ' + esc(p.mode) : ''}</div></div><div class="amt">${money0(p.amount)}</div></div>`).join('') || '<div class="empty">No payments yet.<i>अजून पेमेंट नाही</i></div>'}
+  <div class="card"><h3>Payments<small>${pays.length}</small></h3>
+    ${pays.map(p => `<div class="row" data-act="opEdit" data-v="${p.id}"><div class="main"><div class="ttl">${esc(p.owner)}</div><div class="sub">${fmtDate(p.date)}${p.paidBy ? ' &middot; ' + esc(p.paidBy) : ''}${p.mode ? ' &middot; ' + esc(p.mode) : ''}</div></div><div class="amt">${money0(p.amount)}</div></div>`).join('') || '<div class="empty">No payments yet.</div>'}
   </div>`;
 }
 
@@ -1849,14 +1870,14 @@ function dueView(s) {
   const canNotify = typeof Notification !== 'undefined';
   const perm = canNotify ? Notification.permission : 'x';
   return `
-  <button class="btn" data-act="remAdd">+ Add payment due date<i>देय तारीख</i></button>
+  <button class="btn" data-act="remAdd">+ Add payment due date</button>
 
   ${perm === 'granted' ? '' : `<div class="card mt"><div class="pad">
-    <div class="tiny" style="margin-bottom:8px;line-height:1.7">App ughadlyavar popup notification havа asel tar ekda parvangi dya. <b>App band asel tevha</b> notification yenar nahi &mdash; tyasathi pratek reminder samorcha <b>Calendar</b> button vapra, tо phone chya calendar madhe alarm thevto.</div>
-    ${canNotify ? '<button class="btn sec sm" style="width:100%" data-act="notifyOn">Turn on notifications<i>नोटिफिकेशन चालू</i></button>' : '<div class="tiny">Ya browser madhe notification nahi.</div>'}
+    <div class="tiny" style="margin-bottom:8px;line-height:1.7">App ughadlyavar popup notification havа asel tar ekda parvangi dya. <b>App band asel tevha</b> no notification will come &mdash; for that use each reminder’s <b>Calendar</b> button — it puts an alarm in your phone calendar.</div>
+    ${canNotify ? '<button class="btn sec sm" style="width:100%" data-act="notifyOn">Turn on notifications</button>' : '<div class="tiny">This browser does not support notifications.</div>'}
   </div></div>`}
 
-  <div class="card mt"><h3>Payment due<i>येणारे पेमेंट</i><small>${open.length}</small></h3>
+  <div class="card mt"><h3>Payment due<small>${open.length}</small></h3>
     ${open.length ? open.map(r => {
       const late = dueLate(r), tod = r.due === today();
       const bal = r.vendor ? remVendorStats(s, r.vendor).remaining : 0;
@@ -1871,24 +1892,24 @@ function dueView(s) {
         </div>
         <div class="btnrow" style="margin-top:8px">
           ${r.vendor ? `<button class="btn sm" style="flex:1" data-act="vpAdd" data-v="${esc(r.vendor)}">Make payment</button>` : ''}
-          <button class="btn sec sm" style="flex:1" data-act="remIcs" data-v="${r.id}">Add to calendar<i>कॅलेंडरमध्ये</i></button>
+          <button class="btn sec sm" style="flex:1" data-act="remIcs" data-v="${r.id}">Add to calendar</button>
           <button class="btn sec sm" style="flex:0 0 30%" data-act="remDone" data-v="${r.id}">Done</button>
         </div>
       </div>`;
-    }).join('') : '<div class="empty">Ek pn date thevleli nahi.<i>तारीख ठेवलेली नाही</i></div>'}
+    }).join('') : '<div class="empty">No due dates set.</div>'}
   </div>
 
-  ${done.length ? `<div class="card"><h3>Completed<i>पूर्ण झालेले</i><small>${done.length}</small></h3>
-    ${done.slice(0, 10).map(r => `<div class="row" data-act="remEdit" data-v="${r.id}"><div class="main"><div class="ttl">${esc(r.vendor || r.note)} <span class="pill p">zala</span></div>
+  ${done.length ? `<div class="card"><h3>Completed<small>${done.length}</small></h3>
+    ${done.slice(0, 10).map(r => `<div class="row" data-act="remEdit" data-v="${r.id}"><div class="main"><div class="ttl">${esc(r.vendor || r.note)} <span class="pill p">done</span></div>
       <div class="sub">${fmtDate(r.due)}</div></div><div class="amt">${num(r.amount) ? money0(r.amount) : ''}</div></div>`).join('')}
   </div>` : ''}
 
-  <div class="card"><h3>How this works<i>हे कसे चालते</i></h3><div class="pad tiny" style="line-height:1.9">
-    <b>1.</b> Vendor ani tarikh thevaa &mdash; udaharan Achit, 15 tarkhela ₹50,000.<br>
-    <b>2.</b> Ti tarikh javal aali ki <b>Dashboard var laal/pivla card</b> disto (3 divas aadhi pasun).<br>
+  <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
+    <b>1.</b> Set a vendor and a date &mdash; example: Achit, 15th, ₹50,000.<br>
+    <b>2.</b> When that date is near, <b>Dashboard var laal/pivla card</b> shows up (from 3 days before).<br>
     <b>3.</b> App ughadla ki <b>popup notification</b> yeto (ekda parvangi dilyavar).<br>
-    <b>4.</b> <b>Calendar</b> button dabla ki tumchya phone chya calendar madhe to divas ani alarm jato &mdash; app band asla tari to vajto.<br>
-    <b>5.</b> Payment kelyavar <b>Zala</b> daba, kiwa "Payment kara" ne direct entry kara.
+    <b>4.</b> <b>Calendar</b> button puts the date and an alarm in your phone calendar &mdash; it rings even when the app is closed.<br>
+    <b>5.</b> Payment kelyavar <b>Done</b> or use "Make payment" to record it.
   </div></div>`;
 }
 
@@ -1899,23 +1920,23 @@ function stockView(s) {
   const days = t.days.slice().reverse();
   return `
   <div class="hero">
-    <div class="lbl">DIESEL IN STOCK<i>शिल्लक डिझेल</i></div>
+    <div class="lbl">DIESEL IN STOCK</div>
     <div class="big"><small></small>${dec(t.stock)}<small style="font-size:18px"> L</small></div>
     <div class="hsplit">
-      <div><div class="k">RECEIVED<i>आलेले</i></div><div class="v num">${dec(t.rec)} L</div></div>
-      <div><div class="k">FILLED<i>भरलेले</i></div><div class="v num">${dec(t.fil)} L</div></div>
-      <div><div class="k">OPENING<i>सुरुवातीचे</i></div><div class="v num">${dec(t.opening)} L</div></div>
+      <div><div class="k">RECEIVED</div><div class="v num">${dec(t.rec)} L</div></div>
+      <div><div class="k">FILLED</div><div class="v num">${dec(t.fil)} L</div></div>
+      <div><div class="k">OPENING</div><div class="v num">${dec(t.opening)} L</div></div>
     </div>
   </div>
 
   <div class="btnrow" style="margin:0 0 12px">
-    <button class="btn sec" style="flex:1" data-act="stkOpen">Opening stock<i>सुरुवातीचा स्टॉक</i></button>
-    <button class="btn sec" style="flex:1" data-act="sub" data-v="log" data-t="diesel">Diesel bills<i>डिझेल बिल</i></button>
+    <button class="btn sec" style="flex:1" data-act="stkOpen">Opening stock</button>
+    <button class="btn sec" style="flex:1" data-act="sub" data-v="log" data-t="diesel">Diesel bills</button>
   </div>
 
-  ${t.stock < -0.5 ? '<div class="warn">Stock ujavа (minus) disat aahe. Diesel bill rahila asel kiwa machine madhe bharlela aakda jaast asel &mdash; tapasun bagha.</div>' : ''}
+  ${t.stock < -0.5 ? '<div class="warn">Stock is showing negative. A diesel bill may be missing, or the filled figure may be too high &mdash; please check.</div>' : ''}
 
-  <div class="card"><h3>Date-wise stock<i>तारखेनुसार</i><small>${days.length} divas</small></h3>
+  <div class="card"><h3>Date-wise stock<small>${days.length} divas</small></h3>
     <div class="scroll"><table>
       <thead><tr><th>Date</th><th class="n">Received</th><th class="n">Filled</th><th class="n">Day +/-</th><th class="n">Stock</th></tr></thead>
       <tbody>${days.length ? days.map(d => `<tr data-act="stkDay" data-v="${d.date}">
@@ -1924,16 +1945,16 @@ function stockView(s) {
         <td class="n">${d.fil ? dec(d.fil) : '—'}</td>
         <td class="n" style="color:${d.net < 0 ? 'var(--due)' : 'var(--paid)'}">${d.net > 0 ? '+' : ''}${dec(d.net)}</td>
         <td class="n"><b style="color:${d.stock < 0 ? 'var(--due)' : 'inherit'}">${dec(d.stock)}</b></td></tr>`).join('')
-        : '<tr><td colspan="5" class="muted">Ajun diesel chi nond nahi.</td></tr>'}</tbody>
+        : '<tr><td colspan="5" class="muted">No diesel entries yet.</td></tr>'}</tbody>
       <tfoot><tr><td>TOTAL</td><td class="n">${dec(t.rec)}</td><td class="n">${dec(t.fil)}</td>
         <td class="n">${dec(t.rec - t.fil)}</td><td class="n">${dec(t.stock)}</td></tr></tfoot>
     </table></div>
-    <div class="pad tiny">Konatyahi tarkhevar tap kara &mdash; tya divsache bill ani kontya machine madhe kiti bharla te disel.</div>
+    <div class="pad tiny">Tap any date &mdash; you will see that day’s bills and how much went into each machine.</div>
   </div>
 
-  <div class="card"><h3>He kase mojla jata<i>हे कसे मोजले जाते</i></h3><div class="pad tiny" style="line-height:1.9">
-    <b>Received</b> = tya divsachya diesel bills madhle litre (Diesel tab)<br>
-    <b>Filled</b> = tya divshi machine entries madhe bharlela diesel (Machine tab)<br>
+  <div class="card"><h3>How this is calculated</h3><div class="pad tiny" style="line-height:1.9">
+    <b>Received</b> = litres from that day’s diesel bills (Diesel tab)<br>
+    <b>Filled</b> = diesel filled into machines that day (Machine tab)<br>
     <b>Stock</b> = opening + ekun aalela &minus; ekun bharlela<br>
     Udaharan: 3000 L aala, 2500 L bharla &rarr; 500 L shillak. Dusrya divshi 3000 aala ani 3500 bharla &rarr; tya divshi &minus;500, mhanje junya stock madhun 500 vaparla.
   </div></div>`;
@@ -1948,46 +1969,46 @@ function mgrView(s) {
   }, { r: 0, s: 0, b: 0 });
   return `
   <div class="hero">
-    <div class="lbl">MANAGERS SHILLAK<i>मॅनेजरकडे शिल्लक</i></div>
+    <div class="lbl">MANAGERS BALANCE</div>
     <div class="big"><small>₹</small>${money(tot.b).replace('₹', '')}</div>
     <div class="hsplit">
-      <div><div class="k">RECEIVED<i>दिलेले</i></div><div class="v num">${money0(tot.r)}</div></div>
-      <div><div class="k">SPENT<i>खर्च</i></div><div class="v num">${money0(tot.s)}</div></div>
+      <div><div class="k">RECEIVED</div><div class="v num">${money0(tot.r)}</div></div>
+      <div><div class="k">SPENT</div><div class="v num">${money0(tot.s)}</div></div>
       <div><div class="k">MANAGERS</div><div class="v num">${list.length}</div></div>
     </div>
   </div>
 
   <div class="btnrow" style="margin:0 0 12px">
-    <button class="btn" style="flex:1" data-act="mgAdd">+ Add manager<i>मॅनेजर जोडा</i></button>
-    <button class="btn sec" style="flex:1" data-act="mgImport">Import files<i>फाईल घ्या</i></button>
+    <button class="btn" style="flex:1" data-act="mgAdd">+ Add manager</button>
+    <button class="btn sec" style="flex:1" data-act="mgImport">Import files</button>
   </div>
 
-  <div class="card"><h3>Manager account<i>मॅनेजरचा हिशोब</i><small>${list.length}</small></h3>
+  <div class="card"><h3>Manager account<small>${list.length}</small></h3>
     ${list.length ? list.map(m => {
       const x = mgrStats(m.name);
       return `<div class="row" data-act="mgOpen" data-v="${m.id}">
         <div class="main"><div class="ttl">${esc(m.name)}</div>
         <div class="sub">milale ${money(x.received)} &middot; kharch ${money(x.spent)} &middot; ${x.entries} entries</div></div>
         <div class="amt" style="color:${x.balance < 0 ? 'var(--due)' : 'inherit'}">${money0(x.balance)}
-          <div class="tiny" style="font-weight:500">shillak</div></div></div>`;
-    }).join('') : '<div class="empty">Ajun ek pn manager nahi.<i>मॅनेजर जोडा</i></div>'}
+          <div class="tiny" style="font-weight:500">balance</div></div></div>`;
+    }).join('') : '<div class="empty">No managers yet.</div>'}
   </div>
 
-  <div class="card"><h3>Manager app<i>मॅनेजरचा अ‍ॅप</i></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Ha link pratek manager la WhatsApp var pathva. To tyat roj paise milale ani kharch bharel, ani sandhyakali <b>data file</b> pathvel &mdash; ti ithe "Import files" madhun ghya.</div>
-    <div class="field"><label>Link<i>लिंक</i></label><input id="f_mgrlink" value="${esc(mgrLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
+  <div class="card"><h3>Manager app</h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Send this link to each manager on WhatsApp. They record money received and expenses daily, then send a data file &mdash; take it in here with "Import files".<b>data file</b> will send it &mdash; take it in here with "Import files".</div>
+    <div class="field"><label>Link</label><input id="f_mgrlink" value="${esc(mgrLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
     <div class="btnrow">
       <button class="btn sec sm" style="flex:1" data-act="mgLinkCopy">Copy link</button>
       <button class="btn sec sm" style="flex:1" data-act="mgLinkWa">WhatsApp</button>
     </div>
   </div></div>
 
-  <div class="card"><h3>He kase chalta<i>हे कसे चालते</i></h3><div class="pad tiny" style="line-height:1.9">
-    <b>1.</b> Ithe manager add kara, mag tyala varcha link pathva.<br>
-    <b>2.</b> To tyachya app madhe swatacha login banavto.<br>
-    <b>3.</b> Paise milale ti entry &mdash; <b>site nako</b>. Kharch &mdash; <b>site nivadaycha</b>.<br>
+  <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
+    <b>1.</b> Add the manager here, then send them the link above.<br>
+    <b>2.</b> They create their own login in their app.<br>
+    <b>3.</b> Money received ti entry &mdash; <b>site nako</b>. Spent &mdash; <b>site nivadaycha</b>.<br>
     <b>4.</b> Roj "Send data file" &rarr; tumhala WhatsApp var file.<br>
-    <b>5.</b> Ithe "Import files" &mdash; kharch tya-tya <b>site chya Expense log</b> madhe jato ani milalele paise ya manager chya khatyat.
+    <b>5.</b> Here use "Import files" &mdash; each expense goes to its own <b>site chya Expense log</b> and money received goes to that manager’s account.
   </div></div>`;
 }
 
@@ -2002,32 +2023,32 @@ function mgrDetailSheet(id) {
   exps.sort((a, b) => String(b.e.date).localeCompare(String(a.e.date)));
   openSheet(m.name, `
     <div class="card"><div class="scroll"><table><tbody>
-      <tr><td class="muted">Milale<i>मिळालेले</i></td><td class="right n"><b>${money(x.received)}</b></td></tr>
-      <tr><td class="muted">Kharch<i>खर्च</i></td><td class="right n"><b>${money(x.spent)}</b></td></tr>
-      <tr><td class="muted"><b>SHILLAK</b></td><td class="right n"><b style="color:${x.balance < 0 ? 'var(--due)' : 'var(--paid)'}">${money(x.balance)}</b></td></tr>
+      <tr><td class="muted">Received</td><td class="right n"><b>${money(x.received)}</b></td></tr>
+      <tr><td class="muted">Spent</td><td class="right n"><b>${money(x.spent)}</b></td></tr>
+      <tr><td class="muted"><b>BALANCE</b></td><td class="right n"><b style="color:${x.balance < 0 ? 'var(--due)' : 'var(--paid)'}">${money(x.balance)}</b></td></tr>
     </tbody></table></div>
     <div class="pad"><div class="btnrow">
-      <button class="btn sm" style="flex:1" data-act="mgFund" data-v="${m.id}">+ Paise dile<i>पैसे दिले</i></button>
+      <button class="btn sm" style="flex:1" data-act="mgFund" data-v="${m.id}">+ Money given</button>
       <button class="btn sec sm" style="flex:1" data-act="mgEdit" data-v="${m.id}">Edit / remove</button>
     </div></div></div>
 
-    ${sites.length ? `<div class="card"><h3>Site-wise kharch</h3><div class="scroll"><table>
+    ${sites.length ? `<div class="card"><h3>Site-wise spend</h3><div class="scroll"><table>
       <thead><tr><th>Site</th><th class="n">Entries</th><th class="n">Amount</th></tr></thead>
       <tbody>${sites.map(o => `<tr><td>${esc(o.site.name)}</td><td class="n">${o.entries}</td><td class="n">${money0(o.amount)}</td></tr>`).join('')}</tbody>
     </table></div></div>` : ''}
 
-    <div class="card"><h3>Paise milale<small>${funds.length}</small></h3>
+    <div class="card"><h3>Money received<small>${funds.length}</small></h3>
       ${funds.length ? funds.slice(0, 25).map(f => `<div class="row" data-act="mgFundEdit" data-v="${f.id}">
         <div class="main"><div class="ttl">${fmtDate(f.date)}</div>
         <div class="sub">${esc(f.from || '')}${f.mode ? ' &middot; ' + esc(f.mode) : ''}${f.remark ? ' &middot; ' + esc(f.remark) : ''}</div></div>
-        <div class="amt">${money0(f.amount)}</div></div>`).join('') : '<div class="empty">Ajun kahi nahi.</div>'}
+        <div class="amt">${money0(f.amount)}</div></div>`).join('') : '<div class="empty">Nothing yet.</div>'}
     </div>
 
-    <div class="card"><h3>Kharch<small>${exps.length}</small></h3>
+    <div class="card"><h3>Spent<small>${exps.length}</small></h3>
       ${exps.length ? exps.slice(0, 40).map(o => `<div class="row"><div class="main">
         <div class="ttl">${esc(o.e.desc || o.e.category)}</div>
         <div class="sub">${fmtDate(o.e.date)} &middot; ${esc(o.s.name)} &middot; ${esc(o.e.category)}</div></div>
-        <div class="amt">${money0(o.e.amount)}</div></div>`).join('') : '<div class="empty">Ajun kharch nahi.</div>'}
+        <div class="amt">${money0(o.e.amount)}</div></div>`).join('') : '<div class="empty">No expenses yet.</div>'}
     </div>`, null, null);
 }
 
@@ -2751,9 +2772,10 @@ function openSheet(title, body, onSave, onDelete) {
   $('#modal').innerHTML = `<div class="sheet" data-act="sheetBg"><div class="box">
     <h3>${title}<button class="x" data-act="sheetClose">&times;</button></h3>
     ${body}
-    ${onSave ? '<div class="btnrow" style="margin-top:14px"><button class="btn" data-act="sheetSave">Save<i>सेव्ह</i></button></div>' : ''}
-    ${onDelete ? '<div class="btnrow"><button class="btn dgr sm" style="flex:1" data-act="sheetDelete">Delete<i>डिलीट</i></button></div>' : ''}
+    ${onSave ? '<div class="btnrow" style="margin-top:14px"><button class="btn" data-act="sheetSave">Save</button></div>' : ''}
+    ${onDelete ? '<div class="btnrow"><button class="btn dgr sm" style="flex:1" data-act="sheetDelete">Delete</button></div>' : ''}
   </div></div>`;
+  noSuggest($('#modal'));
   document.body.style.overflow = 'hidden';
 }
 function closeSheet() { $('#modal').innerHTML = ''; SHEET = null; document.body.style.overflow = ''; }
@@ -2776,22 +2798,22 @@ function machineForm(s, rec) {
   openSheet(rec ? 'Edit machine entry' : 'New machine entry', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Machine no<i>मशीन नंबर</i></label><select id="f_no">${selOpts(s.machines.map(m => m.no), r.machineNo)}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
+        <div class="field"><label>Machine no</label><select id="f_no">${selOpts(s.machines.map(m => m.no), r.machineNo)}</select></div>
       </div>
       <div class="tiny" id="f_type" style="margin:-4px 0 10px"></div>
       <div class="f3">
-        <div class="field"><label>In reading<i>सुरुवात रीडिंग</i></label><input type="number" inputmode="decimal" step="0.1" id="f_in" value="${has(r.inR) ? r.inR : ''}"></div>
-        <div class="field"><label>Out reading<i>शेवट रीडिंग</i></label><input type="number" inputmode="decimal" step="0.1" id="f_out" value="${has(r.outR) ? r.outR : ''}"></div>
-        <div class="field"><label>Total hours<i>एकूण तास</i></label><input id="f_hr" value="" readonly style="background:#F2F5F7;font-weight:700"></div>
+        <div class="field"><label>In reading</label><input type="number" inputmode="decimal" step="0.1" id="f_in" value="${has(r.inR) ? r.inR : ''}"></div>
+        <div class="field"><label>Out reading</label><input type="number" inputmode="decimal" step="0.1" id="f_out" value="${has(r.outR) ? r.outR : ''}"></div>
+        <div class="field"><label>Total hours</label><input id="f_hr" value="" readonly style="background:#F2F5F7;font-weight:700"></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Diesel filled (L)<i>भरलेले डिझेल</i></label><input type="number" inputmode="decimal" step="0.1" id="f_dsl" value="${has(r.diesel) ? r.diesel : ''}"></div>
-        <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+        <div class="field"><label>Diesel filled (L)</label><input type="number" inputmode="decimal" step="0.1" id="f_dsl" value="${has(r.diesel) ? r.diesel : ''}"></div>
+        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       <div id="f_openwrap" style="display:none">
-        <div class="field"><label>Opening diesel in machine (L)<i>सुरुवातीला टाकीत असलेले डिझेल</i></label>
+        <div class="field"><label>Opening diesel in machine (L)</label>
           <input type="number" inputmode="decimal" step="0.1" id="f_open" value="${has(r.openDiesel) ? r.openDiesel : ''}" placeholder="machine aali tevha tankit kiti hota"></div>
-        <div class="tiny" style="margin:-6px 0 10px">He fakt <b>tya machine chya pahilya divsala</b> vicharla jata. Ha aakda diesel kharedit mojla jat nahi &mdash; fakt nond mhanun rahto.</div>
+        <div class="tiny" style="margin:-6px 0 10px">He fakt <b>on that machine’s first day only</b> is asked. This is not counted as a diesel purchase &mdash; it is kept only as a record.</div>
       </div>
       </div>
     </div></div>`,
@@ -2819,20 +2841,20 @@ function dieselForm(s, rec) {
   openSheet(rec ? 'Edit diesel entry' : 'New diesel entry', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Diesel vendor<i>डिझेल पंप</i></label><select id="f_v">${selOpts(s.dieselVendors, r.vendor, '— select —')}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
+        <div class="field"><label>Diesel vendor</label><select id="f_v">${selOpts(s.dieselVendors, r.vendor, '— select —')}</select></div>
       </div>
       <div class="f3">
-        <div class="field"><label>Diesel (L)<i>डिझेल (लिटर)</i></label><input type="number" inputmode="decimal" step="0.01" id="f_l" value="${has(r.litres) ? r.litres : ''}"></div>
-        <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
-        <div class="field"><label>Rate / L<i>रेट प्रति लिटर</i></label><input id="f_rate" readonly style="background:#F2F5F7;font-weight:700"></div>
+        <div class="field"><label>Diesel (L)</label><input type="number" inputmode="decimal" step="0.01" id="f_l" value="${has(r.litres) ? r.litres : ''}"></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
+        <div class="field"><label>Rate / L</label><input id="f_rate" readonly style="background:#F2F5F7;font-weight:700"></div>
       </div>
       ${segField('Payment Status', 'f_st', ['Paid', 'Unpaid'], st(r), 'pu')}
       <div class="f2">
-        <div class="field"><label>Paid by<i>कोणी दिले</i></label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
-        <div class="field"><label>Bill no<i>बिल नंबर</i></label><input id="f_bill" value="${esc(r.bill || '')}"></div>
+        <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
+        <div class="field"><label>Bill no</label><input id="f_bill" value="${esc(r.bill || '')}"></div>
       </div>
-      <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+      <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
     </div></div>`,
     () => {
       const v = val('f_v'); if (!v) return toast('Select a vendor');
@@ -2851,20 +2873,20 @@ function expenseForm(s, rec) {
   openSheet(rec ? 'Edit expense' : 'New expense', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Category<i>प्रकार</i></label><select id="f_cat">${selOpts(s.categories, r.category, '— select —')}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
+        <div class="field"><label>Category</label><select id="f_cat">${selOpts(s.categories, r.category, '— select —')}</select></div>
       </div>
-      <div class="field"><label>Description<i>तपशील</i></label><input id="f_desc" value="${esc(r.desc || '')}" placeholder="what the money was spent on"></div>
+      <div class="field"><label>Description</label><input id="f_desc" value="${esc(r.desc || '')}" placeholder="what the money was spent on"></div>
       <div class="f2">
-        <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
-        <div class="field"><label>Vendor (for credit)<i>व्हेंडर (उधारी असेल तर)</i></label><select id="f_v">${selOpts(s.vendors, r.vendor, '— none —')}</select></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
+        <div class="field"><label>Vendor (for credit)</label><select id="f_v">${selOpts(s.vendors, r.vendor, '— none —')}</select></div>
       </div>
       ${segField('Payment Status', 'f_st', ['Paid', 'Unpaid'], st(r), 'pu')}
       <div class="f2">
-        <div class="field"><label>Paid by<i>कोणी दिले</i></label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
-        <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+        <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
+        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
-      <div class="tiny">Keep it Unpaid and pick a vendor — the entry then shows under Vendor &rarr; Pending.<i>उधारी असेल तर व्हेंडर निवडा</i></div>
+      <div class="tiny">Keep it Unpaid and pick a vendor — the entry then shows under Vendor &rarr; Pending.</div>
     </div></div>`,
     () => {
       const st = segVal('f_st');
@@ -2884,17 +2906,17 @@ function vpForm(s, rec, preVendor) {
   openSheet(rec ? 'Edit payment' : 'Vendor payment', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Vendor<i>व्हेंडर</i></label><select id="f_v">${selOpts(allVendors(s), r.vendor, '— select —')}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
+        <div class="field"><label>Vendor</label><select id="f_v">${selOpts(allVendors(s), r.vendor, '— select —')}</select></div>
       </div>
       <div id="f_bal" class="tiny" style="margin:-4px 0 10px">${vs ? 'Baki: <b>' + money(vs.remaining) + '</b>' : ''}</div>
       <div class="f2">
-        <div class="field"><label>Amount paid (Rs)<i>दिलेली रक्कम</i></label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
-        <div class="field"><label>Paid by<i>कोणी दिले</i></label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
+        <div class="field"><label>Amount paid (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
+        <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Payment mode<i>पेमेंट प्रकार</i></label><select id="f_mode">${selOpts(['Online / UPI', 'Cash', 'Cheque', 'RTGS / NEFT'], r.mode || 'Online / UPI')}</select></div>
-        <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+        <div class="field"><label>Payment mode</label><select id="f_mode">${selOpts(['Online / UPI', 'Cash', 'Cheque', 'RTGS / NEFT'], r.mode || 'Online / UPI')}</select></div>
+        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
     () => {
@@ -2917,16 +2939,16 @@ function machineMasterForm(s, rec) {
   openSheet(rec ? 'Edit machine' : 'New machine', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Machine no<i>मशीन नंबर</i></label><input id="f_no" value="${esc(r.no)}" placeholder="PC-25"></div>
-        <div class="field"><label>Machine type<i>मशीन प्रकार</i></label><select id="f_type">${selOpts(s.rateMaster.map(x => x.type), r.type)}</select></div>
+        <div class="field"><label>Machine no</label><input id="f_no" value="${esc(r.no)}" placeholder="PC-25"></div>
+        <div class="field"><label>Machine type</label><select id="f_type">${selOpts(s.rateMaster.map(x => x.type), r.type)}</select></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Owner name<i>मालकाचे नाव</i></label><input id="f_own" value="${esc(r.owner || '')}"></div>
-        <div class="field"><label>Operator name<i>ऑपरेटरचे नाव</i></label><input id="f_op" value="${esc(r.operator || '')}"></div>
+        <div class="field"><label>Owner name</label><input id="f_own" value="${esc(r.owner || '')}"></div>
+        <div class="field"><label>Operator name</label><input id="f_op" value="${esc(r.operator || '')}"></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Make<i>कंपनी</i></label><input id="f_make" value="${esc(r.make || '')}"></div>
-        <div class="field"><label>Rate for this machine<i>या मशीनचा रेट</i></label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.monthlyRate) ? r.monthlyRate : ''}" placeholder="Rate Master madhla"></div>
+        <div class="field"><label>Make</label><input id="f_make" value="${esc(r.make || '')}"></div>
+        <div class="field"><label>Rate for this machine</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.monthlyRate) ? r.monthlyRate : ''}" placeholder="Rate Master madhla"></div>
       </div>
       <div class="tiny">Leave this empty to use the Rate Master rate for the type. Fill it only if this machine has its own rate.</div>
     </div></div>`,
@@ -2956,21 +2978,21 @@ function rateForm(s, i) {
   openSheet(isNew ? 'New machine type' : 'Rate \u2014 ' + esc(r.type), `
     <div class="card"><div class="pad">
       ${isNew
-        ? `<div class="field"><label>Machine type name<i>मशीनचा प्रकार</i></label><input id="f_type" placeholder="udaharan: Dumper, Crane, Grader" autocomplete="off"></div>`
-        : `<div class="field"><label>Machine type<i>मशीनचा प्रकार</i></label><input id="f_type" value="${esc(r.type)}"></div>
+        ? `<div class="field"><label>Machine type name</label><input id="f_type" placeholder="udaharan: Dumper, Crane, Grader" autocomplete="off"></div>`
+        : `<div class="field"><label>Machine type</label><input id="f_type" value="${esc(r.type)}"></div>
            <div class="tiny" style="margin:-6px 0 10px">${used ? used + ' machine ya type chya aahet. Naav badalla tar tyanche pn badalel.' : 'Ya type chi ek pn machine nahi.'}</div>`}
       ${segField('Rate basis', 'f_basis', ['Hourly', 'Daily'], r.basis)}
       <div class="f2">
-        <div class="field"><label>Package rate (Rs)<i>पॅकेज रेट</i></label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.packageRate) && num(r.packageRate) ? r.packageRate : ''}"></div>
-        <div class="field"><label>Package units<i>पॅकेज युनिट</i></label><input type="number" inputmode="decimal" id="f_units" value="${has(r.packageUnits) ? r.packageUnits : ''}"></div>
+        <div class="field"><label>Package rate (Rs)</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.packageRate) && num(r.packageRate) ? r.packageRate : ''}"></div>
+        <div class="field"><label>Package units</label><input type="number" inputmode="decimal" id="f_units" value="${has(r.packageUnits) ? r.packageUnits : ''}"></div>
       </div>
       <div class="tiny" style="line-height:1.7">Udaharan: Poclain cha mahinyacha rate 240 hours sathi asel tar Package Rate = to rate, Units = 240. Hiwa sarkha divsavar asel tar Basis = Daily ani Units = 30.<br>Rate nantar bharla tari chalel.</div>
     </div></div>`,
     () => {
       const nm = val('f_type').trim();
-      if (!nm) return toast('Type cha naav taka');
+      if (!nm) return toast('Enter a type name');
       const clash = s.rateMaster.find((x, k) => k !== i && String(x.type).toLowerCase() === nm.toLowerCase());
-      if (clash) return toast('Ha type aadhich aahe');
+      if (clash) return toast('That type already exists');
       const basis = segVal('f_basis'), rate = num(val('f_rate'));
       const units = num(val('f_units')) || (basis === 'Daily' ? 30 : 240);
       if (isNew) {
@@ -3017,19 +3039,19 @@ function murumForm(s, rec) {
   openSheet(rec ? 'Edit murum entry' : 'New murum entry', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Supplier<i>सप्लायर</i></label><select id="f_v">${selOpts(s.vendors, r.vendor, '— select —')}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
+        <div class="field"><label>Supplier</label><select id="f_v">${selOpts(s.vendors, r.vendor, '— select —')}</select></div>
       </div>
       <div class="f3">
         <div class="field"><label>${esc(u)}</label><input type="number" inputmode="decimal" step="0.01" id="f_qty" value="${has(r.qty) ? r.qty : ''}"></div>
         <div class="field"><label>Rate / ${esc(u)}</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.rate) ? r.rate : ''}"></div>
-        <div class="field"><label>Trips<i>ट्रिप</i></label><input type="number" inputmode="numeric" id="f_trips" value="${has(r.trips) ? r.trips : ''}"></div>
+        <div class="field"><label>Trips</label><input type="number" inputmode="numeric" id="f_trips" value="${has(r.trips) ? r.trips : ''}"></div>
       </div>
-      <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) && num(r.amount) ? r.amount : ''}" placeholder="apoap = ${esc(u)} x rate"></div>
+      <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) && num(r.amount) ? r.amount : ''}" placeholder="apoap = ${esc(u)} x rate"></div>
       ${segField('Payment Status', 'f_st', ['Paid', 'Unpaid'], st(r), 'pu')}
       <div class="f2">
-        <div class="field"><label>Paid by<i>कोणी दिले</i></label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
-        <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+        <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
+        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
     () => {
@@ -3055,16 +3077,16 @@ function fundsForm(s, rec) {
   openSheet(rec ? 'Edit entry' : 'Money received', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Received by<i>कोणाला मिळाले</i></label><select id="f_p">${selOpts(names, r.person, '— select —')}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
+        <div class="field"><label>Received by</label><select id="f_p">${selOpts(names, r.person, '— select —')}</select></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
-        <div class="field"><label>Received from<i>कोणाकडून मिळाले</i></label><input id="f_from" value="${esc(r.from || '')}" placeholder="Company / Rushi"></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
+        <div class="field"><label>Received from</label><input id="f_from" value="${esc(r.from || '')}" placeholder="Company / Rushi"></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Mode<i>प्रकार</i></label><select id="f_mode">${selOpts(['Online / UPI', 'Cash', 'Cheque', 'RTGS / NEFT'], r.mode || 'Online / UPI')}</select></div>
-        <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+        <div class="field"><label>Mode</label><select id="f_mode">${selOpts(['Online / UPI', 'Cash', 'Cheque', 'RTGS / NEFT'], r.mode || 'Online / UPI')}</select></div>
+        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
     () => {
@@ -3085,17 +3107,17 @@ function ownerPayForm(s, rec) {
   openSheet(rec ? 'Edit payment' : 'Owner payment', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Machine owner<i>मशीन मालक</i></label><select id="f_o">${selOpts(owners, r.owner, '— select —')}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
+        <div class="field"><label>Machine owner</label><select id="f_o">${selOpts(owners, r.owner, '— select —')}</select></div>
       </div>
       <div id="f_bal" class="tiny" style="margin:-4px 0 10px">${os ? 'Rent baki: <b>' + money(os.balance) + '</b>' : ''}</div>
       <div class="f2">
-        <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
-        <div class="field"><label>Paid by<i>कोणी दिले</i></label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
+        <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Mode<i>प्रकार</i></label><select id="f_mode">${selOpts(['RTGS / NEFT', 'Online / UPI', 'Cash', 'Cheque'], r.mode || 'RTGS / NEFT')}</select></div>
-        <div class="field"><label>Remark<i>शेरा</i></label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+        <div class="field"><label>Mode</label><select id="f_mode">${selOpts(['RTGS / NEFT', 'Online / UPI', 'Cash', 'Cheque'], r.mode || 'RTGS / NEFT')}</select></div>
+        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
     () => {
@@ -3115,7 +3137,7 @@ function ownerPayForm(s, rec) {
 /* ---------- sites ---------- */
 function sitePicker() {
   openSheet('Select site', `<div class="card">${DB.sites.map(x => `<div class="row" data-act="siteGo" data-v="${x.id}"><div class="main"><div class="ttl">${esc(x.name)}</div><div class="sub">${x.expenseLog.length} expenses &middot; total ${money(totals(x).grand)}</div></div>${x.id === DB.activeId ? '<span class="pill p">active</span>' : ''}</div>`).join('')}
-    <div class="pad"><button class="btn sec sm" style="width:100%" data-act="siteAdd">+ New site<i>नवीन साइट</i></button></div></div>`, null, null);
+    <div class="pad"><button class="btn sec sm" style="width:100%" data-act="siteAdd">+ New site</button></div></div>`, null, null);
 }
 
 const STD_CATS = ['Murum', 'Road work', 'Machine / JCB', 'Compound wall', 'Steel material', 'Construction material', 'Fabrication / Hardware', 'Electrical work', 'Plumbing material', 'Site workers / Labour', 'Driver bhatta', 'Transport', 'Food / Tea', 'Fuel (other)', 'Plot marking - Survey', 'Borewell', 'Office expense', 'Miscellaneous'];
@@ -3141,31 +3163,31 @@ function siteForm(id) {
   const mods = s ? s.mods : { machine: true, diesel: true, murum: false, vendor: true, owner: false, funds: false };
   const allPeople = [...new Set([].concat(...DB.sites.map(x => x.people || [])))];
   const types = (s ? s.rateMaster : blankSite('x').rateMaster).map(r => r.type);
-  openSheet(s ? 'Site setup' : 'Navin site', `
+  openSheet(s ? 'Site setup' : 'New site', `
     <div class="card"><div class="pad">
-      <div class="field"><label>Site name<i>साइटचे नाव</i></label><input id="f_name" value="${s ? esc(s.name) : ''}" placeholder="Veershree Vista Residency"></div>
-      ${s ? '' : `<div class="field"><label>Copy masters from<i>मास्टर कुठून घ्यायचे</i></label><select id="f_copy"><option value="">None (empty site)</option>${DB.sites.map(x => `<option value="${x.id}">${esc(x.name)} (copy)</option>`).join('')}</select></div>`}
+      <div class="field"><label>Site name</label><input id="f_name" value="${s ? esc(s.name) : ''}" placeholder="Veershree Vista Residency"></div>
+      ${s ? '' : `<div class="field"><label>Copy masters from</label><select id="f_copy"><option value="">None (empty site)</option>${DB.sites.map(x => `<option value="${x.id}">${esc(x.name)} (copy)</option>`).join('')}</select></div>`}
     </div></div>
 
-    <div class="card"><h3>What this site has<i>या साइटवर काय आहे</i><small>only these tabs show</small></h3>
+    <div class="card"><h3>What this site has<small>only these tabs show</small></h3>
       <div class="chips" style="flex-wrap:wrap;overflow:visible">${MODS.map(([k, l]) => togChip('mod.' + k, l, mods[k] !== false && mods[k] !== undefined ? !!mods[k] : false)).join('')}</div>
       <div class="pad tiny">You can change this later. Switching a module off hides it, nothing is deleted.</div>
     </div>
 
-    ${s ? '' : `<div class="card"><h3>Machines<i>मशीन</i><small>how many</small></h3><div class="pad">
+    ${s ? '' : `<div class="card"><h3>Machines<small>how many</small></h3><div class="pad">
       ${types.map(t => `<div class="f3" style="align-items:end">
         <div class="field" style="margin-bottom:6px"><label>${esc(t)}</label><input value="${esc(t)}" readonly style="background:#F2F5F7"></div>
-        <div class="field" style="margin-bottom:6px"><label>How many<i>किती</i></label><input type="number" inputmode="numeric" id="qc_${esc(t)}" placeholder="0"></div>
-        <div class="field" style="margin-bottom:6px"><label>Rate<i>रेट</i></label><input type="number" inputmode="numeric" id="qr_${esc(t)}" placeholder="rate"></div>
+        <div class="field" style="margin-bottom:6px"><label>How many</label><input type="number" inputmode="numeric" id="qc_${esc(t)}" placeholder="0"></div>
+        <div class="field" style="margin-bottom:6px"><label>Rate</label><input type="number" inputmode="numeric" id="qr_${esc(t)}" placeholder="rate"></div>
       </div>`).join('')}
       <div class="tiny">Example: enter 2 for JCB and JCB-01, JCB-02 are created. Rate = the 240-hour package for Poclain and JCB, the 30-day rate for Hiwa.</div>
     </div></div>
 
-    <div class="card"><h3>Expense categories<i>खर्चाचे प्रकार</i></h3>
+    <div class="card"><h3>Expense categories</h3>
       <div class="chips" style="flex-wrap:wrap;overflow:visible">${STD_CATS.map(c => togChip('cat.' + c, c, ['Murum', 'Machine / JCB', 'Site workers / Labour', 'Food / Tea', 'Transport', 'Miscellaneous'].includes(c))).join('')}</div>
     </div>`}
 
-    <div class="card"><h3>Names<i>नाव</i><small>who spends on site</small></h3>
+    <div class="card"><h3>Names<small>who spends on site</small></h3>
       <div class="chips" style="flex-wrap:wrap;overflow:visible">${allPeople.map(p => togChip('per.' + p, p, s ? (s.people || []).includes(p) : true)).join('') || '<span class="muted">Add names later from Masters.</span>'}</div>
       <div class="pad" style="padding-top:0"><div class="tiny" style="margin-bottom:6px">Who receives money in advance?</div>
       <div class="chips" style="flex-wrap:wrap;overflow:visible;border:0;padding-left:0">${allPeople.map(p => togChip('adv.' + p, p, s ? (s.advance || []).includes(p) : ['Rushi', 'Sahil'].includes(p))).join('')}</div></div>
@@ -3214,10 +3236,10 @@ function pickLogo() {
   inp.onchange = () => {
     const f = inp.files[0]; if (!f) return;
     const rd = new FileReader();
-    rd.onerror = () => alert('Image vachta ali nahi.');
+    rd.onerror = () => alert('Could not read the image.');
     rd.onload = () => {
       const img = new Image();
-      img.onerror = () => alert('Hi image ughadta ali nahi.');
+      img.onerror = () => alert('Could not open that image.');
       img.onload = async () => {
         try {
           const MW = 320, MH = 110;
@@ -3229,7 +3251,7 @@ function pickLogo() {
           c.getContext('2d').drawImage(img, 0, 0, w, h);
           DB.logo = c.toDataURL('image/png');
           await save(); render(); toast('Logo lavla');
-        } catch (e) { alert('Logo thevta ala nahi.'); }
+        } catch (e) { alert('Could not save the logo.'); }
       };
       img.src = rd.result;
     };
@@ -3245,19 +3267,19 @@ function remForm(s, id) {
   const vs = cur.vendor ? remVendorStats(s, cur.vendor) : null;
   openSheet(r ? 'Edit payment due date' : 'Add payment due date', `
     <div class="card"><div class="pad">
-      <div class="field"><label>Vendor<i>व्हेंडर</i></label><select id="r_v">${selOpts(allVendors(s), cur.vendor, '— vendor nako —')}</select></div>
+      <div class="field"><label>Vendor</label><select id="r_v">${selOpts(allVendors(s), cur.vendor, '— vendor nako —')}</select></div>
       <div id="r_bal" class="tiny" style="margin:-4px 0 10px">${vs ? 'Ya vendor chi baki: <b>' + money(vs.remaining) + '</b>' : ''}</div>
       <div class="f2">
-        <div class="field"><label>Payment cha divas<i>तारीख</i></label><input type="date" id="r_d" value="${cur.due || ''}"></div>
-        <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="r_a" value="${has(cur.amount) && num(cur.amount) ? cur.amount : ''}" placeholder="nasla tari chalel"></div>
+        <div class="field"><label>Payment due date</label><input type="date" id="r_d" value="${cur.due || ''}"></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="r_a" value="${has(cur.amount) && num(cur.amount) ? cur.amount : ''}" placeholder="nasla tari chalel"></div>
       </div>
-      <div class="field"><label>Note<i>टिप</i></label><input id="r_n" value="${esc(cur.note || '')}" placeholder="udaharan: RTGS karaycha"></div>
-      <div class="tiny" style="line-height:1.7">Tarikh javal aali ki Dashboard var alert disel ani app ughadlyavar notification yeil. Phone chya calendar madhe pn thevta yeto.</div>
+      <div class="field"><label>Note</label><input id="r_n" value="${esc(cur.note || '')}" placeholder="udaharan: RTGS karaycha"></div>
+      <div class="tiny" style="line-height:1.7">When the date is near, an alert shows on the Dashboard and a notification appears when you open the app. You can also put it in your phone calendar.</div>
     </div></div>`,
     () => {
       const o = { vendor: val('r_v'), due: val('r_d'), amount: numVal('r_a'), note: val('r_n') };
-      if (!o.due) return toast('Tarikh taka');
-      if (!o.vendor && !o.note) return toast('Vendor kiwa note taka');
+      if (!o.due) return toast('Enter a date');
+      if (!o.vendor && !o.note) return toast('Enter a vendor or a note');
       if (r) Object.assign(r, o);
       else { s.reminders = s.reminders || []; s.reminders.push({ id: uid(), done: false, ...o }); }
       return true;
@@ -3276,25 +3298,25 @@ async function delHash(pw) { return await sha('del:' + String(pw).trim() + ':' +
 function delPassForm(change) {
   openSheet(change ? 'Change delete password' : 'Set delete password', `
     <div class="card"><div class="pad">
-      ${change ? '<div class="field"><label>Juna password<i>जुना पासवर्ड</i></label><input id="d_old" type="password"></div>' : ''}
-      <div class="field"><label>Navin password<i>नवीन पासवर्ड</i></label><input id="d_new" type="password" placeholder="kimaan 4 akshare"></div>
-      <div class="field"><label>Parat tach password<i>पुन्हा तोच पासवर्ड</i></label><input id="d_new2" type="password"></div>
-      <div class="tiny" style="line-height:1.7">Ha password fakt site delete kartana lagto. Kuthe tari lihun theva.</div>
-      ${change ? `<div class="btnrow" style="margin-top:10px"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Password visarlat?<i>पासवर्ड विसरलात?</i></button></div>` : ''}
+      ${change ? '<div class="field"><label>Old password</label><input id="d_old" type="password"></div>' : ''}
+      <div class="field"><label>New password</label><input id="d_new" type="password" placeholder="kimaan 4 akshare"></div>
+      <div class="field"><label>Parat tach password</label><input id="d_new2" type="password"></div>
+      <div class="tiny" style="line-height:1.7">This password is only needed when deleting a site. Write it down somewhere.</div>
+      ${change ? `<div class="btnrow" style="margin-top:10px"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password?</button></div>` : ''}
     </div></div>`,
     () => {
       const a = val('d_new'), b = val('d_new2');
-      if (a.length < 4) return toast('Kimaan 4 akshare');
-      if (a !== b) return toast('Donhi password sarkhe nahit');
+      if (a.length < 4) return toast('At least 4 characters');
+      if (a !== b) return toast('Passwords do not match');
       if (change) {
         const old = val('d_old');
         delHash(old).then(async h => {
-          if (h !== DB.delPass) return toast('Juna password chukicha');
-          DB.delPass = await delHash(a); await save(); render(); toast('Password badalla');
+          if (h !== DB.delPass) return toast('Old password is wrong');
+          DB.delPass = await delHash(a); await save(); render(); toast('Password changed');
         });
         return true;
       }
-      delHash(a).then(async h => { DB.delPass = h; await save(); render(); toast('Password set zala'); });
+      delHash(a).then(async h => { DB.delPass = h; await save(); render(); toast('Password set'); });
       return true;
     }, null);
 }
@@ -3307,33 +3329,33 @@ function siteDeleteForm(id) {
   openSheet('Delete site', `
     <div class="card"><div class="pad">
       <div class="warn" style="margin-bottom:12px">
-        <b>${esc(s.name)}</b> cha sagla data kayamcha jail:<br>
+        <b>${esc(s.name)}</b> and all its data will be gone for good:<br>
         ${s.expenseLog.length} kharch entries, ${s.machineLog.length} machine entries, ${s.dieselLog.length} diesel bills, ${s.machines.length} machines &mdash; ekun ${money(t.grand)}.<br>
-        He parat aanta yenar nahi.
+        This cannot be undone.
       </div>
-      <div class="field"><label>Site cha naav ithe liha<i>साइटचे नाव लिहा</i></label><input id="d_name" placeholder="${esc(s.name)}" autocapitalize="none"></div>
+      <div class="field"><label>Type the site name to confirm</label><input id="d_name" placeholder="${esc(s.name)}" autocapitalize="none"></div>
       ${set
-        ? '<div class="field"><label>Delete password<i>डिलीट पासवर्ड</i></label><input id="d_pw" type="password"></div>'
-        : `<div class="tiny" style="margin-bottom:10px">Ajun delete password set kelela nahi. Aata set kara &mdash; pudhchya velela hach lagel.</div>
-           <div class="field"><label>Navin delete password<i>नवीन पासवर्ड</i></label><input id="d_pw" type="password" placeholder="kimaan 4 akshare"></div>
-           <div class="field"><label>Parat tach password<i>पुन्हा तोच</i></label><input id="d_pw2" type="password"></div>`}
+        ? '<div class="field"><label>Delete password</label><input id="d_pw" type="password"></div>'
+        : `<div class="tiny" style="margin-bottom:10px">No delete password is set yet. Set one now &mdash; it will be needed next time.</div>
+           <div class="field"><label>New delete password</label><input id="d_pw" type="password" placeholder="kimaan 4 akshare"></div>
+           <div class="field"><label>Parat tach password</label><input id="d_pw2" type="password"></div>`}
       <div class="tiny">Delete karnyaadhi <b>backup download</b> karun thevlela changla.</div>
     </div></div>`,
     () => {
-      if (val('d_name').trim().toLowerCase() !== s.name.trim().toLowerCase()) return toast('Site cha naav tantoant liha');
+      if (val('d_name').trim().toLowerCase() !== s.name.trim().toLowerCase()) return toast('Type the site name exactly');
       const pw = val('d_pw');
-      if (pw.length < 4) return toast('Password taka');
+      if (pw.length < 4) return toast('Enter the password');
       (async () => {
         if (!set) {
-          if (pw !== val('d_pw2')) return toast('Donhi password sarkhe nahit');
+          if (pw !== val('d_pw2')) return toast('Passwords do not match');
           DB.delPass = await delHash(pw);
-        } else if (await delHash(pw) !== DB.delPass) return toast('Password chukicha');
+        } else if (await delHash(pw) !== DB.delPass) return toast('Wrong password');
         if (!confirm('"' + s.name + '" nakki delete karaycha?')) return;
         DB.sites = DB.sites.filter(x => x.id !== s.id);
         if (!DB.sites.length) DB.sites.push(blankSite('Site 1'));
         if (!DB.sites.find(x => x.id === DB.activeId)) DB.activeId = DB.sites[0].id;
         UI = {}; TAB = 'more'; UI.more = 'sites';
-        closeSheet(); await save(); render(); toast('Site delete zali');
+        closeSheet(); await save(); render(); toast('Site deleted');
       })();
       return false;                      /* async madhech close hoto */
     }, null);
@@ -3379,7 +3401,7 @@ function dayRegisterSheet(s) {
   const d = UI.regDate || today();
   openSheet('Daily report', `
     <div class="card"><div class="pad">
-      <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="f_d" value="${d}" data-act="regDate"></div>
+      <div class="field"><label>Date</label><input type="date" id="f_d" value="${d}" data-act="regDate"></div>
       <textarea id="f_blk" rows="12" style="width:100%;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:8px">${esc(dayRegister(s, d))}</textarea>
       <div class="btnrow" style="margin-top:8px">
         <button class="btn sm" style="flex:1" data-act="xlClip">Copy</button>
@@ -3491,7 +3513,7 @@ function importSupervisor(s) {
       packs.push({ name: f.name, d, m, dl });
     }
     if (!packs.length) {
-      return alert('Ek pn Reading Book chi file sapadli nahi.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+      return alert('No Reading Book file was found.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
     }
 
     const mTot = packs.reduce((a, p) => a + p.m.length, 0);
@@ -3581,10 +3603,10 @@ function arrangeRows(s) {
 
 function arrangeForm(s) {
   AORDER = s.machines.map(m => m.no);
-  if (AORDER.length < 2) return toast('Kimaan 2 machine lagtat');
+  if (AORDER.length < 2) return toast('Need at least 2 machines');
   openSheet('Machine order', `
     <div class="card"><div class="pad">
-      <div class="tiny" style="margin-bottom:10px;line-height:1.7">Machine <b>hold karun var-khali sarkva</b>, kiwa bajuchya bantanni halva. Ha kram Machine Log chya chips madhe, Summary madhe ani saglikade tasach disel.<br><span style="color:var(--steel)">मशीन धरून वर-खाली सरकवा.</span></div>
+      <div class="tiny" style="margin-bottom:10px;line-height:1.7">Machine <b>hold karun var-khali sarkva</b>, or move it with the buttons on the right. This order is used in the Machine Log chips, the Summary and everywhere else.</div>
       <div id="alist">${arrangeRows(s)}</div>
     </div></div>`,
     () => {
@@ -3657,18 +3679,18 @@ function importJson(fromLock) {
   inp.onchange = () => {
     const f = inp.files[0]; if (!f) return;
     const rd = new FileReader();
-    rd.onerror = () => alert('File vachta ali nahi. Parat try kara.');
+    rd.onerror = () => alert('Could not read the file. Please try again.');
     rd.onload = async () => {
       let d;
       try { d = JSON.parse(String(rd.result).replace(/^\uFEFF/, '')); }
-      catch (e) { return alert('Hi file vachta ali nahi.\n\nJi file ya app madhun "Backup download" ne kadhli aahe tich nivda.'); }
+      catch (e) { return alert('Could not read this file.\n\nChoose a file taken from this app with "Backup download".'); }
       if (d && (d.type === 'sup-log' || d.type === 'sup-machine-log')) {
-        return alert('Hi backup file nahi.');
+        return alert('This is not a backup file.');
       }
       const sites = readSites(d);
-      if (!sites || !sites.length) return alert('Ya file madhe ek pn site sapadli nahi.');
+      if (!sites || !sites.length) return alert('No site was found in this file.');
       const clean = sites.map(s => normSite(JSON.parse(JSON.stringify(s)))).filter(Boolean);
-      if (!clean.length) return alert('Ya file madhla data vachta ala nahi.');
+      if (!clean.length) return alert('Could not read the data in this file.');
       const has = DB.sites && DB.sites.some(s => s.expenseLog.length || s.machineLog.length || s.dieselLog.length || s.murumLog.length);
       if (!has || fromLock) { await applyImport(clean, false); return; }
       PENDING_IMPORT = clean;
@@ -3679,18 +3701,17 @@ function importJson(fromLock) {
           <div class="amt">${money(t.grand)}</div></div>`;
       }).join('');
       const same = clean.filter(s => DB.sites.some(x => x.name.trim().toLowerCase() === s.name.trim().toLowerCase()));
-      openSheet('File madhe kaay aahe', `
+      openSheet('What is in this file', `
         <div class="card">${list}</div>
         <div class="card"><div class="pad">
           <div class="tiny" style="margin-bottom:10px;line-height:1.8">
-            <b>Add kara</b> &mdash; ya sites tumchya aatachya ${DB.sites.length} site sobat add hotil. <b>Juna kahich jaat nahi.</b><br>
-            <b>Sagla data badla</b> &mdash; aatacha sagla data javun fakt ya file madhla rahil.<br>
-            <span style="color:var(--steel)">जोडा — जुने काही जात नाही.</span>
+            <b>Add</b> &mdash; ya sites tumchya aatachya ${DB.sites.length} site sobat add hotil. <b>Nothing existing is lost.</b><br>
+            <b>Replace everything</b> &mdash; everything here is replaced by what is in this file.
           </div>
           ${same.length ? `<div class="warn" style="margin-bottom:10px">"${esc(same[0].name)}" ya naavachi site aadhich aahe. Add kelya var ti <b>(2)</b> mhanun vegli disel &mdash; donhi rahtil.</div>` : ''}
-          <button class="btn" data-act="impAdd">Add kara<i>जोडा — जुने राहील</i></button>
-          <div class="btnrow"><button class="btn dgr sm" style="flex:1" data-act="impReplace">Sagla data badla<i>सगळे बदला</i></button></div>
-          <div class="tiny" style="margin-top:8px">Kahihi kelе tari aatacha data aadhi snapshot madhe theva jato &mdash; Data safety madhun parat aanta yeto.</div>
+          <button class="btn" data-act="impAdd">Add</button>
+          <div class="btnrow"><button class="btn dgr sm" style="flex:1" data-act="impReplace">Replace everything</button></div>
+          <div class="tiny" style="margin-top:8px">Either way a snapshot of your current data is taken first &mdash; you can restore it from Data safety.</div>
         </div></div>`, null, null);
     };
     rd.readAsText(f);
@@ -3714,7 +3735,7 @@ async function applyImport(clean, add) {
   }
   migrate(); UI = {}; TAB = 'dash';
   closeSheet(); await save(); render();
-  toast(add ? clean.length + ' site add zali' : 'Import zala');
+  toast(add ? clean.length + ' site add zali' : 'Imported');
 }
 
 /* ============================================================
@@ -3812,7 +3833,7 @@ document.addEventListener('click', async e => {
     case 'logoPick': pickLogo(); break;
     case 'logoOff':
       if (!confirm('Logo kaadhaycha?')) break;
-      delete DB.logo; await save(); render(); toast('Logo kaadhla');
+      delete DB.logo; await save(); render(); toast('Logo removed');
       break;
     case 'remAdd': remForm(s, null); break;
     case 'remEdit': remForm(s, v); break;
@@ -3825,21 +3846,21 @@ document.addEventListener('click', async e => {
       const r = (s.reminders || []).find(x => x.id === v);
       if (!r) break;
       download('payment-' + (r.vendor || 'reminder').replace(/[^\w]+/g, '_') + '-' + (r.due || today()) + '.ics', icsFor(s, r), 'text/calendar;charset=utf-8');
-      toast('Calendar file ghya - ughadun "Add" daba');
+      toast('Calendar file downloaded - open it and tap Add');
       break;
     }
     case 'notifyOn': {
       try {
         const p = await Notification.requestPermission();
-        if (p === 'granted') { toast('Notification chalu zala'); DB.lastNotify = null; notifyDue(s); }
-        else toast('Parvangi milali nahi');
-      } catch (e) { toast('Ya browser madhe jamla nahi'); }
+        if (p === 'granted') { toast('Notifications turned on'); DB.lastNotify = null; notifyDue(s); }
+        else toast('Permission not given');
+      } catch (e) { toast('Not supported in this browser'); }
       render(); break;
     }
     case 'dayBackup': {
       download('Site_Manager_backup_' + today() + '.json', JSON.stringify(DB), 'application/json');
       DB.lastBackup = today();
-      await save(); render(); toast('Backup Downloads madhe gela');
+      await save(); render(); toast('Backup saved to Downloads');
       break;
     }
     case 'remAdd': remForm(s, null); break;
@@ -3853,21 +3874,21 @@ document.addEventListener('click', async e => {
       const r = (s.reminders || []).find(x => x.id === v);
       if (!r) break;
       download('payment-' + (r.vendor || 'reminder').replace(/[^\w]+/g, '_') + '-' + (r.due || today()) + '.ics', icsFor(s, r), 'text/calendar;charset=utf-8');
-      toast('Calendar file ghya - ughadun "Add" daba');
+      toast('Calendar file downloaded - open it and tap Add');
       break;
     }
     case 'notifyOn': {
       try {
         const p = await Notification.requestPermission();
-        if (p === 'granted') { toast('Notification chalu zala'); DB.lastNotify = null; notifyDue(s); }
-        else toast('Parvangi milali nahi');
-      } catch (e) { toast('Ya browser madhe jamla nahi'); }
+        if (p === 'granted') { toast('Notifications turned on'); DB.lastNotify = null; notifyDue(s); }
+        else toast('Permission not given');
+      } catch (e) { toast('Not supported in this browser'); }
       render(); break;
     }
     case 'dayBackup': {
       download('Site_Manager_backup_' + today() + '.json', JSON.stringify(DB), 'application/json');
       DB.lastBackup = today();
-      await save(); render(); toast('Backup Downloads madhe gela');
+      await save(); render(); toast('Backup saved to Downloads');
       break;
     }
     case 'waSend': window.open('https://wa.me/?text=' + encodeURIComponent(document.getElementById('f_blk').value), '_blank'); break;
@@ -3876,7 +3897,7 @@ document.addEventListener('click', async e => {
     case 'mgMerge': case 'mgAll': {
       const groups = machineGroups(s);
       const list = a === 'mgAll' ? groups : groups.filter(o => o.key === v);
-      if (!list.length) { toast('Kahi sapadla nahi'); break; }
+      if (!list.length) { toast('Nothing found'); break; }
       if (!confirm(list.length + ' group ek kartoy.\n\nUdaharan: ' + list[0].items.map(x => x.no).join(' + ') + '  ->  ' + list[0].target + '\n\nPudhe jaayche?')) break;
       try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
       let moved = 0;
@@ -3922,21 +3943,21 @@ document.addEventListener('click', async e => {
         <div class="card"><div class="scroll"><table><tbody>
           <tr><td class="muted">Aala (received)</td><td class="right n"><b>${dec(rec)} L</b></td></tr>
           <tr><td class="muted">Bharla (filled)</td><td class="right n"><b>${dec(fil)} L</b></td></tr>
-          <tr><td class="muted">Tya divsacha farak</td><td class="right n"><b style="color:${rec - fil < 0 ? 'var(--due)' : 'var(--paid)'}">${rec - fil > 0 ? '+' : ''}${dec(rec - fil)} L</b></td></tr>
+          <tr><td class="muted">Difference for the day</td><td class="right n"><b style="color:${rec - fil < 0 ? 'var(--due)' : 'var(--paid)'}">${rec - fil > 0 ? '+' : ''}${dec(rec - fil)} L</b></td></tr>
         </tbody></table></div></div>
         <div class="card"><h3>Diesel bills<small>${d.bills.length}</small></h3>
           ${d.bills.length ? d.bills.map(b => `<div class="row" data-act="dEdit" data-v="${b.id}">
             <div class="main"><div class="ttl">${esc(b.vendor || 'Diesel')}</div>
             <div class="sub">${dec(b.litres)} L${b.bill ? ' &middot; bill ' + esc(b.bill) : ''}</div></div>
             <div class="amt">${money0(b.amount)}</div></div>`).join('')
-            : '<div class="empty">Tya divshi bill nahi.</div>'}
+            : '<div class="empty">No bills that day.</div>'}
         </div>
-        <div class="card"><h3>Machine madhe bharla<small>${d.fills.length}</small></h3>
+        <div class="card"><h3>Filled into machines<small>${d.fills.length}</small></h3>
           ${d.fills.length ? d.fills.map(r => `<div class="row" data-act="mlEdit" data-v="${r.id}">
             <div class="main"><div class="ttl">${esc(r.machineNo || 'machine nahi')}</div>
             <div class="sub">${dec(hoursOf(r))} hr${hoursOf(r) && num(r.diesel) ? ' &middot; ' + dec(num(r.diesel) / hoursOf(r), 2) + ' L/hr' : ''}</div></div>
             <div class="amt">${dec(r.diesel)} L</div></div>`).join('')
-            : '<div class="empty">Tya divshi kuthlya machine madhe bharla nahi.</div>'}
+            : '<div class="empty">No machine was filled that day.</div>'}
         </div>`, null, null);
       break;
     }
@@ -3944,14 +3965,14 @@ document.addEventListener('click', async e => {
       const m = a === 'mgEdit' ? mgrList().find(x => x.id === v) : null;
       openSheet(m ? 'Manager' : 'New manager', `
         <div class="card"><div class="pad">
-          <div class="field"><label>Manager cha naav<i>मॅनेजरचे नाव</i></label><input id="g_nm" value="${m ? esc(m.name) : ''}" placeholder="udaharan: Suhas Sir"></div>
-          <div class="field"><label>Mobile (optional)<i>मोबाईल</i></label><input id="g_mo" type="tel" inputmode="numeric" value="${m ? esc(m.mobile || '') : ''}"></div>
-          <div class="tiny">Ha naav tya manager chya app madhlya naavashi jullaayla hava, mhanje tyacha data barobar jodla jail.</div>
+          <div class="field"><label>Manager name</label><input id="g_nm" value="${m ? esc(m.name) : ''}" placeholder="udaharan: Suhas Sir"></div>
+          <div class="field"><label>Mobile (optional)</label><input id="g_mo" type="tel" inputmode="numeric" value="${m ? esc(m.mobile || '') : ''}"></div>
+          <div class="tiny">This name must match the name in that manager’s app, so their data links correctly.</div>
         </div></div>`,
         () => {
           const nm = val('g_nm').trim();
-          if (!nm) return toast('Naav taka');
-          if (mgrList().some(x => x.name.toLowerCase() === nm.toLowerCase() && (!m || x.id !== m.id))) return toast('Ha manager aadhich aahe');
+          if (!nm) return toast('Enter a name');
+          if (mgrList().some(x => x.name.toLowerCase() === nm.toLowerCase() && (!m || x.id !== m.id))) return toast('That manager already exists');
           if (m) {
             if (m.name !== nm) {
               mgrFunds().forEach(f => { if (f.manager === m.name) f.manager = nm; });
@@ -3966,7 +3987,7 @@ document.addEventListener('click', async e => {
         },
         m ? () => {
           const x = mgrStats(m.name);
-          if (x.entries || x.received) { alert('Ya manager cha data aahe (' + x.entries + ' entries, ' + money(x.received) + ' milale). Aadhi to data baghun ghya - manager kaadhla tari entries rahtil.'); }
+          if (x.entries || x.received) { alert('This manager has data (' + x.entries + ' entries, ' + money(x.received) + ' milale). Aadhi to data baghun ghya - manager kaadhla tari entries rahtil.'); }
           if (!confirm(m.name + ' la yaadi madhun kaadhaycha?')) return false;
           DB.managers = DB.managers.filter(x2 => x2.id !== m.id);
         } : null);
@@ -3977,23 +3998,23 @@ document.addEventListener('click', async e => {
       const f = a === 'mgFundEdit' ? mgrFunds().find(x => x.id === v) : null;
       const mgr = f ? f.manager : (mgrList().find(x => x.id === v) || {}).name;
       if (!mgr) break;
-      openSheet(f ? 'Paise dile' : 'Manager la paise dile', `
+      openSheet(f ? 'Money given' : 'Manager la paise dile', `
         <div class="card"><div class="pad">
           <div class="tiny" style="margin-bottom:10px">Manager: <b>${esc(mgr)}</b></div>
           <div class="f2">
-            <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="g_d" value="${f ? f.date : today()}"></div>
-            <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="g_a" value="${f ? f.amount : ''}"></div>
+            <div class="field"><label>Date</label><input type="date" id="g_d" value="${f ? f.date : today()}"></div>
+            <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="g_a" value="${f ? f.amount : ''}"></div>
           </div>
           <div class="f2">
-            <div class="field"><label>Konakadun<i>कोणाकडून</i></label><input id="g_f" value="${f ? esc(f.from) : ''}" placeholder="office / Rushi"></div>
-            <div class="field"><label>Mode<i>पद्धत</i></label><input id="g_md" value="${f ? esc(f.mode) : ''}" placeholder="Cash / RTGS"></div>
+            <div class="field"><label>From</label><input id="g_f" value="${f ? esc(f.from) : ''}" placeholder="office / Rushi"></div>
+            <div class="field"><label>Mode</label><input id="g_md" value="${f ? esc(f.mode) : ''}" placeholder="Cash / RTGS"></div>
           </div>
-          <div class="field"><label>Remark<i>शेरा</i></label><input id="g_r" value="${f ? esc(f.remark) : ''}"></div>
-          <div class="tiny">Ithe site nivadaychi garaj nahi &mdash; paise saglya site sathi ekatra miltat.</div>
+          <div class="field"><label>Remark</label><input id="g_r" value="${f ? esc(f.remark) : ''}"></div>
+          <div class="tiny">No site is needed here &mdash; money is received for all sites together.</div>
         </div></div>`,
         () => {
           const amt = numVal('g_a');
-          if (!amt) return toast('Amount taka');
+          if (!amt) return toast('Enter an amount');
           if (f) { f.date = val('g_d'); f.amount = amt; f.from = val('g_f'); f.mode = val('g_md'); f.remark = val('g_r'); }
           else DB.mfunds.push({ id: uid(), manager: mgr, date: val('g_d'), amount: amt, from: val('g_f'), mode: val('g_md'), remark: val('g_r') });
           return true;
@@ -4004,8 +4025,8 @@ document.addEventListener('click', async e => {
     case 'mgLinkCopy': {
       const box = document.getElementById('f_mgrlink');
       try { box.focus(); box.setSelectionRange(0, box.value.length); } catch (er) { }
-      try { await navigator.clipboard.writeText(mgrLink()); toast('Link copy zala'); }
-      catch (er) { toast('Link select zala - long press karun copy kara'); }
+      try { await navigator.clipboard.writeText(mgrLink()); toast('Link copied'); }
+      catch (er) { toast('Link selected - long press to copy'); }
       break;
     }
     case 'mgLinkWa':
@@ -4021,14 +4042,14 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'mBill':
-      if (!v) { toast('Machine nivda'); break; }
+      if (!v) { toast('Select a machine'); break; }
       openBill(machineBill(s, v), 'machine-' + v);
       render(); break;
     case 'vBill':
       if (!v) break;
       openBill(vendorBill(s, v), 'vendor-' + v);
       render(); break;
-    case 'prtGo': try { window.print(); } catch (e) { toast('Print jamla nahi'); } break;
+    case 'prtGo': try { window.print(); } catch (e) { toast('Print failed'); } break;
     case 'prtClose': closeBill(); render(); break;
     case 'mDelOne': {
       const m = s.machines.find(x => x.id === v);
@@ -4056,12 +4077,12 @@ document.addEventListener('click', async e => {
     case 'delPassSet': delPassForm(false); break;
     case 'delPassChange': delPassForm(true); break;
     case 'delPassForgot': {
-      if (!confirm('Delete password reset karaycha?\n\nHa password fakt chukun site delete hou naye mhanun aahe. Reset kelyavar kuthlahi password nasel - mag navin thevta yeto.\n\nPudhe jaayche?')) break;
+      if (!confirm('Reset the delete password?\n\nThis password only stops a site being deleted by mistake. After reset there will be no password - you can set a new one.\n\nContinue?')) break;
       download('Site_Manager_backup_' + today() + '.json', JSON.stringify(DB), 'application/json');
-      if (!confirm('Aadhi backup download zala aahe (Downloads madhe bagha).\n\nAata password kaadhtoy - nakki?')) break;
+      if (!confirm('A backup has been downloaded (check Downloads).\n\nRemove the password now - are you sure?')) break;
       delete DB.delPass;
       closeSheet(); await save(); render();
-      alert('Password kaadhla.\n\nAata More > Sites madhun navin password thevaa, kiwa site delete kartana tithech navin thevta yeil.');
+      alert('Password removed.\n\nSet a new one from More > Sites, or set it while deleting a site.');
       break;
     }
     case 'siteGo': DB.activeId = v; UI = {}; TAB = 'dash'; closeSheet(); await save(); render(); toast('Site changed'); break;
@@ -4110,8 +4131,8 @@ document.addEventListener('click', async e => {
     case 'supLinkCopy': {
       const box = document.getElementById('f_suplink');
       try { box.focus(); box.setSelectionRange(0, box.value.length); } catch (er) { }
-      try { await navigator.clipboard.writeText(supLink()); toast('Link copy zala'); }
-      catch (er) { toast('Link select zala - long press karun copy kara'); }
+      try { await navigator.clipboard.writeText(supLink()); toast('Link copied'); }
+      catch (er) { toast('Link selected - long press to copy'); }
       break;
     }
     case 'supLinkWa':
@@ -4119,7 +4140,7 @@ document.addEventListener('click', async e => {
       break;
     case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
     case 'impReplace':
-      if (PENDING_IMPORT && confirm('Aatacha sagla data jail ani fakt ya file madhla rahil. Nakki?')) {
+      if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
         const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
       }
       break;
@@ -4127,7 +4148,7 @@ document.addEventListener('click', async e => {
     case 'impJson': importJson(); break;
     case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
     case 'impReplace':
-      if (PENDING_IMPORT && confirm('Aatacha sagla data jail ani fakt ya file madhla rahil. Nakki?')) {
+      if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
         const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
       }
       break;
@@ -4135,7 +4156,7 @@ document.addEventListener('click', async e => {
     case 'impJson': importJson(); break;
     case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
     case 'impReplace':
-      if (PENDING_IMPORT && confirm('Aatacha sagla data jail ani fakt ya file madhla rahil. Nakki?')) {
+      if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
         const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
       }
       break;
@@ -4143,7 +4164,7 @@ document.addEventListener('click', async e => {
     case 'impJson': importJson(); break;
     case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
     case 'impReplace':
-      if (PENDING_IMPORT && confirm('Aatacha sagla data jail ani fakt ya file madhla rahil. Nakki?')) {
+      if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
         const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
       }
       break;
@@ -4190,7 +4211,7 @@ function importManager() {
       if (!fu.length && !ex.length) { bad.push(f.name); continue; }
       packs.push({ name: f.name, d, fu, ex });
     }
-    if (!packs.length) return alert('Ek pn manager chi file sapadli nahi.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+    if (!packs.length) return alert('No manager file was found.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
 
     const mgrs = [...new Set(packs.map(p => p.d.manager))];
     const fTot = packs.reduce((a, p) => a + p.fu.length, 0);

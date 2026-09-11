@@ -90,7 +90,8 @@ main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
 .hero .big{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;line-height:1.05;margin-top:2px}
 .hero .big small{font-size:20px;color:var(--hivis);margin-right:4px;font-weight:600}
 .hsplit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#33414B;border-radius:8px;overflow:hidden;margin-top:12px}
-.hsplit div{background:#1C242B;padding:9px 10px}
+.hsplit div{background:#1C242B;padding:9px 10px;min-width:0}
+.hsplit .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hsplit .k{font-size:10.5px;color:#93A3AF;font-weight:600;letter-spacing:.04em}
 .hsplit .v{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;margin-top:1px}
 .pendbar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;background:var(--hivis);color:#241C00;border-radius:8px;padding:9px 12px}
@@ -100,12 +101,13 @@ main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px}
 .kpi .k{font-size:11px;color:var(--steel);font-weight:600;letter-spacing:.03em}
-.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1}
+.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kpi{min-width:0}
 .kpi.g .v{color:var(--paid)} .kpi.r .v{color:var(--due)} .kpi.b .v{color:var(--rent)}
 .k3{grid-template-columns:1fr 1fr 1fr}
 
 /* ---------- tables ---------- */
-.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th{
   text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--steel);
@@ -118,17 +120,19 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .nowrap{white-space:nowrap}
 
 /* ---------- log rows ---------- */
-.row{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.row{display:flex;flex-wrap:wrap;gap:8px 10px;padding:11px 12px;border-bottom:1px solid var(--line-2);align-items:center}
 .row:last-child{border-bottom:0}
-.row .main{flex:1;min-width:0}
+.row .main{flex:1 1 58%;min-width:0}
 .row .ttl{font-weight:600;font-size:14.5px;word-break:break-word}
 .row .sub{font-size:12px;color:var(--steel);margin-top:2px}
-.row .amt{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+.row .amt{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
 .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.03em}
 .pill.p{background:var(--paid-bg);color:var(--paid)}
 .pill.u{background:var(--due-bg);color:var(--due)}
 .pill.n{background:#EEF2F5;color:var(--ink-2)}
-.rowbtn{background:none;border:0;padding:6px 2px 0;color:var(--steel);font-size:12px;font-weight:600}
+.rowbtn{flex:0 0 auto;background:#F7F9FA;border:1px solid var(--line);border-radius:8px;
+  padding:6px 10px;color:var(--ink-2);font-size:12px;font-weight:600;line-height:1.1}
+.rowbtn:active{background:var(--line)}
 
 /* ---------- forms ---------- */
 .field{margin-bottom:10px}
@@ -171,8 +175,9 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .nav button.on{color:var(--ink)}
 .nav button.on svg{stroke:var(--hivis-dk)}
 
-.nav.n7 button,.nav.n8 button{font-size:9.5px;padding:7px 1px 8px}
-.nav.n7 button svg,.nav.n8 button svg{width:19px;height:19px}
+.nav.n7 button,.nav.n8 button{font-size:9px;padding:7px 0 8px;letter-spacing:-.01em}
+.nav.n7 button svg,.nav.n8 button svg{width:18px;height:18px}
+.nav button{min-width:0;overflow:hidden}
 .logo{height:26px;width:auto;max-width:88px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;flex:0 0 auto}
 .logobox{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 
@@ -245,8 +250,7 @@ body.ro button[data-act$="Add"],body.ro button[data-act="xlAllDone"],body.ro but
 body.ro button[data-act="impJson"],body.ro button[data-act="snapList"],body.ro button[data-act="snapBack"],
 body.ro button[data-act="xlCopy"],body.ro button[data-act="siteEdit"],body.ro .rowbtn{display:none !important}
 /* English var, Hindi khali */
-label i,h3 i,.kpi .k i,.hsplit .k i,.btn i,.chip i,.empty i,.tab i,.row .ttl i{
-  display:block;font-style:normal;font-weight:500;font-size:10.5px;color:var(--steel);letter-spacing:0;margin-top:1px;line-height:1.3}
+
 h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 .hero .lbl i,.hsplit .k i{color:#7C8B98}
 .btn i{color:rgba(36,28,0,.62);font-size:10px}
@@ -387,48 +391,61 @@ const bySite = () => {
 };
 
 
+/* ---------- browser chya naav suggestions band ---------- */
+function noSuggest(root) {
+  try {
+    (root || document).querySelectorAll('input, textarea').forEach(el => {
+      const t = (el.type || 'text').toLowerCase();
+      if (t === 'date' || t === 'checkbox' || t === 'radio') return;
+      el.setAttribute('autocomplete', 'off');
+      el.setAttribute('autocorrect', 'off');
+      el.setAttribute('spellcheck', 'false');
+      if (!el.name) el.name = 'f' + Math.random().toString(36).slice(2, 8);
+    });
+  } catch (e) { }
+}
+
 /* ============================ VIEWS ============================ */
 function render() {
-  if (!hasLogin()) { $('#app').innerHTML = firstRunView(); return; }
-  if (!ME) { $('#app').innerHTML = loginView(); return; }
+  if (!hasLogin()) { $('#app').innerHTML = firstRunView(); noSuggest($('#app')); return; }
+  if (!ME) { $('#app').innerHTML = loginView(); noSuggest($('#app')); return; }
   const V = { home: homeView, fund: fundView, exp: expView, hist: histView, send: sendView, setup: setupView };
   $('#app').innerHTML = `
   <div class="topbar"><div class="tb-row">
     <div class="brand">MANAGER BOOK<span>${esc((DB.name || ME.name || '').toUpperCase())}</span></div>
     <button class="sitepick" data-act="logout"><b>Log out</b></button>
   </div></div>
-  <main>${STORAGE_OK ? '' : '<div class="warn">He phone data save karat nahi. Setup madhun backup ghya.</div>'}
+  <main>${STORAGE_OK ? '' : '<div class="warn">This phone is not saving data. Take a backup from Setup.</div>'}
     ${(V[TAB] || homeView)()}
   </main>
   <nav class="nav n6" style="grid-template-columns:repeat(6,1fr)">
-    ${[['home', 'Home'], ['fund', 'Paise'], ['exp', 'Kharch'], ['hist', 'History'], ['send', 'Send'], ['setup', 'Setup']]
+    ${[['home', 'Home'], ['fund', 'Paise'], ['exp', 'Spent'], ['hist', 'History'], ['send', 'Send'], ['setup', 'Setup']]
       .map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}
   </nav>`;
+  noSuggest($('#app'));
   window.scrollTo(0, 0);
 }
 
 function firstRunView() {
   return `<div class="lock"><div class="lockbox">
-    <div class="brand" style="margin-bottom:14px">MANAGER BOOK<span>FIRST TIME SETUP</span></div>
-    <div class="field"><label>Tumcha naav<i>तुमचे नाव</i></label><input id="s_nm" placeholder="Suhas Sir"></div>
-    <div class="field"><label>Login ID<i>लॉगिन आयडी</i></label><input id="s_id" placeholder="suhas" autocapitalize="none"></div>
-    <div class="f2">
-      <div class="field"><label>Password<i>पासवर्ड</i></label><input id="s_p1" type="password"></div>
-      <div class="field"><label>Parat<i>पुन्हा</i></label><input id="s_p2" type="password"></div>
-    </div>
+    <div class="brand" style="margin-bottom:6px">MANAGER BOOK<span>FIRST TIME SETUP</span></div>
+    <div class="tiny" style="margin-bottom:16px;line-height:1.6">Set your login once. After this the app opens directly \u2014 you only need it again after you log out.</div>
+    <div class="field"><label>YOUR NAME</label><input id="s_nm" placeholder="Suhas Sir"></div>
+    <div class="field"><label>LOGIN ID</label><input id="s_id" placeholder="suhas" autocapitalize="none"></div>
+    <div class="field"><label>PASSWORD</label><input id="s_p1" type="password"></div>
+    <div class="field"><label>REPEAT PASSWORD</label><input id="s_p2" type="password"></div>
     <div id="s_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
-    <button class="btn" data-act="mkLogin">Suru kara<i>सुरू करा</i></button>
-    <div class="tiny" style="margin-top:12px;line-height:1.7">Ha login <b>ekdach</b> takaycha. Nantar app direct ughadto &mdash; log out kelyavarach parat lagto.</div>
+    <button class="btn" style="margin-top:6px" data-act="mkLogin">Create login</button>
   </div></div>`;
 }
 
 function loginView() {
   return `<div class="lock"><div class="lockbox">
-    <div class="brand" style="margin-bottom:14px">MANAGER BOOK<span>${esc((DB.name || '').toUpperCase())}</span></div>
-    <div class="field"><label>Login ID<i>लॉगिन आयडी</i></label><input id="l_id" autocapitalize="none"></div>
-    <div class="field"><label>Password<i>पासवर्ड</i></label><input id="l_pw" type="password"></div>
+    <div class="brand" style="margin-bottom:16px">MANAGER BOOK<span>${esc((DB.name || 'MANAGER').toUpperCase())}</span></div>
+    <div class="field"><label>LOGIN ID</label><input id="l_id" autocapitalize="none"></div>
+    <div class="field"><label>PASSWORD</label><input id="l_pw" type="password"></div>
     <div id="l_err" class="tiny" style="color:var(--due);min-height:16px;margin-bottom:6px"></div>
-    <button class="btn" data-act="login">Log in<i>लॉग इन</i></button>
+    <button class="btn" style="margin-top:6px" data-act="login">Log in</button>
   </div></div>`;
 }
 
@@ -437,29 +454,29 @@ function homeView() {
   const n = unsent();
   return `
   <div class="hero">
-    <div class="lbl">SHILLAK<i>शिल्लक</i></div>
+    <div class="lbl">BALANCE</div>
     <div class="big"><small>₹</small>${money(b).replace('₹', '')}</div>
     <div class="hsplit">
-      <div><div class="k">MILALE<i>मिळालेले</i></div><div class="v num">${money(totalFunds())}</div></div>
-      <div><div class="k">KHARCH<i>खर्च</i></div><div class="v num">${money(totalExp())}</div></div>
+      <div><div class="k">RECEIVED</div><div class="v num">${money(totalFunds())}</div></div>
+      <div><div class="k">SPENT</div><div class="v num">${money(totalExp())}</div></div>
       <div><div class="k">ENTRIES</div><div class="v num">${DB.funds.length + DB.expenses.length}</div></div>
     </div>
   </div>
   ${n ? `<div class="card" style="border-color:var(--hivis)"><div class="pad">
-    <div class="tiny" style="margin-bottom:8px"><b>${n}</b> entries ajun office la pathavlelya nahit.</div>
-    <button class="btn sm" style="width:100%" data-act="tab" data-v="send">Office la pathva<i>पाठवा</i></button>
+    <div class="tiny" style="margin-bottom:8px"><b>${n}</b> entries have not been sent to the office yet.</div>
+    <button class="btn sm" style="width:100%" data-act="tab" data-v="send">Send to office</button>
   </div></div>` : ''}
   <div class="btnrow" style="margin:0 0 12px">
-    <button class="btn" style="flex:1" data-act="fAdd">+ Paise milale<i>पैसे मिळाले</i></button>
-    <button class="btn" style="flex:1" data-act="eAdd">+ Kharch<i>खर्च</i></button>
+    <button class="btn" style="flex:1" data-act="fAdd">+ Money received</button>
+    <button class="btn" style="flex:1" data-act="eAdd">+ Spent</button>
   </div>
-  ${sites.length ? `<div class="card"><h3>Site-wise kharch<i>साइटनुसार</i></h3><div class="scroll"><table>
+  ${sites.length ? `<div class="card"><h3>Site-wise spend</h3><div class="scroll"><table>
     <thead><tr><th>Site</th><th class="n">Amount</th></tr></thead>
     <tbody>${sites.map(o => `<tr><td>${esc(o.site)}</td><td class="n">${money(o.amount)}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td>TOTAL</td><td class="n">${money(totalExp())}</td></tr></tfoot>
   </table></div></div>` : ''}
-  <div class="card"><h3>Shevatchya entries<i>शेवटच्या नोंदी</i></h3>
-    ${recentRows(8) || '<div class="empty">Ajun kahi nahi.</div>'}
+  <div class="card"><h3>Recent entries</h3>
+    ${recentRows(8) || '<div class="empty">Nothing yet.</div>'}
   </div>`;
 }
 
@@ -467,7 +484,7 @@ function recentRows(n) {
   const all = DB.funds.map(f => ({ t: 'f', r: f })).concat(DB.expenses.map(e => ({ t: 'e', r: e })));
   all.sort((a, b) => String(b.r.date).localeCompare(String(a.r.date)));
   return all.slice(0, n).map(o => o.t === 'f'
-    ? `<div class="row" data-act="fEdit" data-v="${o.r.id}"><div class="main"><div class="ttl">Paise milale ${o.r.sent ? '<span class="pill p">sent</span>' : ''}</div>
+    ? `<div class="row" data-act="fEdit" data-v="${o.r.id}"><div class="main"><div class="ttl">Money received ${o.r.sent ? '<span class="pill p">sent</span>' : ''}</div>
        <div class="sub">${fmtDate(o.r.date)}${o.r.from ? ' · ' + esc(o.r.from) : ''}</div></div>
        <div class="amt" style="color:var(--paid)">+${money(o.r.amount)}</div></div>`
     : `<div class="row" data-act="eEdit" data-v="${o.r.id}"><div class="main"><div class="ttl">${esc(o.r.desc || o.r.category)} ${o.r.sent ? '<span class="pill p">sent</span>' : ''}</div>
@@ -478,20 +495,20 @@ function recentRows(n) {
 function fundView() {
   const rows = DB.funds.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
   return `
-  <button class="btn" data-act="fAdd">+ Paise milale<i>पैसे मिळाले</i></button>
+  <button class="btn" data-act="fAdd">+ Money received</button>
   <div class="kpis k3 mt">
-    <div class="kpi b"><div class="k">EKUN MILALE<i>एकूण</i></div><div class="v num">${money(totalFunds())}</div></div>
+    <div class="kpi b"><div class="k">EKUN RECEIVED</div><div class="v num">${money(totalFunds())}</div></div>
     <div class="kpi"><div class="k">ENTRIES</div><div class="v num">${rows.length}</div></div>
-    <div class="kpi"><div class="k">SHILLAK<i>शिल्लक</i></div><div class="v num">${money(balance())}</div></div>
+    <div class="kpi"><div class="k">BALANCE</div><div class="v num">${money(balance())}</div></div>
   </div>
-  <div class="card mt"><h3>Milalele paise<i>मिळालेले पैसे</i><small>${rows.length}</small></h3>
+  <div class="card mt"><h3>Money received<small>${rows.length}</small></h3>
     ${rows.length ? rows.map(f => `<div class="row" data-act="fEdit" data-v="${f.id}">
       <div class="main"><div class="ttl">${fmtDate(f.date)} ${f.sent ? '<span class="pill p">sent</span>' : ''}</div>
       <div class="sub">${esc(f.from || '')}${f.mode ? ' · ' + esc(f.mode) : ''}${f.remark ? ' · ' + esc(f.remark) : ''}</div></div>
       <div class="amt" style="color:var(--paid)">+${money(f.amount)}</div></div>`).join('')
-      : '<div class="empty">Ajun kahi nahi.<i>अजून काही नाही</i></div>'}
+      : '<div class="empty">Nothing yet.</div>'}
   </div>
-  <div class="card"><div class="pad tiny" style="line-height:1.8">Ithe <b>site nivadaychi nahi</b> &mdash; paise saglya site sathi ekatra miltat. Kharch takatana matra site nivadaychi.</div></div>`;
+  <div class="card"><div class="pad tiny" style="line-height:1.8">Ithe <b>no site needed</b> &mdash; money comes in for all sites together. A site is chosen only when recording an expense.</div></div>`;
 }
 
 function expView() {
@@ -500,28 +517,28 @@ function expView() {
   if (f) rows = rows.filter(e => e.site === f);
   const tot = rows.reduce((a, e) => a + num(e.amount), 0);
   return `
-  <button class="btn" data-act="eAdd">+ Kharch<i>खर्च</i></button>
+  <button class="btn" data-act="eAdd">+ Spent</button>
   ${DB.sites.length ? `<div class="card mt"><div class="chips">
-    <button class="chip ${!f ? 'on' : ''}" data-act="siteFilter" data-v="">Sagle</button>
+    <button class="chip ${!f ? 'on' : ''}" data-act="siteFilter" data-v="">All</button>
     ${DB.sites.map(x => `<button class="chip ${f === x ? 'on' : ''}" data-act="siteFilter" data-v="${esc(x)}">${esc(x)}</button>`).join('')}
-  </div></div>` : '<div class="card mt"><div class="empty">Aadhi Setup madhe site cha naav taka.<i>साइट टाका</i></div></div>'}
+  </div></div>` : '<div class="card mt"><div class="empty">Add your sites in Setup first.</div></div>'}
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">ENTRIES</div><div class="v num">${rows.length}</div></div>
-    <div class="kpi b"><div class="k">KHARCH<i>खर्च</i></div><div class="v num">${money(tot)}</div></div>
-    <div class="kpi"><div class="k">SHILLAK<i>शिल्लक</i></div><div class="v num">${money(balance())}</div></div>
+    <div class="kpi b"><div class="k">SPENT</div><div class="v num">${money(tot)}</div></div>
+    <div class="kpi"><div class="k">BALANCE</div><div class="v num">${money(balance())}</div></div>
   </div>
-  <div class="card mt"><h3>Kharch<i>खर्च</i><small>${rows.length}</small></h3>
+  <div class="card mt"><h3>Spent<small>${rows.length}</small></h3>
     ${rows.length ? rows.map(e => `<div class="row" data-act="eEdit" data-v="${e.id}">
       <div class="main"><div class="ttl">${esc(e.desc || e.category)} ${e.sent ? '<span class="pill p">sent</span>' : ''}</div>
       <div class="sub">${fmtDate(e.date)} · ${esc(e.site || '—')} · ${esc(e.category || '')}${e.vendor ? ' · ' + esc(e.vendor) : ''}</div></div>
       <div class="amt">${money(e.amount)}</div></div>`).join('')
-      : '<div class="empty">Ajun kharch nahi.<i>अजून खर्च नाही</i></div>'}
+      : '<div class="empty">No expenses yet.</div>'}
   </div>`;
 }
 
 function histView() {
   const days = [...new Set(DB.funds.map(f => f.date).concat(DB.expenses.map(e => e.date)))].filter(Boolean).sort().reverse();
-  return `<div class="card"><h3>Divas-nihay<i>दिवसानुसार</i><small>${days.length}</small></h3>
+  return `<div class="card"><h3>Day-wise<small>${days.length}</small></h3>
     ${days.length ? days.map(d => {
       const fu = DB.funds.filter(f => f.date === d), ex = DB.expenses.filter(e => e.date === d);
       const fa = fu.reduce((a, x) => a + num(x.amount), 0), ea = ex.reduce((a, x) => a + num(x.amount), 0);
@@ -529,42 +546,42 @@ function histView() {
       return `<div class="row"><div class="main"><div class="ttl">${fmtDate(d)} ${sent ? '<span class="pill p">sent</span>' : '<span class="pill u">pathvaycha</span>'}</div>
         <div class="sub">${fu.length ? 'milale ' + money(fa) + ' · ' : ''}${ex.length ? ex.length + ' kharch ' + money(ea) : ''}</div></div>
         <div class="amt">${money(fa - ea)}</div></div>`;
-    }).join('') : '<div class="empty">Ajun kahi nahi.</div>'}
+    }).join('') : '<div class="empty">Nothing yet.</div>'}
   </div>`;
 }
 
 function sendView() {
   const n = unsent();
   return `
-  <div class="card"><h3>Office la pathva<i>ऑफिसला पाठवा</i></h3><div class="pad">
+  <div class="card"><h3>Send to office</h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">${n ? '<b>' + n + '</b> navin entries pathvaychya aahet.' : 'Sagla pathavla aahe. Parat pathavla tari office la duplicate jat nahi.'}</div>
-    <div class="field"><label>Kaay pathvaycha<i>काय पाठवायचे</i></label>
+    <div class="field"><label>What to send</label>
       <select id="sc">
-        <option value="new">Fakt navin entries</option>
-        <option value="all">Sagla data</option>
+        <option value="new">Only new entries</option>
+        <option value="all">Everything</option>
       </select></div>
-    <button class="btn" data-act="sendJson">Data file pathva<i>फाईल पाठवा</i></button>
-    <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="sendWa">WhatsApp message<i>मेसेज</i></button></div>
-    <div class="tiny" style="margin-top:10px">Data file office chya app madhe import hote &mdash; kharch tya-tya site chya hishobat jato.</div>
+    <button class="btn" data-act="sendJson">Send data file</button>
+    <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="sendWa">WhatsApp message</button></div>
+    <div class="tiny" style="margin-top:10px">The data file is imported in the office app &mdash; each expense goes to its own site account.</div>
   </div></div>
-  <div class="card"><h3>Aatapuratcha hishob<i>आजचा हिशोब</i></h3><div class="scroll"><table><tbody>
-    <tr><td class="muted">Ekun milale</td><td class="right n"><b>${money(totalFunds())}</b></td></tr>
-    <tr><td class="muted">Ekun kharch</td><td class="right n"><b>${money(totalExp())}</b></td></tr>
-    <tr><td class="muted"><b>SHILLAK</b></td><td class="right n"><b>${money(balance())}</b></td></tr>
+  <div class="card"><h3>Account summary</h3><div class="scroll"><table><tbody>
+    <tr><td class="muted">Total received</td><td class="right n"><b>${money(totalFunds())}</b></td></tr>
+    <tr><td class="muted">Total spent</td><td class="right n"><b>${money(totalExp())}</b></td></tr>
+    <tr><td class="muted"><b>BALANCE</b></td><td class="right n"><b>${money(balance())}</b></td></tr>
   </tbody></table></div></div>`;
 }
 
 function setupView() {
   return `
-  <div class="card"><h3>Tumchi mahiti<i>तुमची माहिती</i></h3><div class="pad">
-    <div class="field"><label>Naav<i>नाव</i></label><input id="st_nm" value="${esc(DB.name || '')}"></div>
-    <div class="field"><label>Mobile<i>मोबाईल</i></label><input id="st_mo" type="tel" inputmode="numeric" value="${esc(DB.mobile || '')}"></div>
-    <button class="btn sec sm" style="width:100%" data-act="saveMe">Save<i>सेव्ह</i></button>
-    <div class="tiny" style="margin-top:8px">He naav office chya app madhlya tumchya naavashi jullaayla hava.</div>
+  <div class="card"><h3>Your details</h3><div class="pad">
+    <div class="field"><label>Name</label><input id="st_nm" value="${esc(DB.name || '')}"></div>
+    <div class="field"><label>Mobile</label><input id="st_mo" type="tel" inputmode="numeric" value="${esc(DB.mobile || '')}"></div>
+    <button class="btn sec sm" style="width:100%" data-act="saveMe">Save</button>
+    <div class="tiny" style="margin-top:8px">This name must match your name in the office app.</div>
   </div></div>
-  ${listCard('Sites<i>साइट</i>', 'sites', DB.sites, 'Jya site var tumhi kaam karta tya. Kharch takatana hyatunach nivadaychi.')}
-  ${listCard('Kharchache prakar<i>खर्चाचे प्रकार</i>', 'categories', DB.categories, 'Udaharan: Labour, Material, Transport, Food, Fuel.')}
-  <div class="card"><h3>Data safety<i>डेटा सुरक्षा</i></h3><div class="pad">
+  ${listCard('Sites', 'sites', DB.sites, 'Jya site var tumhi kaam karta tya. Spent takatana hyatunach nivadaychi.')}
+  ${listCard('Expense heads', 'categories', DB.categories, 'Udaharan: Labour, Material, Transport, Food, Fuel.')}
+  <div class="card"><h3>Data safety</h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Data ya phone madhech rahto. Mahinyatun ekda backup gheun theva.</div>
     <div class="btnrow">
       <button class="btn sec sm" style="flex:1" data-act="bkDown">Backup download</button>
@@ -593,8 +610,9 @@ function openSheet(title, body, onSave, onDelete) {
     <div class="sheetbody">${body}</div>
     <div class="sheetfoot">
       ${onDelete ? '<button class="btn dgr sm" style="flex:0 0 34%" data-act="sheetDelete">Delete</button>' : ''}
-      <button class="btn" style="flex:1" data-act="sheetSave">Save<i>सेव्ह</i></button>
+      <button class="btn" style="flex:1" data-act="sheetSave">Save</button>
     </div></div>`;
+  noSuggest($('#modal'));
   document.body.style.overflow = 'hidden';
 }
 function closeSheet() { SHEET = null; $('#modal').innerHTML = ''; document.body.style.overflow = ''; }
@@ -604,22 +622,22 @@ const selOpts = (list, cur, ph) => `<option value="">${ph || '— nivda —'}</o
 
 function fundForm(rec) {
   const r = rec || { date: today(), amount: '', from: '', mode: '', remark: '' };
-  openSheet(rec ? 'Paise milale' : 'Paise milale', `
+  openSheet(rec ? 'Money received' : 'Money received', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Tarikh<i>तारीख</i></label><input type="date" id="f_d" value="${r.date}"></div>
-        <div class="field"><label>Rakkam (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="f_a" value="${has(r.amount) ? r.amount : ''}"></div>
+        <div class="field"><label>Date</label><input type="date" id="f_d" value="${r.date}"></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_a" value="${has(r.amount) ? r.amount : ''}"></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Konakadun<i>कोणाकडून</i></label><input id="f_f" value="${esc(r.from)}" placeholder="office / sir"></div>
-        <div class="field"><label>Kase<i>पद्धत</i></label><input id="f_m" value="${esc(r.mode)}" placeholder="Cash / RTGS"></div>
+        <div class="field"><label>From</label><input id="f_f" value="${esc(r.from)}" placeholder="office / sir"></div>
+        <div class="field"><label>Kase</label><input id="f_m" value="${esc(r.mode)}" placeholder="Cash / RTGS"></div>
       </div>
-      <div class="field"><label>Shera<i>शेरा</i></label><input id="f_r" value="${esc(r.remark)}"></div>
-      <div class="tiny">Ithe site nivadaychi nahi.</div>
+      <div class="field"><label>Remark</label><input id="f_r" value="${esc(r.remark)}"></div>
+      <div class="tiny">No site is needed here.</div>
     </div></div>`,
     () => {
       const a = numVal('f_a');
-      if (!a) return toast('Rakkam taka');
+      if (!a) return toast('Enter an amount');
       const o = { date: val('f_d'), amount: a, from: val('f_f'), mode: val('f_m'), remark: val('f_r') };
       if (rec) Object.assign(rec, o, { sent: false });
       else DB.funds.push({ id: uid(), sent: false, ...o });
@@ -630,25 +648,25 @@ function fundForm(rec) {
 
 function expForm(rec) {
   const r = rec || { date: today(), site: UI.site || DB.sites[0] || '', category: '', desc: '', vendor: '', amount: '', remark: '' };
-  openSheet(rec ? 'Kharch' : 'Navin kharch', `
+  openSheet(rec ? 'Spent' : 'Navin kharch', `
     <div class="card"><div class="pad">
       <div class="f2">
-        <div class="field"><label>Tarikh<i>तारीख</i></label><input type="date" id="e_d" value="${r.date}"></div>
-        <div class="field"><label>Rakkam (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="e_a" value="${has(r.amount) ? r.amount : ''}"></div>
+        <div class="field"><label>Date</label><input type="date" id="e_d" value="${r.date}"></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="e_a" value="${has(r.amount) ? r.amount : ''}"></div>
       </div>
-      <div class="field"><label>Site<i>साइट</i></label><select id="e_s">${selOpts(DB.sites, r.site, '— site nivda —')}</select></div>
-      <div class="field"><label>Prakar<i>प्रकार</i></label><select id="e_c">${selOpts(DB.categories, r.category, '— prakar —')}</select></div>
-      <div class="field"><label>Kashasathi<i>कशासाठी</i></label><input id="e_t" value="${esc(r.desc)}" placeholder="udaharan: labour payment"></div>
+      <div class="field"><label>Site</label><select id="e_s">${selOpts(DB.sites, r.site, '— site nivda —')}</select></div>
+      <div class="field"><label>Head</label><select id="e_c">${selOpts(DB.categories, r.category, '— prakar —')}</select></div>
+      <div class="field"><label>For what</label><input id="e_t" value="${esc(r.desc)}" placeholder="udaharan: labour payment"></div>
       <div class="f2">
-        <div class="field"><label>Konala dile<i>कोणाला दिले</i></label><input id="e_v" value="${esc(r.vendor)}" placeholder="vendor / naav"></div>
-        <div class="field"><label>Shera<i>शेरा</i></label><input id="e_r" value="${esc(r.remark)}"></div>
+        <div class="field"><label>Paid to</label><input id="e_v" value="${esc(r.vendor)}" placeholder="vendor / naav"></div>
+        <div class="field"><label>Remark</label><input id="e_r" value="${esc(r.remark)}"></div>
       </div>
-      <div class="tiny">Ha kharch office chya app madhe ya site chya Expense log madhe jail.</div>
+      <div class="tiny">This expense will go into this site’s Expense log in the office app.</div>
     </div></div>`,
     () => {
       const a = numVal('e_a');
-      if (!a) return toast('Rakkam taka');
-      if (!val('e_s')) return toast('Site nivda');
+      if (!a) return toast('Enter an amount');
+      if (!val('e_s')) return toast('Select a site');
       const o = { date: val('e_d'), site: val('e_s'), category: val('e_c') || 'Miscellaneous',
         desc: val('e_t'), vendor: val('e_v'), amount: a, remark: val('e_r') };
       if (rec) Object.assign(rec, o, { sent: false });
@@ -663,11 +681,11 @@ function listForm(key, idx) {
   const cur = isNew ? '' : DB[key][idx];
   openSheet(isNew ? 'Add' : 'Edit', `
     <div class="card"><div class="pad">
-      <div class="field"><label>Naav<i>नाव</i></label><input id="li_v" value="${esc(cur)}"></div>
+      <div class="field"><label>Name</label><input id="li_v" value="${esc(cur)}"></div>
     </div></div>`,
     () => {
       const v = val('li_v');
-      if (!v) return toast('Naav taka');
+      if (!v) return toast('Enter a name');
       if (isNew) { if (!DB[key].includes(v)) DB[key].push(v); }
       else {
         const old = DB[key][idx];
@@ -708,8 +726,8 @@ function waText(scope) {
   const bySiteTxt = {};
   p.expenses.forEach(e => { bySiteTxt[e.site || '—'] = (bySiteTxt[e.site || '—'] || 0) + e.amount; });
   return ['*' + (p.manager || 'Manager') + ' - ' + fmtDate(today()) + '*', '',
-    'Milale: ' + money(fa) + ' (' + p.funds.length + ')',
-    'Kharch: ' + money(ea) + ' (' + p.expenses.length + ')', '']
+    'Received: ' + money(fa) + ' (' + p.funds.length + ')',
+    'Spent: ' + money(ea) + ' (' + p.expenses.length + ')', '']
     .concat(Object.keys(bySiteTxt).map(k => k + ': ' + money(bySiteTxt[k])))
     .concat(['', 'Ekun shillak: ' + money(balance())]).join('\n');
 }
@@ -723,12 +741,12 @@ document.addEventListener('click', async e => {
   if (a === 'sheetBg' || a === 'sheetClose') { closeSheet(); return; }
   if (a === 'sheetSave') {
     if (SHEET && SHEET.onSave) { const ok = SHEET.onSave(); if (ok === false || ok === undefined) return; }
-    closeSheet(); await save(); render(); toast('Save zala'); return;
+    closeSheet(); await save(); render(); toast('Saved'); return;
   }
   if (a === 'sheetDelete') {
-    if (!confirm('Delete karaycha?')) return;
+    if (!confirm('Delete this?')) return;
     if (SHEET && SHEET.onDelete) SHEET.onDelete();
-    closeSheet(); await save(); render(); toast('Delete zala'); return;
+    closeSheet(); await save(); render(); toast('Deleted'); return;
   }
 
   switch (a) {
@@ -737,26 +755,26 @@ document.addEventListener('click', async e => {
     case 'mkLogin': {
       const nm = val('s_nm'), id = val('s_id'), p1 = val('s_p1'), p2 = val('s_p2');
       const err = m => { const x = document.getElementById('s_err'); if (x) x.textContent = m; };
-      if (!nm) return err('Naav taka');
+      if (!nm) return err('Enter a name');
       if (!id) return err('Login ID taka');
       if (p1.length < 4) return err('Password kimaan 4 akshare');
-      if (p1 !== p2) return err('Donhi password sarkhe nahit');
+      if (p1 !== p2) return err('Passwords do not match');
       const salt = uid() + uid();
       DB.auth = { salt, users: [{ userId: id, name: nm, hash: await sha(p1 + ':' + salt) }] };
       DB.name = nm;
       ME = { userId: id, name: nm }; saveSession();
-      await save(); render(); toast('Zala! Aata Setup madhe site cha naav taka');
+      await save(); render(); toast('Done! Now add your sites in Setup');
       break;
     }
     case 'login': {
       const u = await checkLogin(val('l_id'), val('l_pw'));
       const err = m => { const x = document.getElementById('l_err'); if (x) x.textContent = m; };
-      if (!u) return err('ID kiwa password chukicha');
+      if (!u) return err('Wrong ID or password');
       ME = { userId: u.userId, name: u.name }; saveSession();
       TAB = 'home'; render(); break;
     }
     case 'logout':
-      if (!confirm('Log out karaycha? Data phone madhech rahil.')) break;
+      if (!confirm('Log out? Data phone madhech rahil.')) break;
       ME = null; saveSession(); render(); break;
     case 'fAdd': fundForm(null); break;
     case 'fEdit': fundForm(DB.funds.find(x => x.id === v)); break;
@@ -766,16 +784,16 @@ document.addEventListener('click', async e => {
     case 'liEdit': { const [k, i] = String(v).split(':'); listForm(k, +i); break; }
     case 'saveMe':
       DB.name = val('st_nm'); DB.mobile = val('st_mo');
-      await save(); render(); toast('Save zala'); break;
+      await save(); render(); toast('Saved'); break;
     case 'sendJson': {
       const scope = (document.getElementById('sc') || {}).value || 'new';
       const p = packData(scope);
-      if (!p.funds.length && !p.expenses.length) { toast('Pathvaysathi kahi nahi'); break; }
+      if (!p.funds.length && !p.expenses.length) { toast('Nothing to send'); break; }
       download('manager-' + (p.manager || 'data').replace(/[^\w]+/g, '_') + '-' + today() + '.json', JSON.stringify(p));
       DB.funds.forEach(f => f.sent = true);
       DB.expenses.forEach(x => x.sent = true);
       await save(); render();
-      toast('File taiyar - office la WhatsApp kara');
+      toast('File ready - send it to the office on WhatsApp');
       break;
     }
     case 'sendWa': {
@@ -783,7 +801,7 @@ document.addEventListener('click', async e => {
       window.open('https://wa.me/?text=' + encodeURIComponent(waText(scope)), '_blank');
       break;
     }
-    case 'bkDown': download('manager-backup-' + today() + '.json', JSON.stringify(DB)); toast('Backup ghetla'); break;
+    case 'bkDown': download('manager-backup-' + today() + '.json', JSON.stringify(DB)); toast('Backup taken'); break;
     case 'bkUp': {
       const inp = document.createElement('input');
       inp.type = 'file'; inp.accept = '.json';
@@ -793,11 +811,11 @@ document.addEventListener('click', async e => {
         rd.onload = async () => {
           try {
             const d = JSON.parse(rd.result);
-            if (!d || (!d.funds && !d.expenses)) return alert('Hi ya app chi backup file nahi.');
-            if (!confirm('Aatacha data ya file ne badalaycha?')) return;
+            if (!d || (!d.funds && !d.expenses)) return alert('This is not a backup file from this app.');
+            if (!confirm('Replace current data with this file?')) return;
             DB = Object.assign(DB, d);
-            await save(); render(); toast('Import zala');
-          } catch (er) { alert('File vachta ali nahi.'); }
+            await save(); render(); toast('Imported');
+          } catch (er) { alert('Could not read the file.'); }
         };
         rd.readAsText(f);
       };

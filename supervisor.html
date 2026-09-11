@@ -38,7 +38,7 @@ body{
   background:var(--bg);color:var(--ink);
   font-family:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   font-size:15px;line-height:1.45;
-  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  padding-bottom:calc(118px + env(safe-area-inset-bottom));
   -webkit-font-smoothing:antialiased;
 }
 h1,h2,h3,h4{font-family:'Barlow Condensed','Barlow',sans-serif;margin:0;font-weight:700;letter-spacing:.01em}
@@ -91,7 +91,8 @@ main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
 .hero .big{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;line-height:1.05;margin-top:2px}
 .hero .big small{font-size:20px;color:var(--hivis);margin-right:4px;font-weight:600}
 .hsplit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#33414B;border-radius:8px;overflow:hidden;margin-top:12px}
-.hsplit div{background:#1C242B;padding:9px 10px}
+.hsplit div{background:#1C242B;padding:9px 10px;min-width:0}
+.hsplit .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hsplit .k{font-size:10.5px;color:#93A3AF;font-weight:600;letter-spacing:.04em}
 .hsplit .v{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;margin-top:1px}
 .pendbar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;background:var(--hivis);color:#241C00;border-radius:8px;padding:9px 12px}
@@ -101,12 +102,13 @@ main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px}
 .kpi .k{font-size:11px;color:var(--steel);font-weight:600;letter-spacing:.03em}
-.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1}
+.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kpi{min-width:0}
 .kpi.g .v{color:var(--paid)} .kpi.r .v{color:var(--due)} .kpi.b .v{color:var(--rent)}
 .k3{grid-template-columns:1fr 1fr 1fr}
 
 /* ---------- tables ---------- */
-.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th{
   text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--steel);
@@ -119,17 +121,19 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .nowrap{white-space:nowrap}
 
 /* ---------- log rows ---------- */
-.row{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.row{display:flex;flex-wrap:wrap;gap:8px 10px;padding:11px 12px;border-bottom:1px solid var(--line-2);align-items:center}
 .row:last-child{border-bottom:0}
-.row .main{flex:1;min-width:0}
+.row .main{flex:1 1 58%;min-width:0}
 .row .ttl{font-weight:600;font-size:14.5px;word-break:break-word}
 .row .sub{font-size:12px;color:var(--steel);margin-top:2px}
-.row .amt{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+.row .amt{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
 .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.03em}
 .pill.p{background:var(--paid-bg);color:var(--paid)}
 .pill.u{background:var(--due-bg);color:var(--due)}
 .pill.n{background:#EEF2F5;color:var(--ink-2)}
-.rowbtn{background:none;border:0;padding:6px 2px 0;color:var(--steel);font-size:12px;font-weight:600}
+.rowbtn{flex:0 0 auto;background:#F7F9FA;border:1px solid var(--line);border-radius:8px;
+  padding:6px 10px;color:var(--ink-2);font-size:12px;font-weight:600;line-height:1.1}
+.rowbtn:active{background:var(--line)}
 
 /* ---------- forms ---------- */
 .field{margin-bottom:10px}
@@ -149,7 +153,9 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .btn.dk{background:var(--ink);color:#fff}
 .btn.dgr{background:#fff;border:1px solid #E7B7B1;color:var(--due)}
 .btn.sm{width:auto;padding:8px 12px;font-size:13.5px}
-.btnrow{display:flex;gap:8px;margin-top:4px}
+.btnrow{display:flex;gap:8px;margin-top:8px;align-items:stretch}
+.btnrow > .btn{min-width:0}
+.f2 > *{min-width:0}
 .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
 .seg button{flex:1;border:0;background:#fff;padding:10px 6px;font-size:13.5px;font-weight:600;color:var(--steel)}
 .seg button.on{background:var(--ink);color:#fff}
@@ -169,6 +175,47 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .nav button svg{display:block;margin:0 auto 2px;width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .nav button.on{color:var(--ink)}
 .nav button.on svg{stroke:var(--hivis-dk)}
+
+.nav.n7 button,.nav.n8 button{font-size:9px;padding:7px 0 8px;letter-spacing:-.01em}
+.nav.n7 button svg,.nav.n8 button svg{width:18px;height:18px}
+.nav button{min-width:0;overflow:hidden}
+.logo{height:26px;width:auto;max-width:88px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;flex:0 0 auto}
+.logobox{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+
+.prt{position:fixed;inset:0;z-index:100;background:#fff;overflow-y:auto;padding:16px 14px calc(90px + env(safe-area-inset-bottom))}
+.prtbar{position:fixed;left:0;right:0;bottom:0;z-index:101;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+.bill{max-width:760px;margin:0 auto;color:#000;font-size:12.5px}
+.bill h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;margin:0 0 2px}
+.bill .meta{font-size:11.5px;color:#333;margin-bottom:12px;line-height:1.6}
+.bill table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:14px}
+.bill th{background:#EEF2F5;border:1px solid #B9C4CC;padding:5px 6px;text-align:left;font-size:10.5px;letter-spacing:.03em}
+.bill td{border:1px solid #D6DDE3;padding:4px 6px;vertical-align:top}
+.bill td.n,.bill th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bill tfoot td{font-weight:700;background:#F5F7F9}
+.bill .kpi{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.bill .kpi div{border:1px solid #B9C4CC;border-radius:6px;padding:6px 10px;min-width:100px}
+.bill .kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px}
+.bill .kpi span{font-size:9.5px;letter-spacing:.06em;color:#444}
+.bill h2{font-family:'Barlow Condensed',sans-serif;font-size:15px;margin:16px 0 6px;border-bottom:1.5px solid #000;padding-bottom:2px}
+.bill .sign{margin-top:26px;display:flex;justify-content:space-between;font-size:11px;color:#333}
+@media print{
+  body{background:#fff!important;padding:0!important}
+  body > *{display:none!important}
+  body > #print{display:block!important}
+  .prt{position:static;padding:0;overflow:visible}
+  .prtbar{display:none!important}
+  .bill{max-width:none;font-size:11px}
+  @page{margin:12mm}
+}
+
+.arow{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:10px;background:var(--surface);margin-bottom:7px;touch-action:none;user-select:none}
+.arow.drag{background:#FFF7DB;border-color:var(--hivis);box-shadow:0 6px 18px rgba(15,20,25,.16);opacity:.96}
+.arow .hnd{width:26px;flex:0 0 26px;color:var(--steel);font-size:17px;line-height:1;text-align:center;cursor:grab}
+.arow .anm{flex:1;font-weight:600;font-size:14px}
+.arow .asub{font-weight:400;font-size:11px;color:var(--steel);display:block}
+.arow .abtn{width:34px;height:32px;flex:0 0 34px;border:1px solid var(--line);border-radius:8px;
+  background:#F7F9FA;font-size:14px;color:var(--ink)}
 
 /* ---------- sheet / modal ---------- */
 .sheet{position:fixed;inset:0;z-index:80;background:rgba(15,20,25,.55);display:flex;align-items:flex-end;justify-content:center}
@@ -204,8 +251,7 @@ body.ro button[data-act$="Add"],body.ro button[data-act="xlAllDone"],body.ro but
 body.ro button[data-act="impJson"],body.ro button[data-act="snapList"],body.ro button[data-act="snapBack"],
 body.ro button[data-act="xlCopy"],body.ro button[data-act="siteEdit"],body.ro .rowbtn{display:none !important}
 /* English var, Hindi khali */
-label i,h3 i,.kpi .k i,.hsplit .k i,.btn i,.chip i,.empty i,.tab i,.row .ttl i{
-  display:block;font-style:normal;font-weight:500;font-size:10.5px;color:var(--steel);letter-spacing:0;margin-top:1px;line-height:1.3}
+
 h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 .hero .lbl i,.hsplit .k i{color:#7C8B98}
 .btn i{color:rgba(36,28,0,.62);font-size:10px}
@@ -213,29 +259,23 @@ h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 .tab i{font-size:9.5px;color:#6B7A87}
 .seg button i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--steel)}
 .seg button.on i{color:rgba(255,255,255,.7)}
+.searchwrap{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:45;
+  background:var(--surface);border-top:1px solid var(--line);padding:7px 10px;display:flex;gap:8px;align-items:center}
+.searchwrap input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:99px;background:#F4F7F9;font-size:15px}
+.searchwrap input:focus{outline:2px solid var(--hivis);outline-offset:-1px;background:#fff}
+.searchwrap button{flex:0 0 auto;background:none;border:0;color:var(--steel);font-size:13px;font-weight:700;padding:6px 8px}
+.spanel{position:fixed;left:0;right:0;top:0;bottom:calc(112px + env(safe-area-inset-bottom));z-index:44;
+  background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px 20px}
+.shead{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--steel);padding:10px 2px 6px}
+.brandlogo{height:30px;max-width:130px;object-fit:contain;display:block}
 @media (min-width:640px){ .kpis{grid-template-columns:repeat(4,1fr)} .k3{grid-template-columns:repeat(3,1fr)} }
 @media (prefers-reduced-motion:no-preference){ .sheet .box{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px)}} }
-
-body{padding-bottom:24px}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="toast"></div>
 <script>
-/* juna service worker ani cache saaf */
-(function(){ try {
-  if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations)
-    navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ try{ r.unregister(); }catch(e){} }); }).catch(function(){});
-  if (window.caches && caches.keys) caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }).catch(function(){});
-} catch(e){} })();
-window.onerror = function (msg, src, line) {
-  try {
-    document.getElementById('app').innerHTML =
-      '<div style="padding:24px;font-family:system-ui"><div style="font-weight:700;font-size:18px;margin-bottom:8px">App madhe error</div>' +
-      '<div style="font-size:13px;color:#555;line-height:1.6">' + String(msg) + '<br>line ' + line + '</div></div>';
-  } catch (e) { }
-};
 /* ============================================================
    SITE READING BOOK  —  supervisor data entry app
    Machine hour readings + diesel purchases
@@ -417,6 +457,20 @@ function dieselRows(days) {
   }));
 }
 
+/* ---------- browser chya naav suggestions band ---------- */
+function noSuggest(root) {
+  try {
+    (root || document).querySelectorAll('input, textarea').forEach(el => {
+      const t = (el.type || 'text').toLowerCase();
+      if (t === 'date' || t === 'checkbox' || t === 'radio') return;
+      el.setAttribute('autocomplete', 'off');
+      el.setAttribute('autocorrect', 'off');
+      el.setAttribute('spellcheck', 'false');
+      if (!el.name) el.name = 'f' + Math.random().toString(36).slice(2, 8);
+    });
+  } catch (e) { }
+}
+
 /* ============================================================
    VIEWS  (English)
    ============================================================ */
@@ -432,26 +486,26 @@ function loginView() {
 
   if (!hasLogin()) {
     $('#app').innerHTML = box(head('READING BOOK', 'FIRST TIME SETUP') + `
-      <div style="color:#93A3AF;font-size:12.5px;line-height:1.6;margin-bottom:16px">Set your login once. After this the app stays open — you only need it again if you log out.<br><span style="color:#6B7A87">एकदाच लॉगिन तयार करा. लॉग आऊट केल्यावरच पुन्हा लागेल.</span></div>
-      ${inp('l_name', 'YOUR NAME', 'तुमचे नाव')}
-      ${inp('l_id', 'LOGIN ID', 'लॉगिन आयडी')}
-      ${inp('l_pw', 'PASSWORD', 'पासवर्ड', 'password')}
-      ${inp('l_pw2', 'REPEAT PASSWORD', 'पासवर्ड पुन्हा', 'password')}
+      <div style="color:#93A3AF;font-size:12.5px;line-height:1.6;margin-bottom:16px">Set your login once. After this the app stays open — you only need it again if you log out.<br><span style="color:#6B7A87">   .     .</span></div>
+      ${inp('l_name', 'YOUR NAME', ' ')}
+      ${inp('l_id', 'LOGIN ID', ' ')}
+      ${inp('l_pw', 'PASSWORD', '', 'password')}
+      ${inp('l_pw2', 'REPEAT PASSWORD', ' ', 'password')}
       ${err}
-      <button class="btn" style="margin-top:14px" data-act="mkLogin">Create login<i>लॉगिन तयार करा</i></button>`);
+      <button class="btn" style="margin-top:14px" data-act="mkLogin">Create login</button>`);
     return;
   }
   $('#app').innerHTML = box(head('READING BOOK', esc((DB.site || 'SITE').toUpperCase())) + `
-    ${inp('l_id', 'LOGIN ID', 'लॉगिन आयडी')}
-    ${inp('l_pw', 'PASSWORD', 'पासवर्ड', 'password')}
+    ${inp('l_id', 'LOGIN ID', ' ')}
+    ${inp('l_pw', 'PASSWORD', '', 'password')}
     ${err}
-    <button class="btn" style="margin-top:14px" data-act="doLogin">Log in<i>लॉग इन</i></button>`);
+    <button class="btn" style="margin-top:14px" data-act="doLogin">Log in</button>`);
 }
 
 function render() {
   if (!ME) return loginView();
   if (!DB.machines.length && !DB.pumps.length && TAB !== 'setup') TAB = 'setup';
-  const nav = [['machine', 'Machine<i>मशीन</i>'], ['diesel', 'Diesel<i>डिझेल</i>'], ['history', 'History<i>इतिहास</i>'], ['send', 'Send<i>पाठवा</i>'], ['setup', 'Setup<i>सेटअप</i>']];
+  const nav = [['machine', 'Machine'], ['diesel', 'Diesel'], ['history', 'History'], ['send', 'Send'], ['setup', 'Setup']];
   const pend = unsentDays().length;
   $('#app').innerHTML = `
   <div class="topbar">
@@ -465,16 +519,17 @@ function render() {
   <main>${STORAGE_OK ? '' : '<div class="warn">This phone is not saving data. Send your entries to the office as soon as you finish.</div>'}
     ${TAB === 'machine' ? machineView() : TAB === 'diesel' ? dieselView() : TAB === 'history' ? historyView() : TAB === 'send' ? sendView() : setupView()}
   </main>`;
+  noSuggest($('#app'));
   window.scrollTo(0, 0);
 }
 
 function dayBar(extra) {
   return `<div class="card"><div class="pad" style="padding-bottom:10px">
-    <div class="field" style="margin-bottom:8px"><label>Date<i>तारीख</i></label><input type="date" id="f_day" value="${DAY}" data-act="setDay"></div>
+    <div class="field" style="margin-bottom:8px"><label>Date</label><input type="date" id="f_day" value="${DAY}" data-act="setDay"></div>
     <div class="btnrow">
-      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="-1">&#8592; Previous<i>मागचा</i></button>
-      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="today">Today<i>आज</i></button>
-      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="1">Next<i>पुढचा</i> &#8594;</button>
+      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="-1">&#8592; Previous</button>
+      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="today">Today</button>
+      <button class="btn sec sm" style="flex:1" data-act="dayShift" data-v="1">Next &#8594;</button>
     </div>
     <div class="tiny" style="margin-top:8px">${dayName(DAY)}, ${fmtDate(DAY)}${extra ? ' &middot; ' + extra : ''}${isSent(DAY) ? ' &middot; <b style="color:var(--paid)">sent</b>' : ''}</div>
   </div></div>`;
@@ -488,13 +543,13 @@ function machineView() {
   return `
   ${dayBar(machineCount(DAY) + ' of ' + DB.machines.length + ' machines filled')}
   <div class="kpis k3">
-    <div class="kpi"><div class="k">MACHINES<i>मशीन</i></div><div class="v num">${machineCount(DAY)}</div></div>
-    <div class="kpi b"><div class="k">TOTAL HOURS<i>एकूण तास</i></div><div class="v num">${dec(t.hrs)}</div></div>
-    <div class="kpi"><div class="k">DIESEL USED (L)<i>वापरलेले डिझेल</i></div><div class="v num">${dec(t.dsl)}</div></div>
+    <div class="kpi"><div class="k">MACHINES</div><div class="v num">${machineCount(DAY)}</div></div>
+    <div class="kpi b"><div class="k">TOTAL HOURS</div><div class="v num">${dec(t.hrs)}</div></div>
+    <div class="kpi"><div class="k">DIESEL USED (L)</div><div class="v num">${dec(t.dsl)}</div></div>
   </div>
-  ${hourly.length ? `<div class="card"><h3>Hour meter machines<i>अवर मीटर मशीन</i><small>In &rarr; Out</small></h3>${hourly.map(machineCard).join('')}</div>` : ''}
-  ${daily.length ? `<div class="card"><h3>Hiwa / per day<i>हिवा / प्रति दिवस</i><small>worked or not</small></h3>${daily.map(machineCard).join('')}</div>` : ''}
-  ${DB.machines.length ? `<div class="btnrow" style="margin-bottom:10px"><button class="btn" style="flex:1" data-act="tab" data-v="send">Send to office<i>ऑफिसला पाठवा</i></button></div>`
+  ${hourly.length ? `<div class="card"><h3>Hour meter machines<small>In &rarr; Out</small></h3>${hourly.map(machineCard).join('')}</div>` : ''}
+  ${daily.length ? `<div class="card"><h3>Hiwa / per day<small>worked or not</small></h3>${daily.map(machineCard).join('')}</div>` : ''}
+  ${DB.machines.length ? `<div class="btnrow" style="margin-bottom:10px"><button class="btn" style="flex:1" data-act="tab" data-v="send">Send to office</button></div>`
       : '<div class="card"><div class="empty">Add your machines in Setup first.</div></div>'}`;
 }
 
@@ -508,11 +563,11 @@ function machineCard(m) {
     return `<div class="row" style="display:block">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
-        <div class="seg" style="width:180px"><button type="button" class="${r.worked ? 'on' : ''}" data-act="worked" data-v="${esc(m.no)}" data-w="1">Worked<i>काम केले</i></button><button type="button" class="${r.worked ? '' : 'on'}" data-act="worked" data-v="${esc(m.no)}" data-w="0">No work<i>काम नाही</i></button></div>
+        <div class="seg" style="width:180px"><button type="button" class="${r.worked ? 'on' : ''}" data-act="worked" data-v="${esc(m.no)}" data-w="1">Worked</button><button type="button" class="${r.worked ? '' : 'on'}" data-act="worked" data-v="${esc(m.no)}" data-w="0">No work</button></div>
       </div>
       ${r.worked ? `<div class="f2" style="margin-top:8px">
-        <div class="field" style="margin:0"><label>Diesel filled (L)<i>भरलेले डिझेल</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.diesel) ? r.diesel : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="diesel"></div>
-        <div class="field" style="margin:0"><label>Remark<i>शेरा</i></label><input value="${esc(r.remark || '')}" data-act="fld" data-v="${esc(m.no)}" data-f="remark"></div>
+        <div class="field" style="margin:0"><label>Diesel filled (L)</label><input type="number" inputmode="decimal" step="0.1" value="${has(r.diesel) ? r.diesel : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="diesel"></div>
+        <div class="field" style="margin:0"><label>Remark</label><input value="${esc(r.remark || '')}" data-act="fld" data-v="${esc(m.no)}" data-f="remark"></div>
       </div>` : ''}
     </div>`;
   }
@@ -523,12 +578,12 @@ function machineCard(m) {
     </div>
     ${prev ? `<div class="tiny" style="margin-top:2px">Last out reading ${fmtDate(prev.day)}: ${dec(prev.v, 1)}</div>` : ''}
     <div class="f3" style="margin-top:8px">
-      <div class="field" style="margin:0"><label>In reading<i>सुरुवात रीडिंग</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.in) ? r.in : (prev ? prev.v : '')}" data-act="fld" data-v="${esc(m.no)}" data-f="in"></div>
-      <div class="field" style="margin:0"><label>Out reading<i>शेवट रीडिंग</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.out) ? r.out : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="out"></div>
-      <div class="field" style="margin:0"><label>Diesel (L)<i>डिझेल लिटर</i></label><input type="number" inputmode="decimal" step="0.1" value="${has(r.diesel) ? r.diesel : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="diesel"></div>
+      <div class="field" style="margin:0"><label>In reading</label><input type="number" inputmode="decimal" step="0.1" value="${has(r.in) ? r.in : (prev ? prev.v : '')}" data-act="fld" data-v="${esc(m.no)}" data-f="in"></div>
+      <div class="field" style="margin:0"><label>Out reading</label><input type="number" inputmode="decimal" step="0.1" value="${has(r.out) ? r.out : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="out"></div>
+      <div class="field" style="margin:0"><label>Diesel (L)</label><input type="number" inputmode="decimal" step="0.1" value="${has(r.diesel) ? r.diesel : ''}" data-act="fld" data-v="${esc(m.no)}" data-f="diesel"></div>
     </div>
     ${bad ? '<div class="tiny" style="color:var(--due);margin-top:6px">Out reading is lower than In reading — please check.</div>' : ''}
-    <div class="field" style="margin:8px 0 0"><label>Remark<i>शेरा</i></label><input value="${esc(r.remark || '')}" placeholder="breakdown, location, operator" data-act="fld" data-v="${esc(m.no)}" data-f="remark"></div>
+    <div class="field" style="margin:8px 0 0"><label>Remark</label><input value="${esc(r.remark || '')}" placeholder="breakdown, location, operator" data-act="fld" data-v="${esc(m.no)}" data-f="remark"></div>
   </div>`;
 }
 
@@ -542,39 +597,39 @@ function dieselView() {
   const rate = (num(f.litres) && num(f.amount)) ? num(f.amount) / num(f.litres) : '';
   return `
   <div class="kpis k3">
-    <div class="kpi"><div class="k">TOTAL LITRES<i>एकूण लिटर</i></div><div class="v num">${dec(t.litres)}</div></div>
-    <div class="kpi"><div class="k">TOTAL AMOUNT<i>एकूण रक्कम</i></div><div class="v num">${money(t.amount)}</div></div>
-    <div class="kpi"><div class="k">BILLS<i>बिल</i></div><div class="v num">${t.bills}</div></div>
+    <div class="kpi"><div class="k">TOTAL LITRES</div><div class="v num">${dec(t.litres)}</div></div>
+    <div class="kpi"><div class="k">TOTAL AMOUNT</div><div class="v num">${money(t.amount)}</div></div>
+    <div class="kpi"><div class="k">BILLS</div><div class="v num">${t.bills}</div></div>
   </div>
 
-  <div class="card"><h3>${ed ? 'Edit diesel entry<i>डिझेल एंट्री बदला</i>' : 'New diesel entry<i>नवीन डिझेल एंट्री</i>'}${ed ? '<small>' + fmtDate(ed.date) + '</small>' : ''}</h3><div class="pad">
+  <div class="card"><h3>${ed ? 'Edit diesel entry' : 'New diesel entry'}${ed ? '<small>' + fmtDate(ed.date) + '</small>' : ''}</h3><div class="pad">
     <div class="f2">
-      <div class="field"><label>Date<i>तारीख</i></label><input type="date" id="d_date" value="${f.date || DAY}"></div>
-      <div class="field"><label>Pump / vendor<i>डिझेल पंप</i></label><select id="d_vendor">${['— select —'].concat(DB.pumps).map(p => `<option ${p === f.vendor ? 'selected' : ''} value="${p === '— select —' ? '' : esc(p)}">${esc(p)}</option>`).join('')}</select></div>
+      <div class="field"><label>Date</label><input type="date" id="d_date" value="${f.date || DAY}"></div>
+      <div class="field"><label>Pump / vendor</label><select id="d_vendor">${['— select —'].concat(DB.pumps).map(p => `<option ${p === f.vendor ? 'selected' : ''} value="${p === '— select —' ? '' : esc(p)}">${esc(p)}</option>`).join('')}</select></div>
     </div>
     <div class="f3">
-      <div class="field"><label>Litres<i>लिटर</i></label><input type="number" inputmode="decimal" step="0.01" id="d_litres" value="${has(f.litres) ? f.litres : ''}" data-act="dCalc"></div>
-      <div class="field"><label>Amount (Rs)<i>रक्कम</i></label><input type="number" inputmode="decimal" id="d_amount" value="${has(f.amount) ? f.amount : ''}" data-act="dCalc"></div>
-      <div class="field"><label>Rate / L<i>रेट प्रति लिटर</i></label><input id="d_rate" value="${rate === '' ? '' : dec(rate, 2)}" readonly style="background:#F2F5F7;font-weight:700"></div>
+      <div class="field"><label>Litres</label><input type="number" inputmode="decimal" step="0.01" id="d_litres" value="${has(f.litres) ? f.litres : ''}" data-act="dCalc"></div>
+      <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="d_amount" value="${has(f.amount) ? f.amount : ''}" data-act="dCalc"></div>
+      <div class="field"><label>Rate / L</label><input id="d_rate" value="${rate === '' ? '' : dec(rate, 2)}" readonly style="background:#F2F5F7;font-weight:700"></div>
     </div>
-    <div class="field"><label>Payment status<i>पेमेंट स्थिती</i></label><div class="seg pu" id="d_st">
+    <div class="field"><label>Payment status</label><div class="seg pu" id="d_st">
       <button type="button" data-seg="d_st" data-v="Paid" class="${f.status === 'Paid' ? 'on' : ''}">Paid</button>
       <button type="button" data-seg="d_st" data-v="Unpaid" class="${f.status === 'Paid' ? '' : 'on'}">Unpaid</button>
     </div></div>
     <div class="f2">
-      <div class="field"><label>Paid by<i>कोणी दिले</i></label><select id="d_by">${['— select —'].concat(DB.people).map(p => `<option ${p === f.paidBy ? 'selected' : ''} value="${p === '— select —' ? '' : esc(p)}">${esc(p)}</option>`).join('')}</select></div>
-      <div class="field"><label>Bill no<i>बिल नंबर</i></label><input id="d_bill" value="${esc(f.bill || '')}"></div>
+      <div class="field"><label>Paid by</label><select id="d_by">${['— select —'].concat(DB.people).map(p => `<option ${p === f.paidBy ? 'selected' : ''} value="${p === '— select —' ? '' : esc(p)}">${esc(p)}</option>`).join('')}</select></div>
+      <div class="field"><label>Bill no</label><input id="d_bill" value="${esc(f.bill || '')}"></div>
     </div>
-    <div class="field"><label>Remark<i>शेरा</i></label><input id="d_remark" value="${esc(f.remark || '')}"></div>
+    <div class="field"><label>Remark</label><input id="d_remark" value="${esc(f.remark || '')}"></div>
     <div class="btnrow">
-      <button class="btn" style="flex:1" data-act="dSave">${ed ? 'Update entry<i>अपडेट</i>' : 'Add entry<i>जोडा</i>'}</button>
+      <button class="btn" style="flex:1" data-act="dSave">${ed ? 'Update entry' : 'Add entry'}</button>
       ${ed ? '<button class="btn dgr sm" style="flex:0 0 40%" data-act="dDelete">Delete</button>' : ''}
     </div>
     ${ed ? '<div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="dCancel">Cancel</button></div>' : ''}
     ${DB.pumps.length ? '' : '<div class="tiny" style="margin-top:8px">Add your diesel pumps in Setup so they appear in this list.</div>'}
   </div></div>
 
-  <div class="card"><h3>Diesel entries<i>डिझेल एंट्री</i><small>${rows.length}</small></h3>
+  <div class="card"><h3>Diesel entries<small>${rows.length}</small></h3>
     ${shown.length ? shown.map(x => `<div class="row" data-act="dOpen" data-v="${x.id}">
       <div class="main"><div class="ttl">${esc(x.vendor || 'no vendor')} <span class="pill ${x.status === 'Paid' ? 'p' : 'u'}">${esc(x.status || 'Unpaid')}</span></div>
       <div class="sub">${fmtDate(x.date)} &middot; ${dec(x.litres)} L${num(x.litres) ? ' @ ' + dec(num(x.amount) / num(x.litres), 2) : ''}${x.paidBy ? ' &middot; ' + esc(x.paidBy) : ''}${x.bill ? ' &middot; bill ' + esc(x.bill) : ''}</div></div>
@@ -589,12 +644,12 @@ function historyView() {
   const t = totals(days);
   return `
   <div class="kpis">
-    <div class="kpi"><div class="k">DAYS<i>दिवस</i></div><div class="v num">${days.length}</div></div>
-    <div class="kpi b"><div class="k">HOURS<i>तास</i></div><div class="v num">${dec(t.hrs)}</div></div>
-    <div class="kpi"><div class="k">DIESEL BILLS<i>डिझेल बिल</i></div><div class="v num">${t.bills}</div></div>
-    <div class="kpi"><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(t.litres)}</div></div>
+    <div class="kpi"><div class="k">DAYS</div><div class="v num">${days.length}</div></div>
+    <div class="kpi b"><div class="k">HOURS</div><div class="v num">${dec(t.hrs)}</div></div>
+    <div class="kpi"><div class="k">DIESEL BILLS</div><div class="v num">${t.bills}</div></div>
+    <div class="kpi"><div class="k">DIESEL (L)</div><div class="v num">${dec(t.litres)}</div></div>
   </div>
-  <div class="card"><h3>Days entered<i>भरलेले दिवस</i><small>${days.length}</small></h3>
+  <div class="card"><h3>Days entered<small>${days.length}</small></h3>
     ${days.length ? days.map(d => {
       const x = totals([d]);
       return `<div class="row" data-act="openDay" data-v="${d}">
@@ -621,21 +676,21 @@ function sendView() {
     <div class="pad">
       <div class="tiny" style="margin-bottom:10px">${days.length} day${days.length === 1 ? '' : 's'} &middot; ${t.entries} machine entries &middot; ${dec(t.hrs)} hr &middot; ${t.bills} diesel bill${t.bills === 1 ? '' : 's'} ${money(t.amount)}</div>
       ${days.length ? `
-      <button class="btn" data-act="sendJson">Send data file to office<i>डेटा फाइल पाठवा</i></button>
+      <button class="btn" data-act="sendJson">Send data file to office</button>
       <div class="btnrow" style="margin-top:8px">
-        <button class="btn dk sm" style="flex:1" data-act="sendXlsx">Excel file<i>एक्सेल फाइल</i></button>
-        <button class="btn sec sm" style="flex:1" data-act="sendWa">WhatsApp message<i>व्हॉट्सअ‍ॅप मेसेज</i></button>
+        <button class="btn dk sm" style="flex:1" data-act="sendXlsx">Excel file</button>
+        <button class="btn sec sm" style="flex:1" data-act="sendWa">WhatsApp message</button>
       </div>
-      <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="markSent">Mark as sent<i>पाठवले म्हणून मार्क करा</i></button></div>
+      <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="markSent">Mark as sent</button></div>
       ` : '<div class="empty">Nothing to send.</div>'}
     </div>
   </div>
-  <div class="card"><h3>Which one to send<i>काय पाठवायचे</i></h3><div class="pad tiny" style="line-height:1.8">
+  <div class="card"><h3>Which one to send</h3><div class="pad tiny" style="line-height:1.8">
     <b>Data file</b> &mdash; a small .json file. The office app reads it directly, nothing has to be typed again. <b>Send this one.</b><br>
-    <b>Excel file<i>एक्सेल फाइल</i></b> &mdash; a normal .xlsx sheet with a Machine Log and a Diesel Purchase sheet.<br>
-    <b>WhatsApp message<i>व्हॉट्सअ‍ॅप मेसेज</i></b> &mdash; plain text, quick to read on the phone.
+    <b>Excel file</b> &mdash; a normal .xlsx sheet with a Machine Log and a Diesel Purchase sheet.<br>
+    <b>WhatsApp message</b> &mdash; plain text, quick to read on the phone.
   </div></div>
-  ${days.length ? `<div class="card"><h3>Preview<i>झलक</i></h3><div class="pad">
+  ${days.length ? `<div class="card"><h3>Preview</h3><div class="pad">
     <textarea id="f_blk" rows="10" style="width:100%;font-size:12.5px;padding:10px;border:1px solid var(--line);border-radius:8px">${esc(waText(days))}</textarea>
   </div></div>` : ''}`;
 }
@@ -645,7 +700,7 @@ function listBlock(title, key, items, ph) {
   return `<div class="card"><h3>${title}<small>${items.length}</small></h3>
     ${items.map((v, i) => `<div class="row"><div class="main"><div class="ttl">${esc(v)}</div></div><button class="rowbtn" data-act="listDel" data-k="${key}" data-v="${i}">Remove</button></div>`).join('') || '<div class="empty">Nothing added yet.</div>'}
     <div class="pad"><div class="f2" style="align-items:end">
-      <div class="field" style="margin:0"><label>Add new<i>नवीन जोडा</i></label><input id="l_${key}" placeholder="${ph}"></div>
+      <div class="field" style="margin:0"><label>Add new</label><input id="l_${key}" placeholder="${ph}"></div>
       <div class="field" style="margin:0"><label>&nbsp;</label><button class="btn sm" style="width:100%" data-act="listAdd" data-k="${key}">Add</button></div>
     </div></div>
   </div>`;
@@ -653,35 +708,35 @@ function listBlock(title, key, items, ph) {
 
 function setupView() {
   return `
-  <div class="card"><h3>Site details<i>साइट माहिती</i></h3><div class="pad">
+  <div class="card"><h3>Site details</h3><div class="pad">
     <div class="f2">
-      <div class="field"><label>Site name<i>साइटचे नाव</i></label><input value="${esc(DB.site || '')}" placeholder="Veershree Industrial Park" data-act="siteName"></div>
-      <div class="field"><label>Your name<i>तुमचे नाव</i></label><input value="${esc(DB.supervisor || '')}" placeholder="supervisor name" data-act="supName"></div>
+      <div class="field"><label>Site name</label><input value="${esc(DB.site || '')}" placeholder="Veershree Industrial Park" data-act="siteName"></div>
+      <div class="field"><label>Your name</label><input value="${esc(DB.supervisor || '')}" placeholder="supervisor name" data-act="supName"></div>
     </div>
     <div class="tiny">These appear on every file and message you send.</div>
   </div></div>
 
-  <div class="card"><h3>Machines<i>मशीन</i><small>${DB.machines.length}</small></h3>
+  <div class="card"><h3>Machines<small>${DB.machines.length}</small></h3>
     ${DB.machines.map((m, i) => `<div class="row"><div class="main"><div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
       <div class="sub">${isDaily(m.type) ? 'per day — no hour meter' : 'hour meter reading'}</div></div>
       <button class="rowbtn" data-act="mDel" data-v="${i}">Remove</button></div>`).join('') || '<div class="empty">No machines yet.</div>'}
     <div class="pad">
       <div class="f3">
-        <div class="field" style="margin:0"><label>Machine no<i>मशीन नंबर</i></label><input id="f_no" placeholder="PC-01"></div>
-        <div class="field" style="margin:0"><label>Type<i>प्रकार</i></label><select id="f_type">${TYPES.map(t => `<option>${t}</option>`).join('')}</select></div>
+        <div class="field" style="margin:0"><label>Machine no</label><input id="f_no" placeholder="PC-01"></div>
+        <div class="field" style="margin:0"><label>Type</label><select id="f_type">${TYPES.map(t => `<option>${t}</option>`).join('')}</select></div>
         <div class="field" style="margin:0"><label>&nbsp;</label><button class="btn sm" style="width:100%" data-act="mAdd">Add</button></div>
       </div>
       <div class="tiny" style="margin-top:10px">Use the same machine numbers the office uses. Hiwa is counted per day, so it only asks worked / not worked and diesel.</div>
     </div>
   </div>
 
-  ${listBlock('Diesel pumps<i>डिझेल पंप</i>', 'pumps', DB.pumps, 'HP Petroleum')}
-  ${listBlock('Names for paid by<i>कोणी दिले</i>', 'people', DB.people, 'Rushi')}
+  ${listBlock('Diesel pumps', 'pumps', DB.pumps, 'HP Petroleum')}
+  ${listBlock('Names for paid by', 'people', DB.people, 'Rushi')}
 
-  <div class="card"><h3>Your data<i>तुमचा डेटा</i></h3><div class="pad">
-    <div class="tiny" style="line-height:1.8;margin-bottom:10px">Everything is stored on this phone in two places, and one snapshot per day is kept for 21 days. Still, send your entries to the office every evening.<br><span style="color:var(--steel)">डेटा या फोनमध्ये दोन ठिकाणी सेव्ह होतो. रोज संध्याकाळी ऑफिसला पाठवा.</span></div>
-    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="bkDown">Download backup<i>बॅकअप घ्या</i></button><button class="btn sec sm" style="flex:1" data-act="bkUp">Import backup<i>बॅकअप इम्पोर्ट</i></button></div>
-    <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="logout">Log out<i>लॉग आऊट</i></button></div>
+  <div class="card"><h3>Your data</h3><div class="pad">
+    <div class="tiny" style="line-height:1.8;margin-bottom:10px">Everything is stored on this phone in two places, and one snapshot per day is kept for 21 days. Still, send your entries to the office every evening.</div>
+    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="bkDown">Download backup</button><button class="btn sec sm" style="flex:1" data-act="bkUp">Import backup</button></div>
+    <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="logout">Log out</button></div>
   </div></div>`;
 }
 
