@@ -455,7 +455,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v23 · 10-09-2026';
+const APP_VERSION = 'v25 · 11-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -486,7 +486,10 @@ function normSite(s) {
     type: String(r.type), basis: r.basis === 'Daily' ? 'Daily' : 'Hourly',
     packageRate: num(r.packageRate), packageUnits: num(r.packageUnits) || (r.basis === 'Daily' ? 30 : 240)
   }));
-  s.mods = Object.assign({ machine: true, diesel: true, murum: false, vendor: true, funds: false, owner: false }, s.mods || {});
+  s.mods = Object.assign({ machine: true, diesel: true, murum: false, vendor: true, funds: false, owner: false, stock: false }, s.mods || {});
+  /* Industrial Park la stock apoap chalu (ekda), baki sites la site setup madhun) */
+  if (!s.stockSeen) { s.stockSeen = 1; if (/industrial\s*park/i.test(s.name)) s.mods.stock = true; }
+  s.stockOpening = num(s.stockOpening);
   s.murumUnit = s.murumUnit || 'Brass';
   s.xlRows = Object.assign({ ...BASE_ROWS }, s.xlRows || {});
   /* masters madhle rikame / duplicate kaadhun taka */
@@ -745,6 +748,32 @@ function firstDayFor(s, no, date, rec) {
   if (!others.length) return true;
   const first = others.reduce((a, r) => (String(r.date) < a ? String(r.date) : a), '9999-99-99');
   return String(date) <= first;
+}
+
+/* ---------- diesel stock: aala kiti, bharla kiti, shillak kiti ---------- */
+function stockDays(s) {
+  const rec = {}, fil = {};
+  (s.dieselLog || []).forEach(d => { if (d.date) rec[d.date] = (rec[d.date] || 0) + num(d.litres); });
+  (s.machineLog || []).forEach(r => { if (r.date) fil[r.date] = (fil[r.date] || 0) + num(r.diesel); });
+  const days = [...new Set(Object.keys(rec).concat(Object.keys(fil)))].filter(Boolean).sort();
+  let run = num(s.stockOpening);
+  return days.map(d => {
+    const r = rec[d] || 0, f = fil[d] || 0;
+    run += r - f;
+    return { date: d, rec: r, fil: f, net: r - f, stock: run };
+  });
+}
+function stockTotals(s) {
+  const days = stockDays(s);
+  const rec = days.reduce((a, x) => a + x.rec, 0);
+  const fil = days.reduce((a, x) => a + x.fil, 0);
+  return { days, rec, fil, opening: num(s.stockOpening), stock: num(s.stockOpening) + rec - fil };
+}
+function stockDay(s, d) {
+  return {
+    bills: (s.dieselLog || []).filter(x => x.date === d),
+    fills: (s.machineLog || []).filter(x => x.date === d && num(x.diesel))
+  };
 }
 
 /* ---------- machine no che variants shodhun ek karnyasathi ---------- */
@@ -1053,6 +1082,7 @@ const ICON = {
   expense: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>',
   vendor: '<svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></svg>',
   murum: '<svg viewBox="0 0 24 24"><path d="M3 19h18L12 6zM8.5 19l3.5-5 3.5 5"/></svg>',
+  stock: '<svg viewBox="0 0 24 24"><path d="M4 8h16v12H4zM4 8l2-4h12l2 4M9 12h6"/></svg>',
   more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 };
 function navItems(s) {
@@ -1061,6 +1091,7 @@ function navItems(s) {
   if (m.machine !== false) rest.push(['machine', 'Machine']);
   if (m.diesel !== false) rest.push(['diesel', 'Diesel']);
   if (m.murum) rest.push(['murum', 'Murum']);
+  if (m.stock) rest.push(['stock', 'Stock']);
   rest.push(['expense', 'Expense']);
   if (m.vendor !== false) rest.push(['vendor', 'Vendor']);
   rest.push(['more', 'More']);
@@ -1535,6 +1566,7 @@ function vendorSumView(s) {
 }
 
 /* ---------------- MORE ---------------- */
+VIEW.stock = s => stockView(s);
 VIEW.more = s => { const k = sub('more'); return k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
 
 /* ---------------- EXCEL SYNC ---------------- */
@@ -1639,7 +1671,7 @@ function sitesView(s) {
   </div></div>
   <div class="card"><h3>Site delete password<i>साइट डिलीट पासवर्ड</i><small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">Site delete karayla ha password lagto, mhanje chukun kunachihi site jaat nahi. Pahilya velela delete kartana to set karta yeto.<br><span style="color:var(--steel)">साइट डिलीट करायला हा पासवर्ड लागतो.</span></div>
-    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password<i>पासवर्ड बदला</i></button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password<i>पासवर्ड ठेवा</i></button>'}
+    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password<i>पासवर्ड बदला</i></button><div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password - reset<i>विसरलात? रिसेट करा</i></button></div>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password<i>पासवर्ड ठेवा</i></button>'}
   </div></div>
   <div class="card"><h3>Backup and Excel<i>बॅकअप आणि एक्सेल</i></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px">Take the Excel file and backup from <b>More &rarr; Excel</b>.</div>
@@ -1791,6 +1823,52 @@ function dueView(s) {
   </div></div>`;
 }
 
+
+/* ---------------- DIESEL STOCK ---------------- */
+function stockView(s) {
+  const t = stockTotals(s);
+  const days = t.days.slice().reverse();
+  return `
+  <div class="hero">
+    <div class="lbl">DIESEL IN STOCK<i>शिल्लक डिझेल</i></div>
+    <div class="big"><small></small>${dec(t.stock)}<small style="font-size:18px"> L</small></div>
+    <div class="hsplit">
+      <div><div class="k">RECEIVED<i>आलेले</i></div><div class="v num">${dec(t.rec)} L</div></div>
+      <div><div class="k">FILLED<i>भरलेले</i></div><div class="v num">${dec(t.fil)} L</div></div>
+      <div><div class="k">OPENING<i>सुरुवातीचे</i></div><div class="v num">${dec(t.opening)} L</div></div>
+    </div>
+  </div>
+
+  <div class="btnrow" style="margin:0 0 12px">
+    <button class="btn sec" style="flex:1" data-act="stkOpen">Opening stock<i>सुरुवातीचा स्टॉक</i></button>
+    <button class="btn sec" style="flex:1" data-act="sub" data-v="log" data-t="diesel">Diesel bills<i>डिझेल बिल</i></button>
+  </div>
+
+  ${t.stock < -0.5 ? '<div class="warn">Stock ujavа (minus) disat aahe. Diesel bill rahila asel kiwa machine madhe bharlela aakda jaast asel &mdash; tapasun bagha.</div>' : ''}
+
+  <div class="card"><h3>Date-wise stock<i>तारखेनुसार</i><small>${days.length} divas</small></h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Date</th><th class="n">Received</th><th class="n">Filled</th><th class="n">Day +/-</th><th class="n">Stock</th></tr></thead>
+      <tbody>${days.length ? days.map(d => `<tr data-act="stkDay" data-v="${d.date}">
+        <td class="nowrap">${fmtDate(d.date)}</td>
+        <td class="n">${d.rec ? dec(d.rec) : '—'}</td>
+        <td class="n">${d.fil ? dec(d.fil) : '—'}</td>
+        <td class="n" style="color:${d.net < 0 ? 'var(--due)' : 'var(--paid)'}">${d.net > 0 ? '+' : ''}${dec(d.net)}</td>
+        <td class="n"><b style="color:${d.stock < 0 ? 'var(--due)' : 'inherit'}">${dec(d.stock)}</b></td></tr>`).join('')
+        : '<tr><td colspan="5" class="muted">Ajun diesel chi nond nahi.</td></tr>'}</tbody>
+      <tfoot><tr><td>TOTAL</td><td class="n">${dec(t.rec)}</td><td class="n">${dec(t.fil)}</td>
+        <td class="n">${dec(t.rec - t.fil)}</td><td class="n">${dec(t.stock)}</td></tr></tfoot>
+    </table></div>
+    <div class="pad tiny">Konatyahi tarkhevar tap kara &mdash; tya divsache bill ani kontya machine madhe kiti bharla te disel.</div>
+  </div>
+
+  <div class="card"><h3>He kase mojla jata<i>हे कसे मोजले जाते</i></h3><div class="pad tiny" style="line-height:1.9">
+    <b>Received</b> = tya divsachya diesel bills madhle litre (Diesel tab)<br>
+    <b>Filled</b> = tya divshi machine entries madhe bharlela diesel (Machine tab)<br>
+    <b>Stock</b> = opening + ekun aalela &minus; ekun bharlela<br>
+    Udaharan: 3000 L aala, 2500 L bharla &rarr; 500 L shillak. Dusrya divshi 3000 aala ani 3500 bharla &rarr; tya divshi &minus;500, mhanje junya stock madhun 500 vaparla.
+  </div></div>`;
+}
 
 /* ============================================================
    EXCEL EXPORT  —  khara .xlsx file (formulas + dropdowns + dashboards)
@@ -2864,6 +2942,7 @@ const MODS = [
   ['machine', 'Machine log and rent'],
   ['diesel', 'Diesel purchase'],
   ['murum', 'Murum (separate head)'],
+  ['stock', 'Diesel stock (received vs filled)'],
   ['vendor', 'Vendor credit and payments'],
   ['owner', 'Machine owner payment'],
   ['funds', 'Money received / balance']
@@ -3018,7 +3097,8 @@ function delPassForm(change) {
       ${change ? '<div class="field"><label>Juna password<i>जुना पासवर्ड</i></label><input id="d_old" type="password"></div>' : ''}
       <div class="field"><label>Navin password<i>नवीन पासवर्ड</i></label><input id="d_new" type="password" placeholder="kimaan 4 akshare"></div>
       <div class="field"><label>Parat tach password<i>पुन्हा तोच पासवर्ड</i></label><input id="d_new2" type="password"></div>
-      <div class="tiny">Ha password fakt site delete kartana lagto. Visarla tar site delete karta yenar nahi &mdash; mhanun kuthe tari lihun theva.</div>
+      <div class="tiny" style="line-height:1.7">Ha password fakt site delete kartana lagto. Kuthe tari lihun theva.</div>
+      ${change ? `<div class="btnrow" style="margin-top:10px"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Password visarlat?<i>पासवर्ड विसरलात?</i></button></div>` : ''}
     </div></div>`,
     () => {
       const a = val('d_new'), b = val('d_new2');
@@ -3640,6 +3720,40 @@ document.addEventListener('click', async e => {
       migrate(); await save(); render(); toast(moved + ' entries badalya');
       break;
     }
+    case 'stkOpen': {
+      const cur = num(s.stockOpening);
+      const v2 = prompt('App suru kartana site var kiti diesel shillak hota? (litre)\n\nMahit nasel tar 0 theva.', cur ? String(cur) : '0');
+      if (v2 == null) break;
+      s.stockOpening = num(v2);
+      await save(); render(); toast('Opening stock ' + dec(s.stockOpening) + ' L');
+      break;
+    }
+    case 'stkDay': {
+      const d = stockDay(s, v);
+      const rec = d.bills.reduce((a, x) => a + num(x.litres), 0);
+      const fil = d.fills.reduce((a, x) => a + num(x.diesel), 0);
+      openSheet(fmtDate(v), `
+        <div class="card"><div class="scroll"><table><tbody>
+          <tr><td class="muted">Aala (received)</td><td class="right n"><b>${dec(rec)} L</b></td></tr>
+          <tr><td class="muted">Bharla (filled)</td><td class="right n"><b>${dec(fil)} L</b></td></tr>
+          <tr><td class="muted">Tya divsacha farak</td><td class="right n"><b style="color:${rec - fil < 0 ? 'var(--due)' : 'var(--paid)'}">${rec - fil > 0 ? '+' : ''}${dec(rec - fil)} L</b></td></tr>
+        </tbody></table></div></div>
+        <div class="card"><h3>Diesel bills<small>${d.bills.length}</small></h3>
+          ${d.bills.length ? d.bills.map(b => `<div class="row" data-act="dEdit" data-v="${b.id}">
+            <div class="main"><div class="ttl">${esc(b.vendor || 'Diesel')}</div>
+            <div class="sub">${dec(b.litres)} L${b.bill ? ' &middot; bill ' + esc(b.bill) : ''}</div></div>
+            <div class="amt">${money0(b.amount)}</div></div>`).join('')
+            : '<div class="empty">Tya divshi bill nahi.</div>'}
+        </div>
+        <div class="card"><h3>Machine madhe bharla<small>${d.fills.length}</small></h3>
+          ${d.fills.length ? d.fills.map(r => `<div class="row" data-act="mlEdit" data-v="${r.id}">
+            <div class="main"><div class="ttl">${esc(r.machineNo || 'machine nahi')}</div>
+            <div class="sub">${dec(hoursOf(r))} hr${hoursOf(r) && num(r.diesel) ? ' &middot; ' + dec(num(r.diesel) / hoursOf(r), 2) + ' L/hr' : ''}</div></div>
+            <div class="amt">${dec(r.diesel)} L</div></div>`).join('')
+            : '<div class="empty">Tya divshi kuthlya machine madhe bharla nahi.</div>'}
+        </div>`, null, null);
+      break;
+    }
     case 'mArrange': arrangeForm(s); break;
     case 'aUp': case 'aDn': {
       const i = +v, j = a === 'aUp' ? i - 1 : i + 1;
@@ -3682,6 +3796,15 @@ document.addEventListener('click', async e => {
     case 'siteDel': siteDeleteForm(v); break;
     case 'delPassSet': delPassForm(false); break;
     case 'delPassChange': delPassForm(true); break;
+    case 'delPassForgot': {
+      if (!confirm('Delete password reset karaycha?\n\nHa password fakt chukun site delete hou naye mhanun aahe. Reset kelyavar kuthlahi password nasel - mag navin thevta yeto.\n\nPudhe jaayche?')) break;
+      download('Site_Manager_backup_' + today() + '.json', JSON.stringify(DB), 'application/json');
+      if (!confirm('Aadhi backup download zala aahe (Downloads madhe bagha).\n\nAata password kaadhtoy - nakki?')) break;
+      delete DB.delPass;
+      closeSheet(); await save(); render();
+      alert('Password kaadhla.\n\nAata More > Sites madhun navin password thevaa, kiwa site delete kartana tithech navin thevta yeil.');
+      break;
+    }
     case 'siteGo': DB.activeId = v; UI = {}; TAB = 'dash'; closeSheet(); await save(); render(); toast('Site changed'); break;
     case 'xlsx': exportExcel(s); break;
     case 'xlRow': break;
