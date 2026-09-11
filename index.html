@@ -149,7 +149,9 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .btn.dk{background:var(--ink);color:#fff}
 .btn.dgr{background:#fff;border:1px solid #E7B7B1;color:var(--due)}
 .btn.sm{width:auto;padding:8px 12px;font-size:13.5px}
-.btnrow{display:flex;gap:8px;margin-top:4px}
+.btnrow{display:flex;gap:8px;margin-top:8px;align-items:stretch}
+.btnrow > .btn{min-width:0}
+.f2 > *{min-width:0}
 .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
 .seg button{flex:1;border:0;background:#fff;padding:10px 6px;font-size:13.5px;font-weight:600;color:var(--steel)}
 .seg button.on{background:var(--ink);color:#fff}
@@ -455,7 +457,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v26 · 11-09-2026';
+const APP_VERSION = 'v27 · 11-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -1250,14 +1252,11 @@ function machineLogView(s) {
     <div class="kpi"><div class="k">DIESEL (L)<i>डिझेल लिटर</i></div><div class="v num">${dec(dsl)}</div></div>
     <div class="kpi b"><div class="k">DIESEL / HOUR<i>तासाला डिझेल</i></div><div class="v num">${lph ? dec(lph, 2) : '—'}</div></div>
   </div>
-  <div class="card"><div class="pad" style="padding-bottom:10px">
-    <div class="f2" style="align-items:end">
-      <div class="field" style="margin:0"><label>Date<i>तारीख</i></label>
-        <input type="date" id="ml_date" value="${esc(day)}" data-act="mlDateIn"></div>
-      <div class="field" style="margin:0">
-        <button class="btn sec sm" style="width:100%" data-act="mlDateClear">${day ? 'Sagle divas dakhva' : 'Aaj cha divas'}<i>${day ? 'सर्व दिवस' : 'आजचा दिवस'}</i></button></div>
-    </div>
-    ${day ? `<div class="tiny" style="margin-top:8px">${fmtDate(day)} &mdash; <b>${chipList.length}</b> machine chalalya, ${dayRows.length} entries.</div>` : ''}
+  <div class="card"><div class="pad">
+    <div class="field" style="margin:0 0 10px"><label>Date<i>तारीख</i></label>
+      <input type="date" id="ml_date" value="${esc(day)}" data-act="mlDateIn"></div>
+    <button class="btn sec sm" style="width:100%" data-act="mlDateClear">${day ? 'Show all days' : "Today's entries"}<i>${day ? 'सर्व दिवस' : 'आजचा दिवस'}</i></button>
+    ${day ? `<div class="tiny" style="margin-top:10px">${fmtDate(day)} &mdash; <b>${chipList.length}</b> machine chalalya, ${dayRows.length} entries.</div>` : ''}
   </div></div>
   <div class="card">
     <div class="chips">
