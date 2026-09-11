@@ -457,7 +457,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v27 · 11-09-2026';
+const APP_VERSION = 'v28 · 11-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -1380,7 +1380,11 @@ function machineMasterView(s) {
   <div class="card mt"><h3>Rate master<i>रेट मास्टर</i><small>fill rates here</small></h3><div class="scroll"><table>
     <thead><tr><th>Type</th><th>Basis</th><th class="n">Package Rate</th><th class="n">Units</th><th class="n">Per Hr/Day</th></tr></thead>
     <tbody>${s.rateMaster.map((r, i) => `<tr data-act="rmEdit" data-v="${i}"><td><b>${esc(r.type)}</b></td><td class="tiny">${esc(r.basis)}</td><td class="n">${r.packageRate ? money0(r.packageRate) : '<span class="pill u">to fill</span>'}</td><td class="n">${r.packageUnits}</td><td class="n">${r.packageRate ? dec(num(r.packageRate) / (num(r.packageUnits) || 1), 0) : '—'}</td></tr>`).join('')}</tbody>
-  </table></div><div class="pad tiny">Tap a row to change the rate. For a machine-specific rate, open that machine in the list below.<i>रेट बदलण्यासाठी ओळीवर टॅप करा</i></div></div>
+  </table></div>
+  <div class="pad">
+    <button class="btn sec sm" style="width:100%" data-act="rmAdd">+ Add machine type<i>नवीन प्रकार</i></button>
+    <div class="tiny" style="margin-top:8px">Type var tap kela ki tyacha rate badalta yeto. Ekhadya machine cha vegla rate asel tar ti machine ughadun tithe taka.</div>
+  </div></div>
   <div class="card"><h3>Machines<i>मशीन</i><small>${s.machines.length}</small></h3>
     ${s.machines.map(m => `<div class="row" data-act="mEdit" data-v="${m.id}">
       <div class="main"><div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
@@ -2804,20 +2808,41 @@ function machineMasterForm(s, rec) {
 
 /* ---------- rate master ---------- */
 function rateForm(s, i) {
-  const r = s.rateMaster[i];
-  openSheet('Rate &mdash; ' + esc(r.type), `
+  const isNew = (i == null || i < 0);
+  const r = isNew ? { type: '', basis: 'Hourly', packageRate: '', packageUnits: 240 } : s.rateMaster[i];
+  const used = isNew ? 0 : s.machines.filter(m => m.type === r.type).length;
+  openSheet(isNew ? 'New machine type' : 'Rate \u2014 ' + esc(r.type), `
     <div class="card"><div class="pad">
-      ${segField('Rate Basis', 'f_basis', ['Hourly', 'Daily'], r.basis)}
+      ${isNew
+        ? `<div class="field"><label>Machine type name<i>मशीनचा प्रकार</i></label><input id="f_type" placeholder="udaharan: Dumper, Crane, Grader" autocomplete="off"></div>`
+        : `<div class="field"><label>Machine type<i>मशीनचा प्रकार</i></label><input id="f_type" value="${esc(r.type)}"></div>
+           <div class="tiny" style="margin:-6px 0 10px">${used ? used + ' machine ya type chya aahet. Naav badalla tar tyanche pn badalel.' : 'Ya type chi ek pn machine nahi.'}</div>`}
+      ${segField('Rate basis', 'f_basis', ['Hourly', 'Daily'], r.basis)}
       <div class="f2">
-        <div class="field"><label>Package rate (Rs)<i>पॅकेज रेट</i></label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.packageRate) && r.packageRate ? r.packageRate : ''}"></div>
-        <div class="field"><label>Package units<i>पॅकेज युनिट</i></label><input type="number" inputmode="decimal" id="f_units" value="${r.packageUnits}"></div>
+        <div class="field"><label>Package rate (Rs)<i>पॅकेज रेट</i></label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.packageRate) && num(r.packageRate) ? r.packageRate : ''}"></div>
+        <div class="field"><label>Package units<i>पॅकेज युनिट</i></label><input type="number" inputmode="decimal" id="f_units" value="${has(r.packageUnits) ? r.packageUnits : ''}"></div>
       </div>
-      <div class="tiny">Udaharan: Poclain cha mahinyacha rate 240 hours sathi asel tar Package Rate = to rate, Units = 240. Rent = Total Hours x (Rate / 240).</div>
+      <div class="tiny" style="line-height:1.7">Udaharan: Poclain cha mahinyacha rate 240 hours sathi asel tar Package Rate = to rate, Units = 240. Hiwa sarkha divsavar asel tar Basis = Daily ani Units = 30.<br>Rate nantar bharla tari chalel.</div>
     </div></div>`,
     () => {
-      r.basis = segVal('f_basis'); r.packageRate = num(val('f_rate')); r.packageUnits = num(val('f_units')) || 1;
+      const nm = val('f_type').trim();
+      if (!nm) return toast('Type cha naav taka');
+      const clash = s.rateMaster.find((x, k) => k !== i && String(x.type).toLowerCase() === nm.toLowerCase());
+      if (clash) return toast('Ha type aadhich aahe');
+      const basis = segVal('f_basis'), rate = num(val('f_rate'));
+      const units = num(val('f_units')) || (basis === 'Daily' ? 30 : 240);
+      if (isNew) {
+        s.rateMaster.push({ type: nm, basis, packageRate: rate, packageUnits: units });
+      } else {
+        if (nm !== r.type) s.machines.forEach(m => { if (m.type === r.type) m.type = nm; });
+        r.type = nm; r.basis = basis; r.packageRate = rate; r.packageUnits = units;
+      }
       return true;
-    }, null);
+    },
+    (!isNew && !used) ? () => {
+      if (!confirm(r.type + ' ha type kaadhaycha? Ya type chi ek pn machine nahi.')) return false;
+      s.rateMaster = s.rateMaster.filter((x, k) => k !== i);
+    } : null);
 }
 
 /* ---------- simple lists ---------- */
@@ -3807,6 +3832,7 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'rmEdit': rateForm(s, +v); break;
+    case 'rmAdd': rateForm(s, null); break;
     case 'listAdd': listForm(s, v, null); break;
     case 'listEdit': { const [k, i] = v.split(':'); listForm(s, k, +i); break; }
     case 'sites': sitePicker(); break;
