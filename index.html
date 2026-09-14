@@ -461,7 +461,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v32 · 11-09-2026';
+const APP_VERSION = 'v34 · 14-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -492,9 +492,9 @@ function normSite(s) {
     type: String(r.type), basis: r.basis === 'Daily' ? 'Daily' : 'Hourly',
     packageRate: num(r.packageRate), packageUnits: num(r.packageUnits) || (r.basis === 'Daily' ? 30 : 240)
   }));
-  s.mods = Object.assign({ machine: true, diesel: true, murum: false, vendor: true, funds: false, owner: false, stock: false }, s.mods || {});
-  /* Industrial Park la stock apoap chalu (ekda), baki sites la site setup madhun) */
-  if (!s.stockSeen) { s.stockSeen = 1; if (/industrial\s*park/i.test(s.name)) s.mods.stock = true; }
+  s.mods = Object.assign({ machine: true, diesel: true, murum: false, vendor: true, funds: false, owner: false, stock: true }, s.mods || {});
+  /* diesel stock saglya sites la chalu (junya sites la pn ekda parat chalu kara) */
+  if (s.stockSeen !== 2) { s.stockSeen = 2; if (s.mods.diesel !== false) s.mods.stock = true; }
   s.stockOpening = num(s.stockOpening);
   s.murumUnit = s.murumUnit || 'Brass';
   s.xlRows = Object.assign({ ...BASE_ROWS }, s.xlRows || {});
@@ -1309,9 +1309,15 @@ function machineLogView(s) {
   else if (f) rows = rows.filter(r => r.machineNo === f);
   const noMachine = dayRows.filter(r => !r.machineNo).length;
   /* tarikh nivadli asel tar fakt tya divshi chalalelya machine dakhva */
-  const chipList = day
+  const ty = UI.mlType || '';
+  if (ty) rows = rows.filter(r => (machineType(s, r.machineNo) || '') === ty);
+  /* tya divshi kontya type chya machine chalalya */
+  const typeList = [...new Set((day ? dayRows : s.machineLog)
+    .map(r => machineType(s, r.machineNo) || '').filter(Boolean))]
+    .sort((a, b) => s.machines.findIndex(m => m.type === a) - s.machines.findIndex(m => m.type === b));
+  const chipList = (day
     ? s.machines.filter(m => dayRows.some(r => sameNo(r.machineNo, m.no)))
-    : s.machines;
+    : s.machines).filter(m => !ty || m.type === ty);
   const shown = rows.slice(0, UI.mlMore || 60);
   const hrs = rows.reduce((a, r) => a + hoursOf(r), 0), dsl = rows.reduce((a, r) => a + num(r.diesel), 0);
   const lph = hrs ? dsl / hrs : 0;
@@ -1327,8 +1333,16 @@ function machineLogView(s) {
     <div class="field" style="margin:0 0 10px"><label>Date</label>
       <input type="date" id="ml_date" value="${esc(day)}" data-act="mlDateIn"></div>
     <button class="btn sec sm" style="width:100%" data-act="mlDateClear">${day ? 'Show all days' : "Today's entries"}</button>
-    ${day ? `<div class="tiny" style="margin-top:10px">${fmtDate(day)} &mdash; <b>${chipList.length}</b> machine chalalya, ${dayRows.length} entries.</div>` : ''}
+    ${day ? `<div class="tiny" style="margin-top:10px">${fmtDate(day)} &mdash; <b>${chipList.length}</b> machine${ty ? ' (' + esc(ty) + ')' : ''} worked, ${rows.length} entries.</div>` : ''}
   </div></div>
+  ${typeList.length > 1 ? `<div class="card"><div class="chips">
+    <button class="chip ${!ty ? 'on' : ''}" data-act="mlType" data-v="">All types</button>
+    ${typeList.map(t2 => {
+      const n = (day ? dayRows : s.machineLog).filter(r => (machineType(s, r.machineNo) || '') === t2).length;
+      const mc = new Set((day ? dayRows : s.machineLog).filter(r => (machineType(s, r.machineNo) || '') === t2).map(r => String(r.machineNo).toLowerCase())).size;
+      return `<button class="chip ${ty === t2 ? 'on' : ''}" data-act="mlType" data-v="${esc(t2)}">${esc(t2)} (${mc})</button>`;
+    }).join('')}
+  </div></div>` : ''}
   <div class="card">
     <div class="chips">
       <button class="chip ${!f ? 'on' : ''}" data-act="mlFilter" data-v="">All${day ? ' (' + dayRows.length + ')' : ''}</button>
@@ -1742,15 +1756,7 @@ function sitesView(s) {
     <div class="pad"><button class="btn" data-act="siteAdd">+ New site</button></div>
   </div>
   <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
-  <div class="card"><h3>Supervisor app</h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Send this Reading Book link to the supervisor on WhatsApp. They open it and use "Add to Home screen".</div>
-    <div class="field"><label>Link</label><input id="f_suplink" value="${esc(supLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
-    <div class="btnrow">
-      <button class="btn sec sm" style="flex:1" data-act="supLinkCopy">Copy link</button>
-      <button class="btn sec sm" style="flex:1" data-act="supLinkWa">WhatsApp</button>
-    </div>
-    <div class="btnrow"><button class="btn dk sm" style="flex:1" data-act="supOpen">Open Reading Book</button></div>
-  </div></div>
+
   <div class="card"><h3>Company logo</h3><div class="pad">
     ${DB.logo ? `<div style="background:var(--ink);border-radius:10px;padding:12px;text-align:center;margin-bottom:10px"><img src="${DB.logo}" style="height:38px;max-width:70%;object-fit:contain"></div>` : '<div class="tiny" style="margin-bottom:10px">Logo takla ki var davikade "SITE MANAGER" chya jaagi to disel.</div>'}
     <div class="btnrow">
@@ -1994,21 +2000,13 @@ function mgrView(s) {
     }).join('') : '<div class="empty">No managers yet.</div>'}
   </div>
 
-  <div class="card"><h3>Manager app</h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Send this link to each manager on WhatsApp. They record money received and expenses daily, then send a data file &mdash; take it in here with "Import files".<b>data file</b> will send it &mdash; take it in here with "Import files".</div>
-    <div class="field"><label>Link</label><input id="f_mgrlink" value="${esc(mgrLink())}" readonly style="background:#F2F5F7;font-size:13px"></div>
-    <div class="btnrow">
-      <button class="btn sec sm" style="flex:1" data-act="mgLinkCopy">Copy link</button>
-      <button class="btn sec sm" style="flex:1" data-act="mgLinkWa">WhatsApp</button>
-    </div>
-  </div></div>
+
 
   <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
-    <b>1.</b> Add the manager here, then send them the link above.<br>
-    <b>2.</b> They create their own login in their app.<br>
+    <b>1.</b> Add the manager here.<br>
+    <b>2.</b> Record the money you give them with "+ Money given".<br>
     <b>3.</b> Money received ti entry &mdash; <b>site nako</b>. Spent &mdash; <b>site nivadaycha</b>.<br>
-    <b>4.</b> Roj "Send data file" &rarr; tumhala WhatsApp var file.<br>
-    <b>5.</b> Here use "Import files" &mdash; each expense goes to its own <b>site chya Expense log</b> and money received goes to that manager’s account.
+    <b>4.</b> Balance = money given &minus; what they spent, across all sites.<b>site chya Expense log</b> and money received goes to that manager’s account.
   </div></div>`;
 }
 
@@ -3772,9 +3770,10 @@ document.addEventListener('click', async e => {
     case 'sub': UI[el.dataset.t || TAB] = v; if (el.dataset.t) TAB = el.dataset.t; render(); break;
     case 'mlFilter': UI.mlFilter = v; UI.mlMore = 60; render(); break;
     case 'mlMore': UI.mlMore = (UI.mlMore || 60) + 100; render(); break;
+    case 'mlType': UI.mlType = v; UI.mlFilter = ''; UI.mlMore = 0; render(); break;
     case 'mlDateClear':
       UI.mlDate = UI.mlDate ? '' : today();
-      UI.mlFilter = ''; UI.mlMore = 0;
+      UI.mlFilter = ''; UI.mlType = ''; UI.mlMore = 0;
       render(); break;
     case 'mlDelAll': {
       const list = v === '__none' ? s.machineLog.filter(r => !r.machineNo) : s.machineLog.filter(r => r.machineNo === v);
