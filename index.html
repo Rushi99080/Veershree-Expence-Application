@@ -461,7 +461,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v35 · 14-09-2026';
+const APP_VERSION = 'v37 · 16-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -484,7 +484,7 @@ function normSite(s) {
   s.name = String(s.name || 'Site').trim() || 'Site';
   s.created = s.created || today();
   /* saglya yaadya asaylach havyat */
-  ['machines', 'categories', 'people', 'vendors', 'dieselVendors', 'advance', 'reminders',
+  ['machines', 'categories', 'people', 'vendors', 'dieselVendors', 'advance', 'reminders', 'bills',
    'machineLog', 'dieselLog', 'expenseLog', 'vendorPayments', 'murumLog', 'funds', 'ownerPayments'
   ].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
   if (!Array.isArray(s.rateMaster) || !s.rateMaster.length) s.rateMaster = blankSite('x').rateMaster;
@@ -547,6 +547,14 @@ function normSite(s) {
     amount: N(r.amount), from: S(r.from), mode: S(r.mode), remark: S(r.remark) }));
   s.ownerPayments = s.ownerPayments.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), owner: S(r.owner),
     amount: N(r.amount), paidBy: S(r.paidBy), mode: S(r.mode), remark: S(r.remark) }));
+  s.bills = s.bills.filter(b => b && (b.owner || (b.items || []).length)).map(b => ({
+    id: b.id || uid(), no: S(b.no), date: D(b.date), owner: S(b.owner), mobile: S(b.mobile), site: S(b.site),
+    from: D(b.from), to: D(b.to), received: N(b.received), note: S(b.note),
+    items: (b.items || []).filter(Boolean).map(i => ({ desc: S(i.desc), hours: N(i.hours), rate: N(i.rate), amount: N(i.amount) }))
+  }));
+  s.co = Object.assign({ name: '', line1: '', line2: '', mobile: '', email: '', gstin: '', bank: '', terms: '' }, s.co || {});
+  s.billPrefix = s.billPrefix == null ? 'RB-' : String(s.billPrefix);
+  s.billNext = num(s.billNext) || 1;
   s.reminders = s.reminders.filter(r => r && (r.vendor || r.note)).map(r => ({ id: r.id || uid(), vendor: S(r.vendor),
     due: D(r.due || r.date), amount: N(r.amount), note: S(r.note), done: !!r.done }));
   /* data madhle naav masters madhe nasel tar add kara — nahitar dropdown madhe disat nahi */
@@ -715,7 +723,7 @@ function blankSite(name) {
     ],
     machines: [], categories: ['Miscellaneous'], people: [], vendors: [], dieselVendors: [],
     machineLog: [], dieselLog: [], expenseLog: [], vendorPayments: [],
-    murumLog: [], funds: [], ownerPayments: [], advance: [], reminders: [],
+    murumLog: [], funds: [], ownerPayments: [], advance: [], reminders: [], bills: [],
     mods: { machine: true, diesel: true, murum: false, vendor: true, funds: false, owner: false },
     murumUnit: 'Brass',
     xlRows: { ...BASE_ROWS }
@@ -830,6 +838,24 @@ function stockDay(s, d) {
     bills: (s.dieselLog || []).filter(x => x.date === d),
     fills: (s.machineLog || []).filter(x => x.date === d && num(x.diesel))
   };
+}
+
+/* ---------- BILLING (manual rate, machine rent bill) ---------- */
+const billTotal = b => (b.items || []).reduce((a, i) => a + num(i.amount), 0);
+const billDue = b => billTotal(b) - num(b.received);
+function nextBillNo(s) {
+  const pre = s.billPrefix == null ? 'RB-' : s.billPrefix;
+  return String(pre) + String(num(s.billNext) || 1);
+}
+/* nivadlelya period madhle machine ani tyanche tas (rate manually bharaycha) */
+function billLinesFrom(s, from, to, owner) {
+  return s.machines
+    .filter(m => !owner || m.owner === owner)
+    .map(m => {
+      const r = machineRent(s, m.no, from, to);
+      return { desc: m.no + (m.type ? ' (' + m.type + ')' : ''), hours: r.hours, rate: '', amount: '', diesel: r.diesel, entries: r.entries };
+    })
+    .filter(x => x.entries);
 }
 
 /* ---------- machine no che variants shodhun ek karnyasathi ---------- */
@@ -1075,11 +1101,35 @@ async function notifyDue(s) {
 
 /* --- machine owner: rent payable vs dilele paise --- */
 function ownerList(s) { return [...new Set(s.machines.map(m => m.owner).filter(Boolean))].sort(); }
-function ownerStats(s, owner) {
+function ownerStats(s, owner, from, to) {
   const ms = s.machines.filter(m => m.owner === owner);
-  const rent = ms.reduce((a, m) => a + machineRent(s, m.no).rent, 0);
-  const paid = (s.ownerPayments || []).filter(p => p.owner === owner).reduce((a, p) => a + num(p.amount), 0);
+  const rent = ms.reduce((a, m) => a + machineRent(s, m.no, from, to).rent, 0);
+  const paid = (s.ownerPayments || []).filter(p => p.owner === owner && inRange(p.date, from, to))
+    .reduce((a, p) => a + num(p.amount), 0);
   return { machines: ms, rent, paid, balance: rent - paid };
+}
+
+/* owner cha bill: period cha rent, period che payment, ani mage chi baki */
+function ownerBillData(s, owner, from, to) {
+  const ms = s.machines.filter(m => m.owner === owner);
+  const lines = ms.map(m => {
+    const r = machineRent(s, m.no, from, to);
+    return { m, r };
+  }).filter(x => x.r.entries || x.r.rent);
+  const rent = lines.reduce((a, x) => a + x.r.rent, 0);
+  const pays = (s.ownerPayments || []).filter(p => p.owner === owner && inRange(p.date, from, to))
+    .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const paid = pays.reduce((a, p) => a + num(p.amount), 0);
+  /* ya period chya aadhi cha hishob */
+  let prevRent = 0, prevPaid = 0;
+  if (from) {
+    const before = shiftDay(from, -1);
+    prevRent = ms.reduce((a, m) => a + machineRent(s, m.no, '', before).rent, 0);
+    prevPaid = (s.ownerPayments || []).filter(p => p.owner === owner && p.date && p.date <= before)
+      .reduce((a, p) => a + num(p.amount), 0);
+  }
+  const opening = prevRent - prevPaid;
+  return { owner, from, to, lines, rent, pays, paid, opening, payable: opening + rent - paid };
 }
 
 /* --- diesel vendor summary --- */
@@ -1158,12 +1208,12 @@ function navItems(s) {
 
 function subsFor(s, t) {
   const m = s.mods || {};
-  if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary'], ['rent', 'Rent']].concat(m.owner ? [['owner', 'Owner']] : []).concat([['mast', 'Machines']]);
+  if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary'], ['bill', 'Billing'], ['rent', 'Rent']].concat(m.owner ? [['owner', 'Owner']] : []).concat([['mast', 'Machines']]);
   if (t === 'more') return [['mgr', 'Managers'], ['excel', 'Excel']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
   return SUBS[t];
 }
 const SUBS = {
-  machine: [['log', 'Daily log'], ['sum', 'Summary'], ['rent', 'Rent'], ['mast', 'Machines']],
+  machine: [['log', 'Daily log'], ['sum', 'Summary'], ['bill', 'Billing'], ['rent', 'Rent'], ['mast', 'Machines']],
   diesel: [['log', 'Purchases'], ['sum', 'Summary']],
   expense: [['log', 'Entries'], ['sum', 'Summary']],
   vendor: [['pend', 'Pending'], ['due', 'Due dates'], ['pay', 'Payments'], ['sum', 'Summary']],
@@ -1292,6 +1342,7 @@ VIEW.dash = s => {
 /* ---------------- MACHINE ---------------- */
 VIEW.machine = s => {
   const k = sub('machine');
+  if (k === 'bill') return billingView(s);
   if (k === 'owner') return ownerView(s);
   if (k === 'log') return machineLogView(s);
   if (k === 'sum') return machineSumView(s);
@@ -1359,7 +1410,7 @@ function machineLogView(s) {
           <div class="ttl">${r.machineNo ? esc(r.machineNo) + ' <span class="pill n">' + esc(machineType(s, r.machineNo) || 'no type') + '</span>' : '<span class="pill u">machine number needed</span>'}</div>
           <div class="sub">${fmtDate(r.date)} &nbsp;&middot;&nbsp; ${has(r.inR) ? dec(r.inR, 1) : '—'} &rarr; ${has(r.outR) ? dec(r.outR, 1) : '—'}${r.diesel ? ' &nbsp;&middot;&nbsp; ' + dec(r.diesel) + ' L' : ''}${r.remark ? ' &nbsp;&middot;&nbsp; ' + esc(r.remark) : ''}${num(r.openDiesel) ? ' &nbsp;&middot;&nbsp; <b>opening ' + dec(r.openDiesel) + ' L</b>' : ''}</div>
         </div>
-        <div class="amt">${dec(h)}<div class="tiny" style="font-weight:500">hr</div>${(h > 0 && num(r.diesel) > 0) ? `<div class="tiny" style="font-weight:700;color:var(--rent)">${dec(num(r.diesel) / h, 2)} L/hr</div>` : ''}</div>
+        <div class="amt">${dec(h)}<div class="tiny" style="font-weight:500">hr</div></div>
       </div>`;
     }).join('') : '<div class="empty">No entries yet. Tap "+ Machine entry" above to start.</div>'}
     ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="mlMore">Ajun ${rows.length - shown.length} entries dakhva</button></div>` : ''}
@@ -1853,7 +1904,10 @@ function ownerView(s) {
   const pays = (s.ownerPayments || []).slice().sort(byDateDesc);
   const T = owners.reduce((a, o) => { const x = ownerStats(s, o); return { r: a.r + x.rent, p: a.p + x.paid, b: a.b + x.balance }; }, { r: 0, p: 0, b: 0 });
   return `
-  <button class="btn" data-act="opAdd">+ Owner payment</button>
+  <div class="btnrow" style="margin:0 0 12px">
+    <button class="btn" style="flex:1" data-act="opAdd">+ Owner payment</button>
+    <button class="btn sec" style="flex:1" data-act="obOpen">Make bill</button>
+  </div>
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">RENT PAYABLE</div><div class="v num">${money0(T.r)}</div></div>
     <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(T.p)}</div></div>
@@ -1861,7 +1915,7 @@ function ownerView(s) {
   </div>
   <div class="card"><h3>Owner-wise</h3><div class="scroll"><table>
     <thead><tr><th>Owner</th><th class="n">Machines</th><th class="n">Rent</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead>
-    <tbody>${owners.map(o => { const x = ownerStats(s, o); return `<tr><td class="nowrap">${esc(o)}</td><td class="n">${x.machines.length}</td><td class="n">${money0(x.rent)}</td><td class="n">${money0(x.paid)}</td><td class="n"><b style="color:${x.balance > 0 ? 'var(--due)' : 'var(--paid)'}">${money0(x.balance)}</b></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted">Fill owner names in Machine Master.</td></tr>'}</tbody>
+    <tbody>${owners.map(o => { const x = ownerStats(s, o); return `<tr data-act="obOpen" data-v="${esc(o)}"><td class="nowrap">${esc(o)}<div class="tiny" style="color:var(--hivis-dk)">BILL</div></td><td class="n">${x.machines.length}</td><td class="n">${money0(x.rent)}</td><td class="n">${money0(x.paid)}</td><td class="n"><b style="color:${x.balance > 0 ? 'var(--due)' : 'var(--paid)'}">${money0(x.balance)}</b></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted">Fill owner names in Machine Master.</td></tr>'}</tbody>
     <tfoot><tr><td>TOTAL</td><td class="n">${s.machines.length}</td><td class="n">${money0(T.r)}</td><td class="n">${money0(T.p)}</td><td class="n">${money0(T.b)}</td></tr></tfoot>
   </table></div></div>
   <div class="card"><h3>Payments<small>${pays.length}</small></h3>
@@ -2051,6 +2105,63 @@ function mgrDetailSheet(id) {
         <div class="sub">${fmtDate(o.e.date)} &middot; ${esc(o.s.name)} &middot; ${esc(o.e.category)}</div></div>
         <div class="amt">${money0(o.e.amount)}</div></div>`).join('') : '<div class="empty">No expenses yet.</div>'}
     </div>`, null, null);
+}
+
+/* ---------------- BILLING ---------------- */
+function billingView(s) {
+  const rows = (s.bills || []).slice().sort(byDateDesc);
+  const billed = rows.reduce((a, b) => a + billTotal(b), 0);
+  const due = rows.reduce((a, b) => a + Math.max(0, billDue(b)), 0);
+  return `
+  <button class="btn" data-act="blAdd">+ New bill</button>
+
+  <div class="kpis k3 mt">
+    <div class="kpi"><div class="k">BILLS</div><div class="v num">${rows.length}</div></div>
+    <div class="kpi b"><div class="k">BILLED</div><div class="v num">${money0(billed)}</div></div>
+    <div class="kpi r"><div class="k">BALANCE</div><div class="v num">${money0(due)}</div></div>
+  </div>
+
+  <div class="card mt"><h3>Bills<small>${rows.length}</small></h3>
+    ${rows.length ? rows.map(b => {
+      const t = billTotal(b), d = billDue(b);
+      const hrs = (b.items || []).reduce((a, i) => a + num(i.hours), 0);
+      return `<div class="row" data-act="blOpen" data-v="${b.id}">
+        <div class="main"><div class="ttl">${esc(b.owner || '—')}
+          ${num(b.received) ? (d > 0.5 ? '<span class="pill u">balance ' + money0(d) + '</span>' : '<span class="pill p">paid</span>') : ''}</div>
+        <div class="sub">${esc(b.no || '')} &middot; ${fmtDate(b.date)}${b.from ? ' &middot; ' + fmtDate(b.from) + ' to ' + fmtDate(b.to) : ''} &middot; ${(b.items || []).length} machines${hrs ? ' &middot; ' + dec(hrs) + ' hrs' : ''}</div></div>
+        <div class="amt">${money0(t)}</div></div>`;
+    }).join('') : '<div class="empty">No bills yet. Tap "+ New bill".</div>'}
+  </div>
+
+  <div class="card"><h3>Your details on the bill</h3><div class="pad">
+    <div class="field"><label>Company / your name</label><input id="co_nm" value="${esc((s.co || {}).name || '')}" placeholder="Veershree Construction"></div>
+    <div class="field"><label>Address line 1</label><input id="co_l1" value="${esc((s.co || {}).line1 || '')}"></div>
+    <div class="field"><label>Address line 2</label><input id="co_l2" value="${esc((s.co || {}).line2 || '')}"></div>
+    <div class="f2">
+      <div class="field"><label>Mobile</label><input id="co_mo" type="tel" inputmode="numeric" value="${esc((s.co || {}).mobile || '')}"></div>
+      <div class="field"><label>Email</label><input id="co_em" type="email" value="${esc((s.co || {}).email || '')}"></div>
+    </div>
+    <div class="field"><label>GSTIN (optional)</label><input id="co_gs" value="${esc((s.co || {}).gstin || '')}"></div>
+    <div class="field"><label>Bank details (optional)</label><input id="co_bk" value="${esc((s.co || {}).bank || '')}"></div>
+    <div class="field"><label>Note / terms on bill (optional)</label><input id="co_tm" value="${esc((s.co || {}).terms || '')}" placeholder="Payment within 7 days"></div>
+    <button class="btn sec sm" style="width:100%" data-act="coSave">Save details</button>
+  </div></div>
+
+  <div class="card"><h3>Bill settings</h3><div class="pad">
+    <div class="f2">
+      <div class="field"><label>Bill no prefix</label><input id="bl_pre" value="${esc(s.billPrefix)}" placeholder="RB-"></div>
+      <div class="field"><label>Next number</label><input type="number" inputmode="numeric" id="bl_nx" value="${s.billNext}"></div>
+    </div>
+    <div class="tiny" style="margin-bottom:10px">Next bill will be <b>${esc(nextBillNo(s))}</b>. Your company details are set just above.</div>
+    <button class="btn sec sm" style="width:100%" data-act="blSet">Save</button>
+  </div></div>
+
+  <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
+    <b>1.</b> Tap <b>+ New bill</b>, put the machine owner name and the period.<br>
+    <b>2.</b> Tap <b>Fill from machine log</b> &mdash; every machine that worked in that period comes in with its total hours.<br>
+    <b>3.</b> Put the <b>rate</b> against each machine yourself &mdash; the amount is worked out for you. Transport or shift charges: leave hours and rate empty and just put the amount.<br>
+    <b>4.</b> Save, then <b>Print / PDF</b> or send on <b>WhatsApp</b>.
+  </div></div>`;
 }
 
 /* ============================================================
@@ -2643,9 +2754,7 @@ function machineBill(s, no) {
       ['TOTAL HOURS', dec(r.hours)],
       ['TOTAL DIESEL (L)', dec(r.diesel)],
       (() => { const o = rows.reduce((a, x) => a + num(x.openDiesel), 0); return o ? ['OPENING DIESEL (L)', dec(o)] : null; })(),
-      ['DIESEL PER HOUR', lph ? dec(lph, 2) + ' L' : '-'],
-      r.unit ? ['RATE / ' + (r.basis === 'Daily' ? 'DAY' : 'HR'), dec(r.unit, 0)] : null,
-      r.rent ? ['RENT PAYABLE', money0(r.rent)] : null
+      ['DIESEL PER HOUR', lph ? dec(lph, 2) + ' L' : '-']
     ])}
     <h2>All entries</h2>
     <table>
@@ -2829,6 +2938,162 @@ function dayBill(s, date, type) {
 
     <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
   </div>`;
+}
+
+/* ---------------- OWNER RENT BILL ---------------- */
+function ownerBill(s, owner, from, to, detail) {
+  const b = ownerBillData(s, owner, from, to);
+  const period = (from || to)
+    ? (from ? fmtDate(from) : 'start') + '  to  ' + (to ? fmtDate(to) : fmtDate(today()))
+    : 'All entries till ' + fmtDate(today());
+  const hrs = b.lines.reduce((a, x) => a + x.r.hours, 0);
+  const dsl = b.lines.reduce((a, x) => a + x.r.diesel, 0);
+
+  return `<div class="bill">
+    ${billHead('Machine Rent Bill', 'Owner: <b>' + esc(owner) + '</b><br>Period: ' + period)}
+    ${kpi([
+      ['MACHINES', b.lines.length],
+      ['TOTAL HOURS', dec(hrs)],
+      ['RENT THIS PERIOD', money0(b.rent)],
+      b.opening ? ['PREVIOUS BALANCE', money0(b.opening)] : null,
+      ['PAID', money0(b.paid)],
+      ['NET PAYABLE', money0(b.payable)]
+    ])}
+
+    <h2>Machine-wise rent</h2>
+    <table>
+      <thead><tr><th>Sr</th><th>Machine</th><th>Type</th><th>Basis</th><th class="n">${'Hours / Days'}</th><th class="n">Rate</th><th class="n">Diesel (L)</th><th class="n">Amount</th></tr></thead>
+      <tbody>${b.lines.map((x, i) => `<tr>
+        <td class="n">${i + 1}</td>
+        <td><b>${esc(x.m.no)}</b></td>
+        <td>${esc(x.m.type || '-')}</td>
+        <td>${esc(x.r.basis || '-')}</td>
+        <td class="n">${dec(x.r.qty)}</td>
+        <td class="n">${x.r.unit ? dec(x.r.unit, 0) : '-'}</td>
+        <td class="n">${x.r.diesel ? dec(x.r.diesel) : '-'}</td>
+        <td class="n">${money0(x.r.rent)}</td></tr>`).join('') || '<tr><td colspan="8">No machine entries in this period</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="4">TOTAL</td><td class="n">${dec(hrs)}</td><td></td><td class="n">${dec(dsl)}</td><td class="n">${money0(b.rent)}</td></tr></tfoot>
+    </table>
+
+    <h2>Account</h2>
+    <table>
+      <tbody>
+        ${b.opening ? `<tr><td>Previous balance</td><td class="n">${money0(b.opening)}</td></tr>` : ''}
+        <tr><td>Rent for this period</td><td class="n">${money0(b.rent)}</td></tr>
+        <tr><td>Less: payments made</td><td class="n">- ${money0(b.paid)}</td></tr>
+      </tbody>
+      <tfoot><tr><td>NET PAYABLE</td><td class="n">${money0(b.payable)}</td></tr></tfoot>
+    </table>
+
+    ${b.pays.length ? `<h2>Payments in this period</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Paid by</th><th>Mode</th><th>Remark</th><th class="n">Amount</th></tr></thead>
+      <tbody>${b.pays.map(p => `<tr><td>${fmtDate(p.date)}</td><td>${esc(p.paidBy || '-')}</td>
+        <td>${esc(p.mode || '-')}</td><td>${esc(p.remark || '')}</td><td class="n">${money0(p.amount)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="4">TOTAL PAID</td><td class="n">${money0(b.paid)}</td></tr></tfoot>
+    </table>` : ''}
+
+    ${detail ? b.lines.map(x => {
+      const rows = s.machineLog.filter(r => sameNo(r.machineNo, x.m.no) && inRange(r.date, from, to))
+        .slice().sort((a, c) => String(a.date).localeCompare(String(c.date)));
+      if (!rows.length) return '';
+      return `<h2>${esc(x.m.no)} &mdash; entries</h2>
+      <table>
+        <thead><tr><th>Sr</th><th>Date</th><th class="n">In</th><th class="n">Out</th><th class="n">Hours</th><th class="n">Diesel</th><th>Remark</th></tr></thead>
+        <tbody>${rows.map((r, i) => `<tr><td class="n">${i + 1}</td><td>${fmtDate(r.date)}</td>
+          <td class="n">${has(r.inR) ? dec(r.inR, 1) : '-'}</td>
+          <td class="n">${has(r.outR) ? dec(r.outR, 1) : '-'}</td>
+          <td class="n">${hoursOf(r) ? dec(hoursOf(r)) : '-'}</td>
+          <td class="n">${num(r.diesel) ? dec(r.diesel) : '-'}</td>
+          <td>${esc(r.remark || '')}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td colspan="4">TOTAL</td><td class="n">${dec(x.r.hours)}</td><td class="n">${dec(x.r.diesel)}</td><td></td></tr></tfoot>
+      </table>`;
+    }).join('') : ''}
+
+    <div class="sign"><div>Prepared by ______________</div><div>Owner signature ______________</div></div>
+  </div>`;
+}
+
+function ownerBillText(s, owner, from, to) {
+  const b = ownerBillData(s, owner, from, to);
+  return ['*' + (site().name || 'Site') + ' - Machine rent*',
+    'Owner: ' + owner,
+    'Period: ' + (from ? fmtDate(from) : 'start') + ' to ' + (to ? fmtDate(to) : fmtDate(today())), '']
+    .concat(b.lines.map(x => x.m.no + '  ' + dec(x.r.qty) + ' ' + (x.r.basis === 'Daily' ? 'days' : 'hr') + '  =  ' + money(x.r.rent)))
+    .concat(['', b.opening ? 'Previous balance: ' + money(b.opening) : '',
+      'Rent this period: ' + money(b.rent),
+      'Paid: ' + money(b.paid),
+      '*Net payable: ' + money(b.payable) + '*'].filter(Boolean)).join('\n');
+}
+
+/* ---------------- INVOICE / BILL (manual rate) ---------------- */
+function billInvoice(s, b) {
+  const tot = billTotal(b), rec = num(b.received), due = tot - rec;
+  const hrs = (b.items || []).reduce((a, i) => a + num(i.hours), 0);
+  const co = s.co || {};
+  return `<div class="bill">
+    <h1>${esc(co.name || s.name || 'MACHINE RENT BILL')}</h1>
+    <div class="meta">
+      ${[co.line1, co.line2].filter(Boolean).map(esc).join('<br>')}${(co.line1 || co.line2) ? '<br>' : ''}
+      ${co.mobile ? 'Mobile: ' + esc(co.mobile) : ''}${co.email ? (co.mobile ? '  |  ' : '') + 'Email: ' + esc(co.email) : ''}
+      ${co.gstin ? '<br>GSTIN: ' + esc(co.gstin) : ''}
+    </div>
+
+    <h2 style="text-align:center;letter-spacing:.06em">INVOICE / BILL</h2>
+
+    <table>
+      <tbody>
+        <tr><td style="width:36%">Bill No</td><td><b>${esc(b.no || '-')}</b></td></tr>
+        <tr><td>Date</td><td>${fmtDate(b.date)}</td></tr>
+        <tr><td>Machine owner</td><td><b>${esc(b.owner || '-')}</b></td></tr>
+        ${b.mobile ? `<tr><td>Owner mobile</td><td>${esc(b.mobile)}</td></tr>` : ''}
+        <tr><td>Site / work place</td><td>${esc(b.site || s.name || '-')}</td></tr>
+        ${(b.from || b.to) ? `<tr><td>Work period</td><td>${fmtDate(b.from)} to ${fmtDate(b.to)}</td></tr>` : ''}
+      </tbody>
+    </table>
+
+    <table style="margin-top:12px">
+      <thead><tr>
+        <th style="width:8%">Sr. No.</th>
+        <th>Machine Type / Description</th>
+        <th class="n">Rate (Per Hour)</th>
+        <th class="n">Total Hours</th>
+        <th class="n">Amount (Rs.)</th>
+      </tr></thead>
+      <tbody>${(b.items || []).map((i, k) => `<tr>
+        <td class="n">${k + 1}.</td>
+        <td>${esc(i.desc || '')}</td>
+        <td class="n">${num(i.rate) ? money0(i.rate) : 'Fixed'}</td>
+        <td class="n">${num(i.hours) ? dec(i.hours) + ' Hrs' : 'Lumpsum'}</td>
+        <td class="n">${money0(i.amount)}/-</td></tr>`).join('') || '<tr><td colspan="5">No items</td></tr>'}</tbody>
+      <tfoot>
+        <tr><td colspan="3">Total</td><td class="n">${hrs ? dec(hrs) + ' Hrs' : ''}</td><td class="n">${money0(tot)}/-</td></tr>
+        <tr><td colspan="4"><b>Grand Total</b></td><td class="n"><b>${money0(tot)}/-</b></td></tr>
+        ${rec ? `<tr><td colspan="4">Received</td><td class="n">- ${money0(rec)}/-</td></tr>
+          <tr><td colspan="4"><b>Balance Due</b></td><td class="n"><b>${money0(due)}/-</b></td></tr>` : ''}
+      </tfoot>
+    </table>
+
+    ${b.note ? `<div class="meta" style="margin-top:10px">Note: ${esc(b.note)}</div>` : ''}
+    ${co.bank ? `<div class="meta" style="margin-top:6px">Bank: ${esc(co.bank)}</div>` : ''}
+    ${co.terms ? `<div class="meta" style="margin-top:6px">${esc(co.terms)}</div>` : ''}
+    <div class="sign"><div>Owner signature ______________</div><div>For ${esc(co.name || s.name || '')} ______________</div></div>
+  </div>`;
+}
+
+function billInvoiceText(s, b) {
+  const tot = billTotal(b), rec = num(b.received);
+  return ['*' + ((s.co && s.co.name) || s.name || 'Machine rent bill') + '*',
+    'Bill ' + (b.no || '') + '  ·  ' + fmtDate(b.date),
+    'Owner: ' + (b.owner || ''),
+    b.site ? 'Site: ' + b.site : '',
+    (b.from || b.to) ? 'Period: ' + fmtDate(b.from) + ' to ' + fmtDate(b.to) : '', '']
+    .filter(x => x !== '')
+    .concat((b.items || []).map(i => i.desc + '  ' + (num(i.hours) ? dec(i.hours) + ' hrs' : 'lumpsum') +
+      (num(i.rate) ? ' × ' + money(i.rate) : '') + '  =  ' + money(i.amount)))
+    .concat(['', '*Grand total: ' + money(tot) + '*',
+      rec ? 'Received: ' + money(rec) : '',
+      rec ? '*Balance due: ' + money(tot - rec) + '*' : ''].filter(Boolean)).join('\n');
 }
 
 /* ============================================================
@@ -3654,6 +3919,42 @@ function importSupervisor(s) {
   inp.click();
 }
 
+/* ---------- machine owner cha rent bill ---------- */
+function ownerBillForm(s, owner) {
+  const owners = ownerList(s);
+  if (!owners.length) return toast('Add machine owners first');
+  const cur = owner || UI.obOwner || owners[0];
+  const f = UI.obFrom || '', t = UI.obTo || '';
+  const prev = ownerBillData(s, cur, f, t);
+  openSheet('Machine rent bill', `
+    <div class="card"><div class="pad">
+      <div class="field"><label>Machine owner</label><select id="ob_o">${selOpts(owners, cur, '')}</select></div>
+      <div class="f2">
+        <div class="field"><label>From date</label><input type="date" id="ob_f" value="${esc(f)}"></div>
+        <div class="field"><label>To date</label><input type="date" id="ob_t" value="${esc(t)}"></div>
+      </div>
+      <div class="tiny" style="margin:-6px 0 10px">Leave both empty for the full account till today.</div>
+      ${segField('Bill detail', 'ob_det', ['Summary', 'With entries'], UI.obDetail ? 'With entries' : 'Summary')}
+      <div id="ob_prev" class="tiny" style="line-height:1.8">
+        ${prev.lines.length} machines &middot; rent ${money(prev.rent)}${prev.opening ? ' &middot; previous ' + money(prev.opening) : ''} &middot; paid ${money(prev.paid)}<br>
+        <b>Net payable: ${money(prev.payable)}</b></div>
+      <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="obWa">WhatsApp summary</button></div>
+      <div class="tiny" style="margin-top:8px">"Save" opens the bill &mdash; then tap <b>Print / Save as PDF</b>.</div>
+    </div></div>`,
+    () => { document.querySelector('[data-act="obMake"]'); return false; }, null);
+  /* Save cha button obMake madhe badla */
+  const btn = document.querySelector('[data-act="sheetSave"]');
+  if (btn) { btn.dataset.act = 'obMake'; btn.textContent = 'Make bill'; }
+  const upd = () => {
+    const b = ownerBillData(s, val('ob_o'), val('ob_f'), val('ob_t'));
+    const box = document.getElementById('ob_prev');
+    if (box) box.innerHTML = b.lines.length + ' machines &middot; rent ' + money(b.rent) +
+      (b.opening ? ' &middot; previous ' + money(b.opening) : '') + ' &middot; paid ' + money(b.paid) +
+      '<br><b>Net payable: ' + money(b.payable) + '</b>';
+  };
+  ['ob_o', 'ob_f', 'ob_t'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('change', upd); });
+}
+
 /* ---------- machine cha kram badalnyacha screen (hold karun sarkva) ---------- */
 let AORDER = [];
 
@@ -4111,6 +4412,89 @@ document.addEventListener('click', async e => {
       redrawArrange(s);
       break;
     }
+    case 'obOpen': ownerBillForm(s, v || ''); break;
+    case 'obMake': {
+      const o = val('ob_o'), f = val('ob_f'), t = val('ob_t');
+      if (!o) { toast('Select an owner'); break; }
+      UI.obOwner = o; UI.obFrom = f; UI.obTo = t; UI.obDetail = segVal('ob_det') === 'With entries';
+      closeSheet();
+      openBill(ownerBill(s, o, f, t, UI.obDetail), 'rent-bill-' + o);
+      render(); break;
+    }
+    case 'obWa': {
+      const o = val('ob_o') || UI.obOwner;
+      if (!o) { toast('Select an owner'); break; }
+      window.open('https://wa.me/?text=' + encodeURIComponent(ownerBillText(s, o, val('ob_f') || UI.obFrom || '', val('ob_t') || UI.obTo || '')), '_blank');
+      break;
+    }
+    case 'blAdd':
+      BDRAFT = { no: nextBillNo(s), date: today(), owner: '', mobile: '', site: s.name || '', from: '', to: '', items: [], received: '', note: '' };
+      blSheet(s); break;
+    case 'blOw': {
+      blGrab(); BDRAFT.owner = v;
+      const last = (s.bills || []).filter(b => b.owner === v).sort(byDateDesc)[0];
+      if (last && !BDRAFT.mobile) BDRAFT.mobile = last.mobile || '';
+      closeSheet(); blSheet(s); break;
+    }
+    case 'blFill': {
+      blGrab();
+      const lines = billLinesFrom(s, BDRAFT.from, BDRAFT.to, BDRAFT.owner && ownerList(s).includes(BDRAFT.owner) ? BDRAFT.owner : '');
+      if (!lines.length) { toast('No machine entries in this period'); break; }
+      const old = {};
+      BDRAFT.items.forEach(i => { if (num(i.rate)) old[i.desc] = num(i.rate); });
+      BDRAFT.items = lines.map(l => {
+        const r = old[l.desc] || 0;
+        return { desc: l.desc, hours: l.hours, rate: r, amount: r ? r * l.hours : '' };
+      });
+      closeSheet(); blSheet(s);
+      toast(lines.length + ' machines filled - now set the rates');
+      break;
+    }
+    case 'blItAdd': blGrab(); closeSheet(); blItemSheet(s, null); break;
+    case 'blItEdit': blGrab(); closeSheet(); blItemSheet(s, +v); break;
+    case 'blItDel': blGrab(); BDRAFT.items.splice(+v, 1); closeSheet(); blSheet(s); break;
+    case 'blOpen': {
+      const b = (s.bills || []).find(x => x.id === v);
+      if (!b) break;
+      const tot = billTotal(b), due = billDue(b);
+      openSheet('Bill ' + esc(b.no || ''), `
+        <div class="card"><div class="scroll"><table><tbody>
+          <tr><td class="muted">Owner</td><td class="right"><b>${esc(b.owner)}</b></td></tr>
+          <tr><td class="muted">Date</td><td class="right">${fmtDate(b.date)}</td></tr>
+          ${(b.from || b.to) ? `<tr><td class="muted">Period</td><td class="right">${fmtDate(b.from)} to ${fmtDate(b.to)}</td></tr>` : ''}
+          <tr><td class="muted"><b>GRAND TOTAL</b></td><td class="right n"><b>${money(tot)}</b></td></tr>
+          ${num(b.received) ? `<tr><td class="muted">Received</td><td class="right n">${money(b.received)}</td></tr>
+            <tr><td class="muted"><b>BALANCE DUE</b></td><td class="right n"><b style="color:${due > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(due)}</b></td></tr>` : ''}
+        </tbody></table></div></div>
+        <div class="card"><h3>Machines<small>${(b.items || []).length}</small></h3>
+          ${(b.items || []).map(i => `<div class="row"><div class="main"><div class="ttl">${esc(i.desc || '')}</div>
+            <div class="sub">${num(i.hours) ? dec(i.hours) + ' hours' : 'lumpsum'}${num(i.rate) ? ' &times; ' + money(i.rate) : ''}</div></div>
+            <div class="amt">${money0(i.amount)}</div></div>`).join('')}
+        </div>
+        <div class="card"><div class="pad">
+          <div class="btnrow">
+            <button class="btn" style="flex:1" data-act="blPrint" data-v="${b.id}">Print / PDF</button>
+            <button class="btn sec" style="flex:1" data-act="blWa" data-v="${b.id}">WhatsApp</button>
+          </div>
+          <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="blEdit" data-v="${b.id}">Edit bill</button></div>
+        </div></div>`, null, null);
+      break;
+    }
+    case 'blEdit': {
+      const b = (s.bills || []).find(x => x.id === v);
+      if (!b) break;
+      BDRAFT = JSON.parse(JSON.stringify(b));
+      closeSheet(); blSheet(s); break;
+    }
+    case 'blPrint': { const b = (s.bills || []).find(x => x.id === v); if (b) { closeSheet(); openBill(billInvoice(s, b), 'bill-' + b.no); render(); } break; }
+    case 'blWa': { const b = (s.bills || []).find(x => x.id === v); if (b) window.open('https://wa.me/?text=' + encodeURIComponent(billInvoiceText(s, b)), '_blank'); break; }
+    case 'coSave':
+      s.co = { name: val('co_nm'), line1: val('co_l1'), line2: val('co_l2'), mobile: val('co_mo'),
+        email: val('co_em'), gstin: val('co_gs'), bank: val('co_bk'), terms: val('co_tm') };
+      await save(); render(); toast('Saved'); break;
+    case 'blSet':
+      s.billPrefix = val('bl_pre'); s.billNext = numVal('bl_nx') || 1;
+      await save(); render(); toast('Saved'); break;
     case 'dayBill': {
       const d = UI.mlDate || today();
       openBill(dayBill(s, d, UI.mlType || ''), 'day-' + d);
@@ -4350,6 +4734,100 @@ function importManager() {
       (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
   };
   inp.click();
+}
+
+/* ---------- BILLING: bill banavaycha ---------- */
+let BDRAFT = null;
+
+function blLines() {
+  return BDRAFT.items.map((it, i) => `<div class="row">
+    <div class="main"><div class="ttl">${esc(it.desc || 'Machine ' + (i + 1))}</div>
+    <div class="sub">${num(it.hours) ? dec(it.hours) + ' hours' : 'lumpsum'}${num(it.rate) ? ' &times; ' + money(it.rate) : ' &middot; rate not set'}</div></div>
+    <div class="amt">${num(it.amount) ? money0(it.amount) : '—'}</div>
+    <button class="rowbtn" data-act="blItEdit" data-v="${i}">Rate</button>
+    <button class="rowbtn" data-act="blItDel" data-v="${i}" style="color:var(--due)">&times;</button></div>`).join('');
+}
+
+function blSheet(s) {
+  const tot = BDRAFT.items.reduce((a, i) => a + num(i.amount), 0);
+  const past = [...new Set(ownerList(s).concat((s.bills || []).map(b => b.owner)).filter(Boolean))]
+    .filter(o => o !== BDRAFT.owner).slice(0, 8);
+  openSheet(BDRAFT.id ? 'Bill ' + esc(BDRAFT.no) : 'New bill', `
+    <div class="field"><label>Machine owner</label><input id="bl_ow" value="${esc(BDRAFT.owner || '')}" placeholder="Sujeet Tope"></div>
+    ${past.length ? `<div class="chips" style="flex-wrap:wrap;overflow:visible;border:0;padding:0 0 10px">
+      ${past.map(o => `<button class="chip" data-act="blOw" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>` : ''}
+    <div class="f2">
+      <div class="field"><label>Bill no</label><input id="bl_no" value="${esc(BDRAFT.no)}"></div>
+      <div class="field"><label>Bill date</label><input type="date" id="bl_dt" value="${esc(BDRAFT.date)}"></div>
+    </div>
+    <div class="f2">
+      <div class="field"><label>Owner mobile</label><input id="bl_mo" type="tel" inputmode="numeric" value="${esc(BDRAFT.mobile || '')}"></div>
+      <div class="field"><label>Site / work place</label><input id="bl_sl" value="${esc(BDRAFT.site || '')}"></div>
+    </div>
+    <div class="f2">
+      <div class="field"><label>Period from</label><input type="date" id="bl_f" value="${esc(BDRAFT.from || '')}"></div>
+      <div class="field"><label>Period to</label><input type="date" id="bl_t" value="${esc(BDRAFT.to || '')}"></div>
+    </div>
+    <div class="btnrow" style="margin:0 0 12px">
+      <button class="btn sec sm" style="flex:1" data-act="blFill">Fill from machine log</button>
+      <button class="btn sec sm" style="flex:0 0 34%" data-act="blItAdd">+ Add line</button>
+    </div>
+    <div class="tiny" style="margin:-8px 0 12px">"Fill from machine log" takes every machine that worked in the period above, with its total hours. Then set the rate on each line.</div>
+
+    <div class="card" style="margin:6px 0"><h3>Machines<small>${BDRAFT.items.length}</small></h3>
+      ${BDRAFT.items.length ? blLines() : '<div class="empty">Set the period, then tap "Fill from machine log".</div>'}
+      ${tot ? `<div class="pad"><div class="tiny" style="text-align:right">Total <b style="font-size:15px">${money(tot)}</b></div></div>` : ''}
+    </div>
+
+    <div class="f2">
+      <div class="field"><label>Received (optional)</label><input type="number" inputmode="decimal" id="bl_rc" value="${has(BDRAFT.received) && num(BDRAFT.received) ? BDRAFT.received : ''}"></div>
+      <div class="field"><label>Note on bill</label><input id="bl_nt" value="${esc(BDRAFT.note || '')}"></div>
+    </div>`,
+    () => {
+      blGrab();
+      if (!BDRAFT.owner) return toast('Enter the machine owner name');
+      if (!BDRAFT.items.length) return toast('Add at least one machine');
+      if (BDRAFT.items.every(i => !num(i.amount))) return toast('Set the rate on at least one line');
+      if (BDRAFT.id) Object.assign((s.bills || []).find(x => x.id === BDRAFT.id), BDRAFT);
+      else {
+        BDRAFT.id = uid();
+        s.bills.push({ ...BDRAFT });
+        const n = parseInt(String(BDRAFT.no).replace(/\D/g, ''), 10);
+        if (isFinite(n) && n >= num(s.billNext)) s.billNext = n + 1;
+      }
+      return true;
+    },
+    BDRAFT.id ? () => { s.bills = s.bills.filter(b => b.id !== BDRAFT.id); } : null);
+}
+
+function blGrab() {
+  BDRAFT.owner = val('bl_ow'); BDRAFT.no = val('bl_no'); BDRAFT.date = val('bl_dt');
+  BDRAFT.mobile = val('bl_mo'); BDRAFT.site = val('bl_sl');
+  BDRAFT.from = val('bl_f'); BDRAFT.to = val('bl_t');
+  BDRAFT.received = numVal('bl_rc'); BDRAFT.note = val('bl_nt');
+}
+
+function blItemSheet(s, idx) {
+  const it = idx == null ? { desc: '', hours: '', rate: '', amount: '' } : BDRAFT.items[idx];
+  openSheet(idx == null ? 'Add line' : 'Rate', `
+    <div class="field"><label>Machine / work</label><input id="bi_d" value="${esc(it.desc)}" placeholder="PC-01 (Poclain)"></div>
+    <div class="f2">
+      <div class="field"><label>Total hours</label><input type="number" inputmode="decimal" id="bi_h" value="${has(it.hours) && num(it.hours) ? it.hours : ''}"></div>
+      <div class="field"><label>Rate per hour</label><input type="number" inputmode="decimal" id="bi_r" value="${has(it.rate) && num(it.rate) ? it.rate : ''}"></div>
+    </div>
+    <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="bi_a" value="${has(it.amount) && num(it.amount) ? it.amount : ''}" placeholder="hours x rate"></div>
+    <div class="tiny">Hours and rate fill the amount for you. For transport or shift charges leave both empty and put only the amount.</div>`,
+    () => {
+      const h = numVal('bi_h'), r = numVal('bi_r');
+      let a = numVal('bi_a');
+      if (!a) a = h * r;
+      if (!a) return toast('Enter the rate or the amount');
+      const o = { desc: val('bi_d'), hours: h, rate: r, amount: a };
+      if (idx == null) BDRAFT.items.push(o); else BDRAFT.items[idx] = o;
+      closeSheet(); blSheet(s);
+      return false;
+    },
+    idx == null ? null : () => { BDRAFT.items.splice(idx, 1); closeSheet(); blSheet(s); return false; });
 }
 
 </script>
