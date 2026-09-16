@@ -461,7 +461,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v37 · 16-09-2026';
+const APP_VERSION = 'v38 · 16-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -1209,7 +1209,7 @@ function navItems(s) {
 function subsFor(s, t) {
   const m = s.mods || {};
   if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary'], ['bill', 'Billing'], ['rent', 'Rent']].concat(m.owner ? [['owner', 'Owner']] : []).concat([['mast', 'Machines']]);
-  if (t === 'more') return [['mgr', 'Managers'], ['excel', 'Excel']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
+  if (t === 'more') return [['mgr', 'Managers'], ['excel', 'Excel'], ['set', 'Settings']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
   return SUBS[t];
 }
 const SUBS = {
@@ -1725,7 +1725,7 @@ function vendorSumView(s) {
 
 /* ---------------- MORE ---------------- */
 VIEW.stock = s => stockView(s);
-VIEW.more = s => { const k = sub('more'); return k === 'mgr' ? mgrView(s) : k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
+VIEW.more = s => { const k = sub('more'); return k === 'set' ? settingsView(s) : k === 'mgr' ? mgrView(s) : k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
 
 /* ---------------- EXCEL SYNC ---------------- */
 function excelView(s) {
@@ -2133,27 +2133,9 @@ function billingView(s) {
     }).join('') : '<div class="empty">No bills yet. Tap "+ New bill".</div>'}
   </div>
 
-  <div class="card"><h3>Your details on the bill</h3><div class="pad">
-    <div class="field"><label>Company / your name</label><input id="co_nm" value="${esc((s.co || {}).name || '')}" placeholder="Veershree Construction"></div>
-    <div class="field"><label>Address line 1</label><input id="co_l1" value="${esc((s.co || {}).line1 || '')}"></div>
-    <div class="field"><label>Address line 2</label><input id="co_l2" value="${esc((s.co || {}).line2 || '')}"></div>
-    <div class="f2">
-      <div class="field"><label>Mobile</label><input id="co_mo" type="tel" inputmode="numeric" value="${esc((s.co || {}).mobile || '')}"></div>
-      <div class="field"><label>Email</label><input id="co_em" type="email" value="${esc((s.co || {}).email || '')}"></div>
-    </div>
-    <div class="field"><label>GSTIN (optional)</label><input id="co_gs" value="${esc((s.co || {}).gstin || '')}"></div>
-    <div class="field"><label>Bank details (optional)</label><input id="co_bk" value="${esc((s.co || {}).bank || '')}"></div>
-    <div class="field"><label>Note / terms on bill (optional)</label><input id="co_tm" value="${esc((s.co || {}).terms || '')}" placeholder="Payment within 7 days"></div>
-    <button class="btn sec sm" style="width:100%" data-act="coSave">Save details</button>
-  </div></div>
-
-  <div class="card"><h3>Bill settings</h3><div class="pad">
-    <div class="f2">
-      <div class="field"><label>Bill no prefix</label><input id="bl_pre" value="${esc(s.billPrefix)}" placeholder="RB-"></div>
-      <div class="field"><label>Next number</label><input type="number" inputmode="numeric" id="bl_nx" value="${s.billNext}"></div>
-    </div>
-    <div class="tiny" style="margin-bottom:10px">Next bill will be <b>${esc(nextBillNo(s))}</b>. Your company details are set just above.</div>
-    <button class="btn sec sm" style="width:100%" data-act="blSet">Save</button>
+  <div class="card"><div class="pad tiny" style="line-height:1.8">
+    Your company name, address, mobile and the bill number series are set in <b>More &rarr; Settings</b>.
+    Next bill will be <b>${esc(nextBillNo(s))}</b>.
   </div></div>
 
   <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
@@ -4476,8 +4458,19 @@ document.addEventListener('click', async e => {
             <button class="btn" style="flex:1" data-act="blPrint" data-v="${b.id}">Print / PDF</button>
             <button class="btn sec" style="flex:1" data-act="blWa" data-v="${b.id}">WhatsApp</button>
           </div>
-          <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="blEdit" data-v="${b.id}">Edit bill</button></div>
+          <div class="btnrow">
+            <button class="btn sec sm" style="flex:1" data-act="blEdit" data-v="${b.id}">Edit bill</button>
+            <button class="btn dgr sm" style="flex:1" data-act="blDel" data-v="${b.id}">Delete bill</button>
+          </div>
         </div></div>`, null, null);
+      break;
+    }
+    case 'blDel': {
+      const b = (s.bills || []).find(x => x.id === v);
+      if (!b) break;
+      if (!confirm('Delete bill ' + (b.no || '') + ' for ' + (b.owner || '') + ' (' + money(billTotal(b)) + ')?\n\nThis cannot be undone.')) break;
+      s.bills = s.bills.filter(x => x.id !== b.id);
+      closeSheet(); await save(); render(); toast('Bill deleted');
       break;
     }
     case 'blEdit': {
@@ -4828,6 +4821,77 @@ function blItemSheet(s, idx) {
       return false;
     },
     idx == null ? null : () => { BDRAFT.items.splice(idx, 1); closeSheet(); blSheet(s); return false; });
+}
+
+/* ---------------- SETTINGS ---------------- */
+function settingsView(s) {
+  const co = s.co || {};
+  const canNotify = typeof Notification !== 'undefined';
+  const perm = canNotify ? Notification.permission : 'x';
+  let bytes = 0;
+  try { bytes = JSON.stringify(DB).length; } catch (e) { }
+  return `
+  <div class="card"><h3>Company details<small>printed on bills</small></h3><div class="pad">
+    <div class="field"><label>Company / your name</label><input id="co_nm" value="${esc(co.name || '')}" placeholder="Veershree Construction"></div>
+    <div class="field"><label>Address line 1</label><input id="co_l1" value="${esc(co.line1 || '')}"></div>
+    <div class="field"><label>Address line 2</label><input id="co_l2" value="${esc(co.line2 || '')}"></div>
+    <div class="f2">
+      <div class="field"><label>Mobile</label><input id="co_mo" type="tel" inputmode="numeric" value="${esc(co.mobile || '')}"></div>
+      <div class="field"><label>Email</label><input id="co_em" type="email" value="${esc(co.email || '')}"></div>
+    </div>
+    <div class="field"><label>GSTIN (optional)</label><input id="co_gs" value="${esc(co.gstin || '')}"></div>
+    <div class="field"><label>Bank details (optional)</label><input id="co_bk" value="${esc(co.bank || '')}"></div>
+    <div class="field"><label>Note / terms on bill (optional)</label><input id="co_tm" value="${esc(co.terms || '')}" placeholder="Payment within 7 days"></div>
+    <button class="btn" data-act="coSave">Save company details</button>
+    <div class="tiny" style="margin-top:8px">Saved for <b>${esc(s.name)}</b>. Each site can have its own details.</div>
+  </div></div>
+
+  <div class="card"><h3>Bill numbering</h3><div class="pad">
+    <div class="f2">
+      <div class="field"><label>Bill no prefix</label><input id="bl_pre" value="${esc(s.billPrefix)}" placeholder="RB-"></div>
+      <div class="field"><label>Next number</label><input type="number" inputmode="numeric" id="bl_nx" value="${s.billNext}"></div>
+    </div>
+    <div class="tiny" style="margin-bottom:10px">Next bill will be <b>${esc(nextBillNo(s))}</b>.</div>
+    <button class="btn sec sm" style="width:100%" data-act="blSet">Save</button>
+  </div></div>
+
+  <div class="card"><h3>Company logo</h3><div class="pad">
+    ${DB.logo ? `<div style="text-align:center;margin-bottom:10px"><img src="${DB.logo}" style="max-height:60px;max-width:180px;object-fit:contain"></div>`
+      : '<div class="tiny" style="margin-bottom:10px">Add a logo and it shows in the top left instead of "SITE MANAGER".</div>'}
+    <div class="btnrow">
+      <button class="btn sec sm" style="flex:1" data-act="logoPick">${DB.logo ? 'Change logo' : 'Add logo'}</button>
+      ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoDel">Remove</button>' : ''}
+    </div>
+  </div></div>
+
+  <div class="card"><h3>Payment reminders</h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Due dates are set in <b>Vendor &rarr; Due dates</b>. Turn on notifications to get a popup when you open the app on the due day.</div>
+    ${perm === 'granted' ? '<div class="tiny" style="color:var(--paid);font-weight:700">Notifications are on.</div>'
+      : canNotify ? '<button class="btn sec sm" style="width:100%" data-act="notifyOn">Turn on notifications</button>'
+      : '<div class="tiny">This browser does not support notifications.</div>'}
+  </div></div>
+
+  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set' : 'not set'}</small></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Asked before a whole site is deleted, so nothing goes by mistake.</div>
+    ${DB.delPass
+      ? `<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password</button>
+         <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password &mdash; reset</button></div>`
+      : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password</button>'}
+  </div></div>
+
+  <div class="card"><h3>Backup and data</h3><div class="pad">
+    <div class="scroll"><table><tbody>
+      <tr><td class="muted">Sites</td><td class="right"><b>${(DB.sites || []).length}</b></td></tr>
+      <tr><td class="muted">Data size</td><td class="right">${(bytes / 1024).toFixed(0)} KB</td></tr>
+      <tr><td class="muted">Storage</td><td class="right">${STORAGE_OK ? 'working' : 'NOT saving'}</td></tr>
+      <tr><td class="muted">App version</td><td class="right">${esc(APP_VERSION)}</td></tr>
+    </tbody></table></div>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="btn sec sm" style="flex:1" data-act="expJson">Backup download</button>
+      <button class="btn sec sm" style="flex:1" data-act="impJson">Backup import</button>
+    </div>
+    <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="sub" data-v="excel" data-t="more">Excel and snapshots</button></div>
+  </div></div>`;
 }
 
 </script>
