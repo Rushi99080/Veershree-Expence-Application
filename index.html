@@ -461,7 +461,7 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v34 · 14-09-2026';
+const APP_VERSION = 'v35 · 14-09-2026';
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -1332,7 +1332,10 @@ function machineLogView(s) {
   <div class="card"><div class="pad">
     <div class="field" style="margin:0 0 10px"><label>Date</label>
       <input type="date" id="ml_date" value="${esc(day)}" data-act="mlDateIn"></div>
-    <button class="btn sec sm" style="width:100%" data-act="mlDateClear">${day ? 'Show all days' : "Today's entries"}</button>
+    <div class="btnrow" style="margin:0">
+      <button class="btn sec sm" style="flex:1" data-act="mlDateClear">${day ? 'Show all days' : "Today's entries"}</button>
+      ${day ? '<button class="btn sm" style="flex:1" data-act="dayBill">Print / PDF</button>' : ''}
+    </div>
     ${day ? `<div class="tiny" style="margin-top:10px">${fmtDate(day)} &mdash; <b>${chipList.length}</b> machine${ty ? ' (' + esc(ty) + ')' : ''} worked, ${rows.length} entries.</div>` : ''}
   </div></div>
   ${typeList.length > 1 ? `<div class="card"><div class="chips">
@@ -2760,6 +2763,74 @@ function openBill(html, name) {
 let PRINT_NAME = 'report';
 function closeBill() { $('#print').innerHTML = ''; document.body.style.overflow = ''; }
 
+/* ---------------- DAY BILL (nivadlelya tarkhecha sagla machine data) ---------------- */
+function dayBill(s, date, type) {
+  let rows = s.machineLog.filter(r => r.date === date);
+  if (type) rows = rows.filter(r => (machineType(s, r.machineNo) || '') === type);
+  rows = rows.slice().sort((a, b) => {
+    const ia = s.machines.findIndex(m => sameNo(m.no, a.machineNo));
+    const ib = s.machines.findIndex(m => sameNo(m.no, b.machineNo));
+    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+  });
+  const hrs = rows.reduce((a, r) => a + hoursOf(r), 0);
+  const dsl = rows.reduce((a, r) => a + num(r.diesel), 0);
+  const bills = s.dieselLog.filter(d => d.date === date);
+  const recL = bills.reduce((a, d) => a + num(d.litres), 0);
+  const machines = new Set(rows.map(r => String(r.machineNo || '').toLowerCase()).filter(Boolean)).size;
+  /* type-nihay berij */
+  const types = [...new Set(rows.map(r => machineType(s, r.machineNo) || '-'))];
+
+  return `<div class="bill">
+    ${billHead('Daily Machine Report  -  ' + fmtDate(date), type ? 'Machine type: ' + esc(type) : 'All machine types')}
+    ${kpi([
+      ['MACHINES WORKED', machines],
+      ['TOTAL HOURS', dec(hrs)],
+      ['DIESEL FILLED (L)', dec(dsl)],
+      ['DIESEL PER HOUR', hrs ? dec(dsl / hrs, 2) + ' L' : '-'],
+      recL ? ['DIESEL RECEIVED (L)', dec(recL)] : null
+    ])}
+    <h2>Machine entries</h2>
+    <table>
+      <thead><tr><th>Sr</th><th>Machine</th><th>Type</th><th class="n">In reading</th><th class="n">Out reading</th><th class="n">Hours</th><th class="n">Diesel (L)</th><th class="n">L / hr</th><th>Remark</th></tr></thead>
+      <tbody>${rows.map((x, i) => {
+        const h = hoursOf(x), d = num(x.diesel);
+        return `<tr><td class="n">${i + 1}</td>
+          <td><b>${esc(x.machineNo || '-')}</b></td>
+          <td>${esc(machineType(s, x.machineNo) || '-')}</td>
+          <td class="n">${has(x.inR) ? dec(x.inR, 1) : '-'}</td>
+          <td class="n">${has(x.outR) ? dec(x.outR, 1) : '-'}</td>
+          <td class="n">${h ? dec(h) : '-'}</td>
+          <td class="n">${d ? dec(d) : '-'}</td>
+          <td class="n">${(h && d) ? dec(d / h, 2) : '-'}</td>
+          <td>${esc(x.remark || '')}</td></tr>`;
+      }).join('') || '<tr><td colspan="9">No entries on this date</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="5">TOTAL</td><td class="n">${dec(hrs)}</td><td class="n">${dec(dsl)}</td><td class="n">${hrs ? dec(dsl / hrs, 2) : '-'}</td><td></td></tr></tfoot>
+    </table>
+
+    ${types.length > 1 ? `<h2>Type-wise</h2>
+    <table>
+      <thead><tr><th>Machine type</th><th class="n">Machines</th><th class="n">Hours</th><th class="n">Diesel (L)</th><th class="n">L / hr</th></tr></thead>
+      <tbody>${types.map(t2 => {
+        const list = rows.filter(r => (machineType(s, r.machineNo) || '-') === t2);
+        const h2 = list.reduce((a, r) => a + hoursOf(r), 0);
+        const d2 = list.reduce((a, r) => a + num(r.diesel), 0);
+        const mc = new Set(list.map(r => String(r.machineNo || '').toLowerCase())).size;
+        return `<tr><td>${esc(t2)}</td><td class="n">${mc}</td><td class="n">${dec(h2)}</td><td class="n">${dec(d2)}</td><td class="n">${h2 ? dec(d2 / h2, 2) : '-'}</td></tr>`;
+      }).join('')}</tbody>
+    </table>` : ''}
+
+    ${bills.length ? `<h2>Diesel received this day</h2>
+    <table>
+      <thead><tr><th>Supplier</th><th>Bill no</th><th class="n">Litres</th><th class="n">Amount</th><th>Status</th></tr></thead>
+      <tbody>${bills.map(d => `<tr><td>${esc(d.vendor || '-')}</td><td>${esc(d.bill || '-')}</td>
+        <td class="n">${dec(d.litres)}</td><td class="n">${money0(d.amount)}</td><td>${st(d)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="2">TOTAL</td><td class="n">${dec(recL)}</td><td class="n">${money0(bills.reduce((a, d) => a + num(d.amount), 0))}</td><td></td></tr></tfoot>
+    </table>` : ''}
+
+    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+  </div>`;
+}
+
 /* ============================================================
    FORMS + ACTIONS
    ============================================================ */
@@ -4039,6 +4110,11 @@ document.addEventListener('click', async e => {
       const t = AORDER[i]; AORDER[i] = AORDER[j]; AORDER[j] = t;
       redrawArrange(s);
       break;
+    }
+    case 'dayBill': {
+      const d = UI.mlDate || today();
+      openBill(dayBill(s, d, UI.mlType || ''), 'day-' + d);
+      render(); break;
     }
     case 'mBill':
       if (!v) { toast('Select a machine'); break; }
