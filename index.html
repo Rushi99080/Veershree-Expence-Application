@@ -139,8 +139,13 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
 .field{margin-bottom:10px}
 .field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.03em;margin-bottom:3px}
 .field input,.field select,.field textarea{
-  width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;
+  width:100%;min-width:0;max-width:100%;box-sizing:border-box;font-size:16px;
+  padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;
 }
+.field input[type=date]{-webkit-appearance:none;appearance:none;min-height:42px}
+.f2>*{min-width:0}
+.f2 .field{margin-bottom:10px}
+*,*::before,*::after{box-sizing:border-box}
 .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--hivis);outline-offset:-1px;border-color:var(--hivis)}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
@@ -461,7 +466,8 @@ async function checkSitePin(pin) {
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v38 · 16-09-2026';
+const APP_VERSION = 'v39 · 16-09-2026';
+const MODES = ['Cash', 'Online / UPI', 'RTGS / NEFT', 'Cheque'];
 const KEY = 'vsms:db:v1';
 
 async function load() {
@@ -536,13 +542,13 @@ function normSite(s) {
   s.machineLog = s.machineLog.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), machineNo: S(r.machineNo),
     inR: N(r.inR), outR: N(r.outR), diesel: N(r.diesel), openDiesel: N(r.openDiesel), remark: S(r.remark), xl: !!r.xl }));
   s.dieselLog = s.dieselLog.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), vendor: S(r.vendor),
-    litres: N(r.litres), bill: S(r.bill), amount: N(r.amount), status: ST(r), paidBy: S(r.paidBy), remark: S(r.remark), xl: !!r.xl }));
+    litres: N(r.litres), bill: S(r.bill), amount: N(r.amount), status: ST(r), paidBy: S(r.paidBy), mode: S(r.mode), remark: S(r.remark), xl: !!r.xl }));
   s.expenseLog = s.expenseLog.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), category: S(r.category),
-    desc: S(r.desc), vendor: S(r.vendor), amount: N(r.amount), status: ST(r), paidBy: S(r.paidBy), remark: S(r.remark), xl: !!r.xl }));
+    desc: S(r.desc), vendor: S(r.vendor), amount: N(r.amount), status: ST(r), paidBy: S(r.paidBy), mode: S(r.mode), remark: S(r.remark), xl: !!r.xl }));
   s.vendorPayments = s.vendorPayments.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), vendor: S(r.vendor),
     amount: N(r.amount), paidBy: S(r.paidBy), mode: S(r.mode), remark: S(r.remark), xl: !!r.xl }));
   s.murumLog = s.murumLog.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), vendor: S(r.vendor),
-    qty: N(r.qty), rate: N(r.rate), amount: N(r.amount), trips: N(r.trips), status: ST(r), paidBy: S(r.paidBy), remark: S(r.remark) }));
+    qty: N(r.qty), rate: N(r.rate), amount: N(r.amount), trips: N(r.trips), status: ST(r), paidBy: S(r.paidBy), mode: S(r.mode), remark: S(r.remark) }));
   s.funds = s.funds.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), person: S(r.person),
     amount: N(r.amount), from: S(r.from), mode: S(r.mode), remark: S(r.remark) }));
   s.ownerPayments = s.ownerPayments.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), owner: S(r.owner),
@@ -968,6 +974,19 @@ function settle(s) {
 }
 
 /* --- totals for the whole site (Plot Dashboard) --- */
+/* ---------- payment mode-wise total (saglya paid outflows) ---------- */
+function modeStats(s) {
+  const o = {};
+  const add = (m, amt) => { const k = String(m || '').trim() || 'Not set'; o[k] = (o[k] || 0) + num(amt); };
+  s.expenseLog.forEach(e => { if (st(e) === 'Paid') add(e.mode, e.amount); });
+  (s.murumLog || []).forEach(m => { if (st(m) === 'Paid') add(m.mode, mAmt(m)); });
+  s.dieselLog.forEach(d => { if (st(d) === 'Paid') add(d.mode, d.amount); });
+  (s.vendorPayments || []).forEach(p => add(p.mode, p.amount));
+  (s.ownerPayments || []).forEach(p => add(p.mode, p.amount));
+  const rows = Object.keys(o).map(k => ({ mode: k, amount: o[k] })).sort((a, b) => b.amount - a.amount);
+  return { rows, total: rows.reduce((a, r) => a + r.amount, 0) };
+}
+
 function totals(s) {
   const fin = settle(s);
   const expTotal = s.expenseLog.reduce((a, e) => a + num(e.amount), 0);
@@ -1332,7 +1351,24 @@ VIEW.dash = s => {
     <div class="tiny" style="margin-bottom:8px">Roj ek tap &mdash; file phone chya <b>Downloads</b> with the date in the name.</div>
     <button class="btn sm" style="width:100%" data-act="dayBackup">Download today's backup</button>
   </div></div>`}
+  ${(() => {
+    const ms = modeStats(s);
+    if (!ms.total) return '';
+    return `<div class="card"><h3>Payment mode-wise<small>${money0(ms.total)}</small></h3>
+      <div class="scroll"><table>
+        <thead><tr><th>Mode</th><th class="n">Amount</th><th class="n">Share</th></tr></thead>
+        <tbody>${ms.rows.map(r => `<tr><td>${esc(r.mode)}</td><td class="n"><b>${money0(r.amount)}</b></td>
+          <td class="n">${ms.total ? Math.round(r.amount / ms.total * 100) : 0}%</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td>TOTAL PAID</td><td class="n">${money0(ms.total)}</td><td></td></tr></tfoot>
+      </table></div>
+      <div class="pad tiny">Cash, UPI, RTGS and cheque totals across site expense, murum, diesel, vendor and owner payments.</div>
+    </div>`;
+  })()}
+
   ${pendingCount(s) ? `<div class="card"><h3>Excel sync<small>${pendingCount(s)} new entries</small></h3><div class="pad"><div class="tiny" style="margin-bottom:8px">These entries have not gone into your Excel sheet yet.</div><button class="btn sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Add to Excel</button></div></div>` : ''}
+  <div class="btnrow" style="margin-bottom:8px">
+    <button class="btn sec sm" style="flex:1" data-act="dashBill">Dashboard PDF</button>
+  </div>
   <div class="btnrow" style="margin-bottom:12px">
     <button class="btn sec sm" style="flex:1" data-act="share">Share summary</button>
     <button class="btn sec sm" style="flex:1" data-act="dayReg">Daily report</button>
@@ -1530,7 +1566,7 @@ function machineMasterView(s) {
       <div class="sub">${esc(m.owner || 'no owner')}${m.operator ? ' &middot; ' + esc(m.operator) : ''}${(() => { const q = machineRent(s, m.no); return q.hours ? ' &middot; <b>' + dec(q.diesel / q.hours, 2) + ' L/hr</b>' : ''; })()}</div></div>
       <div class="amt tiny" style="font-weight:600">${has(m.monthlyRate) && num(m.monthlyRate) ? money0(m.monthlyRate) : ''}</div>
       <button class="rowbtn" data-act="mRename" data-v="${m.id}">Rename</button>
-      <button class="rowbtn" data-act="mBill" data-v="${esc(m.no)}" style="color:var(--hivis-dk)">PDF</button>
+      <button class="rowbtn" data-act="mBillAsk" data-v="${esc(m.no)}" style="color:var(--hivis-dk)">PDF</button>
       <button class="rowbtn" data-act="mDelOne" data-v="${m.id}" style="color:var(--due)">Delete</button>
     </div>`).join('') || '<div class="empty">No machines yet.</div>'}
   </div>`;
@@ -1546,6 +1582,7 @@ function dieselLogView(s) {
   const t = totals(s);
   return `
   <button class="btn" data-act="dAdd">+ Diesel entry</button>
+  <div class="btnrow" style="margin:0 0 12px"><button class="btn sec sm" style="flex:1" data-act="dslBill">Diesel report PDF</button></div>
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">TOTAL DIESEL</div><div class="v num">${dec(t.dsLitres)} L</div></div>
     <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(t.dsPaidFinal)}</div></div>
@@ -1594,6 +1631,7 @@ function expenseLogView(s) {
   const tm = s.expenseLog.filter(e => monthKey(e.date) === monthKey(today())).reduce((a, e) => a + num(e.amount), 0);
   return `
   <button class="btn" data-act="eAdd">+ New expense</button>
+  <div class="btnrow" style="margin:0 0 12px"><button class="btn sec sm" style="flex:1" data-act="expBill">Expense report PDF</button></div>
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">TOTAL</div><div class="v num">${money0(t.expTotal)}</div></div>
     <div class="kpi"><div class="k">THIS MONTH</div><div class="v num">${money0(tm)}</div></div>
@@ -2719,10 +2757,10 @@ function billHead(title, sub) {
 const kpi = list => `<div class="kpi">${list.filter(Boolean).map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join('')}</div>`;
 
 /* ---------------- MACHINE BILL ---------------- */
-function machineBill(s, no) {
+function machineBill(s, no, from, to) {
   const m = machineOf(s, no) || { no, type: '', owner: '', operator: '', make: '' };
-  const r = machineRent(s, no);
-  const rows = s.machineLog.filter(x => sameNo(x.machineNo, no))
+  const r = machineRent(s, no, from, to);
+  const rows = s.machineLog.filter(x => sameNo(x.machineNo, no) && inRange(x.date, from, to))
     .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
   const lph = r.hours ? r.diesel / r.hours : 0;
   return `<div class="bill">
@@ -2730,7 +2768,7 @@ function machineBill(s, no) {
       'Machine type: ' + esc(m.type || '-') +
       '<br>Owner: ' + esc(m.owner || '-') +
       '<br>Driver / Operator: ' + esc(m.operator || '-') +
-      (m.make ? '<br>Make: ' + esc(m.make) : ''))}
+      (m.make ? '<br>Make: ' + esc(m.make) : '') + '<br>Period: ' + periodTxt(from, to))}
     ${kpi([
       ['TOTAL ENTRIES', r.entries],
       ['TOTAL HOURS', dec(r.hours)],
@@ -3170,11 +3208,14 @@ function dieselForm(s, rec) {
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
         <div class="field"><label>Bill no</label><input id="f_bill" value="${esc(r.bill || '')}"></div>
       </div>
-      <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+      <div class="f2">
+        <div class="field"><label>Payment mode</label><select id="f_mode">${selOpts(MODES, r.mode, '— mode —')}</select></div>
+        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+      </div>
     </div></div>`,
     () => {
       const v = val('f_v'); if (!v) return toast('Select a vendor');
-      const o = { date: val('f_date'), vendor: v, litres: numVal('f_l'), bill: val('f_bill'), amount: numVal('f_amt'), status: segVal('f_st'), paidBy: segVal('f_st') === 'Paid' ? val('f_by') : '', remark: val('f_rem') };
+      const o = { date: val('f_date'), vendor: v, litres: numVal('f_l'), bill: val('f_bill'), amount: numVal('f_amt'), status: segVal('f_st'), paidBy: segVal('f_st') === 'Paid' ? val('f_by') : '', mode: segVal('f_st') === 'Paid' ? val('f_mode') : '', remark: val('f_rem') };
       if (rec) Object.assign(rec, o); else s.dieselLog.push({ id: uid(), ...o });
       return true;
     },
@@ -3200,13 +3241,14 @@ function expenseForm(s, rec) {
       ${segField('Payment Status', 'f_st', ['Paid', 'Unpaid'], st(r), 'pu')}
       <div class="f2">
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
-        <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
+        <div class="field"><label>Payment mode</label><select id="f_mode">${selOpts(MODES, r.mode, '— mode —')}</select></div>
       </div>
+      <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       <div class="tiny">Keep it Unpaid and pick a vendor — the entry then shows under Vendor &rarr; Pending.</div>
     </div></div>`,
     () => {
       const st = segVal('f_st');
-      const o = { date: val('f_date'), category: val('f_cat'), desc: val('f_desc'), vendor: val('f_v'), amount: numVal('f_amt'), status: st, paidBy: st === 'Paid' ? val('f_by') : '', remark: val('f_rem') };
+      const o = { date: val('f_date'), category: val('f_cat'), desc: val('f_desc'), vendor: val('f_v'), amount: numVal('f_amt'), status: st, paidBy: st === 'Paid' ? val('f_by') : '', mode: st === 'Paid' ? val('f_mode') : '', remark: val('f_rem') };
       if (!o.category) return toast('Select a category');
       if (o.amount === '') return toast('Enter the amount');
       if (rec) Object.assign(rec, o); else s.expenseLog.push({ id: uid(), ...o });
@@ -3231,7 +3273,7 @@ function vpForm(s, rec, preVendor) {
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Payment mode</label><select id="f_mode">${selOpts(['Online / UPI', 'Cash', 'Cheque', 'RTGS / NEFT'], r.mode || 'Online / UPI')}</select></div>
+        <div class="field"><label>Payment mode</label><select id="f_mode">${selOpts(MODES, r.mode || 'Online / UPI')}</select></div>
         <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
@@ -3367,12 +3409,15 @@ function murumForm(s, rec) {
       ${segField('Payment Status', 'f_st', ['Paid', 'Unpaid'], st(r), 'pu')}
       <div class="f2">
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
+        <div class="field"><label>Payment mode</label><select id="f_mode">${selOpts(MODES, r.mode, '— mode —')}</select></div>
+      </div>
+      <div class="f2">
         <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
     () => {
       const stt = segVal('f_st');
-      const o = { date: val('f_date'), vendor: val('f_v'), qty: numVal('f_qty'), rate: numVal('f_rate'), trips: numVal('f_trips'), amount: numVal('f_amt'), status: stt, paidBy: stt === 'Paid' ? val('f_by') : '', remark: val('f_rem') };
+      const o = { date: val('f_date'), vendor: val('f_v'), qty: numVal('f_qty'), rate: numVal('f_rate'), trips: numVal('f_trips'), amount: numVal('f_amt'), status: stt, paidBy: stt === 'Paid' ? val('f_by') : '', mode: stt === 'Paid' ? val('f_mode') : '', remark: val('f_rem') };
       if (!num(o.amount) && !(num(o.qty) && num(o.rate))) return toast('Enter amount, or quantity and rate');
       if (rec) Object.assign(rec, o); else s.murumLog.push({ id: uid(), ...o });
       return true;
@@ -3401,7 +3446,7 @@ function fundsForm(s, rec) {
         <div class="field"><label>Received from</label><input id="f_from" value="${esc(r.from || '')}" placeholder="Company / Rushi"></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Mode</label><select id="f_mode">${selOpts(['Online / UPI', 'Cash', 'Cheque', 'RTGS / NEFT'], r.mode || 'Online / UPI')}</select></div>
+        <div class="field"><label>Mode</label><select id="f_mode">${selOpts(MODES, r.mode || 'Online / UPI')}</select></div>
         <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
@@ -3432,7 +3477,7 @@ function ownerPayForm(s, rec) {
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
       </div>
       <div class="f2">
-        <div class="field"><label>Mode</label><select id="f_mode">${selOpts(['RTGS / NEFT', 'Online / UPI', 'Cash', 'Cheque'], r.mode || 'RTGS / NEFT')}</select></div>
+        <div class="field"><label>Mode</label><select id="f_mode">${selOpts(MODES, r.mode || 'RTGS / NEFT')}</select></div>
         <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       </div>
     </div></div>`,
@@ -4488,6 +4533,30 @@ document.addEventListener('click', async e => {
     case 'blSet':
       s.billPrefix = val('bl_pre'); s.billNext = numVal('bl_nx') || 1;
       await save(); render(); toast('Saved'); break;
+    case 'dashBill': openBill(dashBill(s), 'dashboard'); render(); break;
+    case 'expBill': reportForm(s, 'exp'); break;
+    case 'dslBill': reportForm(s, 'dsl'); break;
+    case 'mBillAsk': reportForm(s, 'machine', v); break;
+    case 'repToday': {
+      const f = document.getElementById('rp_f'), t2 = document.getElementById('rp_t');
+      if (f) f.value = today(); if (t2) t2.value = today();
+      break;
+    }
+    case 'repMonth': {
+      const d = today().slice(0, 7);
+      const f = document.getElementById('rp_f'), t2 = document.getElementById('rp_t');
+      if (f) f.value = d + '-01'; if (t2) t2.value = today();
+      break;
+    }
+    case 'repMake': {
+      const f = val('rp_f'), t2 = val('rp_t'), pick = val('rp_pick');
+      const kind = UI.repKind;
+      closeSheet();
+      if (kind === 'exp') openBill(expenseBill(s, f, t2, pick), 'expense-report');
+      else if (kind === 'dsl') openBill(dieselReport(s, f, t2, pick), 'diesel-report');
+      else openBill(machineBill(s, UI.repMachine, f, t2), 'machine-' + UI.repMachine);
+      render(); break;
+    }
     case 'dayBill': {
       const d = UI.mlDate || today();
       openBill(dayBill(s, d, UI.mlType || ''), 'day-' + d);
@@ -4892,6 +4961,167 @@ function settingsView(s) {
     </div>
     <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="sub" data-v="excel" data-t="more">Excel and snapshots</button></div>
   </div></div>`;
+}
+
+/* ---------------- DASHBOARD / EXPENSE / DIESEL PDF ---------------- */
+function periodTxt(from, to) {
+  return (from || to) ? ((from ? fmtDate(from) : 'start') + ' to ' + (to ? fmtDate(to) : fmtDate(today()))) : 'All entries till ' + fmtDate(today());
+}
+
+function dashBill(s) {
+  const t = totals(s), ms = modeStats(s);
+  const fin = t.fin;
+  const cats = s.categories.map(c => ({ c, x: categoryStats(s, c, fin) })).filter(o => o.x.total).sort((a, b) => b.x.total - a.x.total);
+  const ppl = s.people.map(p => ({ p, x: personStats(s, p) })).filter(o => o.x.total);
+  const vend = allVendors(s).map(v => ({ v, x: remVendorStats(s, v) })).filter(o => o.x.remaining > 0.5).sort((a, b) => b.x.remaining - a.x.remaining);
+  return `<div class="bill">
+    ${billHead('Site Account Summary', 'As on ' + fmtDate(today()))}
+    ${kpi([
+      ['TOTAL EXPENSE', money0(t.grand)],
+      ['SITE EXPENSE', money0(t.expTotal)],
+      s.mods.murum ? ['MURUM', money0(t.muTotal)] : null,
+      s.mods.diesel !== false ? ['DIESEL', money0(t.dsTotal)] : null,
+      s.mods.machine !== false ? ['MACHINE RENT', money0(t.rent)] : null,
+      ['NET PENDING', money0(t.netPending)]
+    ])}
+
+    <h2>Head-wise</h2>
+    <table>
+      <thead><tr><th>Head</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Pending</th></tr></thead>
+      <tbody>
+        <tr><td>Site expense</td><td class="n">${money0(t.expTotal)}</td><td class="n">${money0(t.expPaidFinal)}</td><td class="n">${money0(t.expUnpaidFinal)}</td></tr>
+        ${s.mods.murum ? `<tr><td>Murum</td><td class="n">${money0(t.muTotal)}</td><td class="n">${money0(t.muPaidFinal)}</td><td class="n">${money0(t.muUnpaidFinal)}</td></tr>` : ''}
+        ${s.mods.diesel !== false ? `<tr><td>Diesel purchase</td><td class="n">${money0(t.dsTotal)}</td><td class="n">${money0(t.dsPaidFinal)}</td><td class="n">${money0(t.dsUnpaidFinal)}</td></tr>` : ''}
+      </tbody>
+      <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td>
+        <td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
+    </table>
+
+    ${ms.rows.length ? `<h2>Payment mode-wise</h2>
+    <table>
+      <thead><tr><th>Mode</th><th class="n">Amount</th><th class="n">Share</th></tr></thead>
+      <tbody>${ms.rows.map(r => `<tr><td>${esc(r.mode)}</td><td class="n">${money0(r.amount)}</td>
+        <td class="n">${ms.total ? Math.round(r.amount / ms.total * 100) : 0}%</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>TOTAL PAID</td><td class="n">${money0(ms.total)}</td><td></td></tr></tfoot>
+    </table>` : ''}
+
+    ${cats.length ? `<h2>Category-wise expense</h2>
+    <table>
+      <thead><tr><th>Category</th><th class="n">Entries</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Pending</th></tr></thead>
+      <tbody>${cats.map(o => `<tr><td>${esc(o.c)}</td><td class="n">${o.x.entries}</td><td class="n">${money0(o.x.total)}</td>
+        <td class="n">${money0(o.x.paid)}</td><td class="n">${money0(o.x.unpaid)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>TOTAL</td><td class="n">${cats.reduce((a, o) => a + o.x.entries, 0)}</td><td class="n">${money0(t.expTotal)}</td>
+        <td class="n">${money0(t.expPaidFinal)}</td><td class="n">${money0(t.expUnpaidFinal)}</td></tr></tfoot>
+    </table>` : ''}
+
+    ${vend.length ? `<h2>Vendor pending</h2>
+    <table>
+      <thead><tr><th>Vendor</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead>
+      <tbody>${vend.map(o => `<tr><td>${esc(o.v)}</td><td class="n">${money0(o.x.total || o.x.amount)}</td>
+        <td class="n">${money0((o.x.direct || 0) + (o.x.paid || o.x.payments || 0))}</td><td class="n">${money0(o.x.remaining)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>TOTAL DUE</td><td class="n"></td><td class="n"></td><td class="n">${money0(vend.reduce((a, o) => a + o.x.remaining, 0))}</td></tr></tfoot>
+    </table>` : ''}
+
+    ${ppl.length ? `<h2>Person-wise spend</h2>
+    <table>
+      <thead><tr><th>Name</th><th class="n">Site</th><th class="n">Diesel</th><th class="n">Payments</th><th class="n">Total</th></tr></thead>
+      <tbody>${ppl.map(o => `<tr><td>${esc(o.p)}</td><td class="n">${money0(o.x.site + o.x.mu)}</td><td class="n">${money0(o.x.dsl)}</td>
+        <td class="n">${money0(o.x.vp + o.x.op)}</td><td class="n">${money0(o.x.total)}</td></tr>`).join('')}</tbody>
+    </table>` : ''}
+
+    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+  </div>`;
+}
+
+function expenseBill(s, from, to, cat) {
+  const fin = settle(s);
+  let rows = s.expenseLog.filter(e => inRange(e.date, from, to));
+  if (cat) rows = rows.filter(e => e.category === cat);
+  rows = rows.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const tot = rows.reduce((a, e) => a + num(e.amount), 0);
+  const paid = rows.filter(e => fin[e.id] && fin[e.id].final === 'Paid').reduce((a, e) => a + num(e.amount), 0);
+  const cats = [...new Set(rows.map(e => e.category || '-'))].map(c => {
+    const list = rows.filter(e => (e.category || '-') === c);
+    return { c, n: list.length, amt: list.reduce((a, e) => a + num(e.amount), 0) };
+  }).sort((a, b) => b.amt - a.amt);
+  return `<div class="bill">
+    ${billHead('Expense Report', periodTxt(from, to) + (cat ? '<br>Category: <b>' + esc(cat) + '</b>' : ''))}
+    ${kpi([['ENTRIES', rows.length], ['TOTAL', money0(tot)], ['PAID', money0(paid)], ['PENDING', money0(tot - paid)]])}
+    <h2>Entries</h2>
+    <table>
+      <thead><tr><th>Sr</th><th>Date</th><th>Particular</th><th>Category</th><th>Vendor</th><th>Paid by</th><th>Mode</th><th class="n">Amount</th><th>Status</th></tr></thead>
+      <tbody>${rows.map((e, i) => `<tr><td class="n">${i + 1}</td><td>${fmtDate(e.date)}</td>
+        <td>${esc(e.desc || '')}</td><td>${esc(e.category || '')}</td><td>${esc(e.vendor || '')}</td>
+        <td>${esc(e.paidBy || '')}</td><td>${esc(e.mode || '')}</td><td class="n">${money0(e.amount)}</td>
+        <td>${fin[e.id] && fin[e.id].final === 'Paid' ? 'Paid' : 'Pending'}</td></tr>`).join('') || '<tr><td colspan="9">No entries</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="7">TOTAL</td><td class="n">${money0(tot)}</td><td></td></tr></tfoot>
+    </table>
+    ${cats.length > 1 ? `<h2>Category-wise</h2>
+    <table>
+      <thead><tr><th>Category</th><th class="n">Entries</th><th class="n">Amount</th></tr></thead>
+      <tbody>${cats.map(o => `<tr><td>${esc(o.c)}</td><td class="n">${o.n}</td><td class="n">${money0(o.amt)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>TOTAL</td><td class="n">${rows.length}</td><td class="n">${money0(tot)}</td></tr></tfoot>
+    </table>` : ''}
+    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+  </div>`;
+}
+
+function dieselReport(s, from, to, vendor) {
+  const fin = settle(s);
+  let rows = s.dieselLog.filter(d => inRange(d.date, from, to));
+  if (vendor) rows = rows.filter(d => d.vendor === vendor);
+  rows = rows.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const lit = rows.reduce((a, d) => a + num(d.litres), 0);
+  const amt = rows.reduce((a, d) => a + num(d.amount), 0);
+  const paid = rows.filter(d => fin[d.id] && fin[d.id].final === 'Paid').reduce((a, d) => a + num(d.amount), 0);
+  const vend = [...new Set(rows.map(d => d.vendor || '-'))].map(v => {
+    const list = rows.filter(d => (d.vendor || '-') === v);
+    return { v, n: list.length, lit: list.reduce((a, d) => a + num(d.litres), 0), amt: list.reduce((a, d) => a + num(d.amount), 0) };
+  }).sort((a, b) => b.amt - a.amt);
+  const filled = s.machineLog.filter(r => inRange(r.date, from, to)).reduce((a, r) => a + num(r.diesel), 0);
+  return `<div class="bill">
+    ${billHead('Diesel Report', periodTxt(from, to) + (vendor ? '<br>Supplier: <b>' + esc(vendor) + '</b>' : ''))}
+    ${kpi([['BILLS', rows.length], ['LITRES', dec(lit)], ['AMOUNT', money0(amt)],
+      ['AVG RATE', lit ? dec(amt / lit, 2) : '-'], ['PENDING', money0(amt - paid)],
+      filled ? ['FILLED IN MACHINES', dec(filled) + ' L'] : null])}
+    <h2>Diesel bills</h2>
+    <table>
+      <thead><tr><th>Sr</th><th>Date</th><th>Supplier</th><th>Bill no</th><th class="n">Litres</th><th class="n">Rate</th><th class="n">Amount</th><th>Paid by</th><th>Mode</th><th>Status</th></tr></thead>
+      <tbody>${rows.map((d, i) => `<tr><td class="n">${i + 1}</td><td>${fmtDate(d.date)}</td>
+        <td>${esc(d.vendor || '')}</td><td>${esc(d.bill || '')}</td>
+        <td class="n">${dec(d.litres)}</td><td class="n">${num(d.litres) ? dec(num(d.amount) / num(d.litres), 2) : '-'}</td>
+        <td class="n">${money0(d.amount)}</td><td>${esc(d.paidBy || '')}</td><td>${esc(d.mode || '')}</td>
+        <td>${fin[d.id] && fin[d.id].final === 'Paid' ? 'Paid' : 'Pending'}</td></tr>`).join('') || '<tr><td colspan="10">No entries</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="4">TOTAL</td><td class="n">${dec(lit)}</td><td class="n"></td><td class="n">${money0(amt)}</td><td colspan="3"></td></tr></tfoot>
+    </table>
+    ${vend.length > 1 ? `<h2>Supplier-wise</h2>
+    <table>
+      <thead><tr><th>Supplier</th><th class="n">Bills</th><th class="n">Litres</th><th class="n">Amount</th></tr></thead>
+      <tbody>${vend.map(o => `<tr><td>${esc(o.v)}</td><td class="n">${o.n}</td><td class="n">${dec(o.lit)}</td><td class="n">${money0(o.amt)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>TOTAL</td><td class="n">${rows.length}</td><td class="n">${dec(lit)}</td><td class="n">${money0(amt)}</td></tr></tfoot>
+    </table>` : ''}
+    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+  </div>`;
+}
+
+/* ---------- report cha period vicharaycha ---------- */
+function reportForm(s, kind, machine) {
+  UI.repKind = kind; UI.repMachine = machine || '';
+  const title = kind === 'exp' ? 'Expense report' : kind === 'dsl' ? 'Diesel report' : 'Machine report - ' + machine;
+  const list = kind === 'exp' ? s.categories : kind === 'dsl' ? s.dieselVendors : [];
+  const label = kind === 'exp' ? 'Only this category (optional)' : 'Only this supplier (optional)';
+  openSheet(title, `
+    <div class="card"><div class="pad">
+      <div class="field"><label>From date</label><input type="date" id="rp_f" value="${esc(UI.repFrom || '')}"></div>
+      <div class="field"><label>To date</label><input type="date" id="rp_t" value="${esc(UI.repTo || '')}"></div>
+      <div class="tiny" style="margin:-4px 0 12px">Leave both empty for every entry till today.</div>
+      ${list.length ? `<div class="field"><label>${label}</label><select id="rp_pick">${selOpts(list, '', '— all —')}</select></div>` : '<input type="hidden" id="rp_pick" value="">'}
+      <div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="repToday">Today</button>
+        <button class="btn sec sm" style="flex:1" data-act="repMonth">This month</button></div>
+    </div></div>`,
+    () => false, null);
+  const btn = document.querySelector('[data-act="sheetSave"]');
+  if (btn) { btn.dataset.act = 'repMake'; btn.textContent = 'Open report'; }
 }
 
 </script>
