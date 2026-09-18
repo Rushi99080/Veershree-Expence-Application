@@ -4,207 +4,398 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Site Manager</title>
-<meta name="theme-color" content="#141A1F">
+<meta name="description" content="Site accounts — machine hours, diesel, expenses and vendor payments.">
+<meta name="theme-color" content="#0F1519" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1116" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Site Manager">
-<link rel="manifest" href="manifest.webmanifest">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F1519'/%3E%3Cpath d='M14 44h22v-9H14z' fill='%23F2A81D'/%3E%3Cpath d='M20 35v-11h8l6 11' fill='none' stroke='%23F2A81D' stroke-width='3.4' stroke-linejoin='round'/%3E%3Cpath d='M36 31l10-8 4 6-8 6' fill='none' stroke='%23F2A81D' stroke-width='3.4' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='48' r='4' fill='%23F2A81D'/%3E%3Ccircle cx='31' cy='48' r='4' fill='%23F2A81D'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ===========================================================
+   SITE MANAGER — design system
+   Graphite + hi-vis amber. Built to be read one-handed,
+   outdoors, on a phone. Amber means "needs attention".
+   =========================================================== */
 :root{
-  --ink:#141A1F;
-  --ink-2:#39454F;
-  --steel:#6B7A87;
-  --line:#D6DDE3;
-  --line-2:#EBEFF2;
-  --bg:#EDF1F4;
-  --surface:#FFFFFF;
-  --hivis:#F5B301;
-  --hivis-dk:#C08D00;
-  --paid:#15784B;
-  --paid-bg:#E3F3EA;
-  --due:#C0392B;
-  --due-bg:#FBE9E7;
-  --rent:#2C5F8A;
-  --r:10px;
+  color-scheme: light dark;
+
+  /* — surfaces — */
+  --ink:#0F1519;          /* header, hero, primary dark */
+  --ink-soft:#1A242D;     /* raised block on dark */
+  --ink-line:#2C3842;     /* divider on dark */
+  --bg:#EDF0F3;           /* app background */
+  --surface:#FFFFFF;      /* cards */
+  --surface-2:#F6F8FA;    /* table head, inset */
+
+  /* — text — */
+  --ink-2:#38454F;        /* strong secondary text */
+  --steel:#5E6C79;        /* muted text — AA on white and on --surface-2 */
+  --on-dark:#FFFFFF;
+  --on-dark-2:#93A3AF;
+
+  /* — rules — */
+  --line:#D8DFE5;
+  --line-2:#EAEEF1;
+
+  /* — status — */
+  --hivis:#F2A81D;        /* attention / brand accent */
+  --hivis-dk:#A97400;     /* amber text on white (AA) */
+  --hivis-bg:#FFF6E0;
+  --paid:#0F7047;
+  --paid-bg:#E3F2EA;
+  --due:#B5342A;
+  --due-bg:#FBEAE6;
+  --rent:#1F5C8B;
+  --rent-bg:#E8F0F7;
+
+  /* — type scale — */
+  --t-xs:11px; --t-sm:12.5px; --t-md:13.5px; --t-base:15px;
+  --t-lg:17px; --t-xl:21px; --t-2xl:27px; --t-3xl:clamp(34px,10vw,42px);
+
+  /* — geometry — */
+  --r:12px; --r-sm:9px; --r-pill:999px;
+  --tap:44px;                       /* minimum touch target */
+  --gap:12px;
+  --shadow-1:0 1px 2px rgba(15,21,25,.05);
+  --shadow-2:0 8px 28px rgba(15,21,25,.16);
+  --nav-h:calc(60px + env(safe-area-inset-bottom));
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#0B1116; --ink-soft:#161F26; --ink-line:#26323B;
+    --bg:#0E1418; --surface:#161D23; --surface-2:#1B242B;
+    --ink-2:#C6D0D8; --steel:#8B9AA6;
+    --line:#2A353E; --line-2:#222C34;
+    --hivis:#F5B435; --hivis-dk:#F0AE2B; --hivis-bg:#2A2107;
+    --paid:#4FC08D; --paid-bg:#10291F;
+    --due:#F08175; --due-bg:#2E1512;
+    --rent:#79B4E6; --rent-bg:#10222F;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4);
+    --shadow-2:0 8px 28px rgba(0,0,0,.55);
+  }
+  body{color:#E8EDF1}
+  .kpi,.card,.arow{box-shadow:none}
+  .hero{border:1px solid var(--ink-line)}      /* hero is darker than the page, so outline it */
+  .topbar{box-shadow:0 1px 0 var(--ink-line)}
+  img.brandlogo{background:#fff}
+}
+
+*,*::before,*::after{box-sizing:border-box}
+*{-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
 html,body{margin:0;padding:0}
 body{
-  background:var(--bg);color:var(--ink);
+  background:var(--bg);
+  color:var(--ink);
   font-family:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  font-size:15px;line-height:1.45;
-  padding-bottom:calc(118px + env(safe-area-inset-bottom));
+  font-size:var(--t-base);
+  line-height:1.45;
+  padding-bottom:calc(var(--nav-h) + 58px);
   -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
 }
-h1,h2,h3,h4{font-family:'Barlow Condensed','Barlow',sans-serif;margin:0;font-weight:700;letter-spacing:.01em}
-.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
-button,input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
-button{cursor:pointer}
+
+h1,h2,h3,h4{
+  font-family:'Barlow Condensed','Barlow Semi Condensed','Barlow',sans-serif;
+  margin:0;font-weight:700;letter-spacing:.005em;
+}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+button,input,select,textarea{font-family:inherit;font-size:16px;color:inherit}
+button{cursor:pointer;color:inherit}
 a{color:var(--rent)}
 
-/* ---------- top bar ---------- */
+/* visible keyboard focus everywhere */
+:where(button,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid var(--hivis);
+  outline-offset:2px;
+  border-radius:6px;
+}
+
+/* ---------- top bar ----------
+   The header and the sub-tab chips stick as one block. Sticking them
+   separately makes the chips slide underneath the header. */
+.stickyhead{position:sticky;top:0;z-index:40}
 .topbar{
-  position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;
-  padding:calc(8px + env(safe-area-inset-top)) 12px 0;
+  background:var(--ink);color:var(--on-dark);
+  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;
+  box-shadow:0 1px 0 rgba(0,0,0,.2);
 }
-.tb-row{display:flex;align-items:center;gap:8px;padding-bottom:8px}
-.brand{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;letter-spacing:.02em;line-height:1;flex:0 0 auto}
-.brand span{display:block;font-size:10.5px;font-family:'Barlow',sans-serif;font-weight:500;color:#93A3AF;letter-spacing:.08em;margin-top:2px}
+.tb-row{display:flex;align-items:center;gap:9px}
+.brand{
+  font-family:'Barlow Condensed',sans-serif;font-size:var(--t-lg);font-weight:600;
+  letter-spacing:.02em;line-height:1;flex:0 0 auto;
+}
+.brand span{
+  display:block;font-size:10px;font-family:'Barlow',sans-serif;font-weight:500;
+  color:var(--on-dark-2);letter-spacing:.09em;margin-top:3px;
+}
 .sitepick{
-  flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;justify-content:flex-end;
-  background:#222C34;border:1px solid #33414B;border-radius:8px;padding:7px 10px;color:#fff;
+  flex:1 1 auto;min-width:0;min-height:var(--tap);
+  display:flex;align-items:center;gap:7px;justify-content:space-between;
+  background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:var(--r-sm);
+  padding:8px 12px;color:var(--on-dark);
 }
-.sitepick b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
-.sitepick i{font-style:normal;color:var(--hivis);font-size:11px}
-.lockbtn{flex:0 0 auto;background:#222C34;border:1px solid #33414B;color:var(--hivis);border-radius:8px;padding:8px 9px;font-size:10px;font-weight:700;letter-spacing:.06em}
-.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding-bottom:0}
-.tabs::-webkit-scrollbar{display:none}
-.tab{
-  flex:0 0 auto;background:none;border:0;color:#93A3AF;padding:9px 11px 10px;
-  font-size:13.5px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;
+.sitepick b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--t-base)}
+.sitepick i{font-style:normal;color:var(--hivis);font-size:10px;flex:0 0 auto}
+
+/* ---------- sub-tab chips (sticky under the header) ---------- */
+.chips{
+  display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;
+  padding:9px 12px;background:var(--surface);border-bottom:1px solid var(--line);
 }
-.tab.on{color:#fff;border-bottom-color:var(--hivis)}
+.chips::-webkit-scrollbar{display:none}
+.chipbar{box-shadow:0 1px 0 rgba(15,21,25,.05)}
+.chip{
+  flex:0 0 auto;min-height:36px;border:1px solid var(--line);background:var(--surface);
+  border-radius:var(--r-pill);padding:7px 14px;font-size:var(--t-md);font-weight:600;color:var(--ink-2);
+}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--on-dark)}
 
 /* ---------- layout ---------- */
-main{padding:12px 12px 24px;max-width:820px;margin:0 auto}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
-.card>h3{
-  padding:10px 12px;font-size:15px;border-bottom:1px solid var(--line-2);
-  display:flex;justify-content:space-between;align-items:center;gap:8px;
+main{padding:var(--gap) var(--gap) 28px;max-width:820px;margin:0 auto}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  margin-bottom:var(--gap);overflow:hidden;box-shadow:var(--shadow-1);
 }
-.card>h3 small{font-family:'Barlow',sans-serif;font-weight:500;font-size:12px;color:var(--steel)}
-.pad{padding:12px}
-.muted{color:var(--steel);font-size:13px}
-.tiny{font-size:12px;color:var(--steel)}
+.card>h3{
+  padding:11px 13px;font-size:var(--t-lg);border-bottom:1px solid var(--line-2);
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;line-height:1.2;
+}
+.card>h3 small{
+  font-family:'Barlow',sans-serif;font-weight:600;font-size:var(--t-sm);
+  color:var(--steel);text-align:right;flex:0 0 auto;
+}
+.pad{padding:13px}
+.muted{color:var(--steel);font-size:var(--t-md)}
+.tiny{font-size:var(--t-sm);color:var(--steel);line-height:1.55}
 .right{text-align:right}
 .center{text-align:center}
-.mt{margin-top:12px}
+.mt{margin-top:var(--gap)}
 
-/* ---------- hero totals ---------- */
-.hero{background:var(--ink);color:#fff;border-radius:var(--r);padding:14px;margin-bottom:12px}
-.hero .lbl{font-size:11px;letter-spacing:.1em;color:#93A3AF;font-weight:600}
-.hero .big{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;line-height:1.05;margin-top:2px}
-.hero .big small{font-size:20px;color:var(--hivis);margin-right:4px;font-weight:600}
-.hsplit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#33414B;border-radius:8px;overflow:hidden;margin-top:12px}
-.hsplit div{background:#1C242B;padding:9px 10px;min-width:0}
-.hsplit .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hsplit .k{font-size:10.5px;color:#93A3AF;font-weight:600;letter-spacing:.04em}
-.hsplit .v{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;margin-top:1px}
-.pendbar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;background:var(--hivis);color:#241C00;border-radius:8px;padding:9px 12px}
-.pendbar b{font-family:'Barlow Condensed',sans-serif;font-size:22px}
+/* ---------- hero: the one loud moment ---------- */
+.hero{
+  background:var(--ink);color:var(--on-dark);border-radius:var(--r);
+  padding:16px 15px 15px;margin-bottom:var(--gap);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.05),transparent 42%);
+}
+.hero .lbl{font-size:var(--t-xs);letter-spacing:.12em;color:var(--on-dark-2);font-weight:600;text-transform:uppercase}
+.hero .big{
+  font-family:'Barlow Condensed',sans-serif;font-size:var(--t-3xl);font-weight:700;
+  line-height:1;margin-top:4px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;
+}
+.hero .big small{font-size:.5em;color:var(--hivis);margin-right:5px;font-weight:600;letter-spacing:0}
+.hsplit{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--ink-line);
+  border-radius:var(--r-sm);overflow:hidden;margin-top:14px;
+}
+.hsplit div{background:var(--ink-soft);padding:10px 11px;min-width:0}
+.hsplit .k{font-size:10px;color:var(--on-dark-2);font-weight:600;letter-spacing:.07em;text-transform:uppercase}
+.hsplit .v{
+  font-family:'Barlow Condensed',sans-serif;font-size:var(--t-xl);font-weight:600;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+.pendbar{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  margin-top:11px;background:var(--hivis);color:#241C00;border-radius:var(--r-sm);padding:10px 13px;
+}
+.pendbar b{font-family:'Barlow Condensed',sans-serif;font-size:var(--t-2xl);line-height:1;font-variant-numeric:tabular-nums}
 
 /* ---------- kpi grid ---------- */
-.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px}
-.kpi .k{font-size:11px;color:var(--steel);font-weight:600;letter-spacing:.03em}
-.kpi .v{font-family:'Barlow Condensed',sans-serif;font-size:23px;font-weight:700;margin-top:2px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.kpi{min-width:0}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:var(--gap)}
+.kpi{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:11px 12px;min-width:0;box-shadow:var(--shadow-1);
+}
+.kpi .k{font-size:var(--t-xs);color:var(--steel);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.kpi .v{
+  font-family:'Barlow Condensed',sans-serif;font-size:var(--t-2xl);font-weight:700;margin-top:3px;
+  line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
 .kpi.g .v{color:var(--paid)} .kpi.r .v{color:var(--due)} .kpi.b .v{color:var(--rent)}
 .k3{grid-template-columns:1fr 1fr 1fr}
 
-/* ---------- tables ---------- */
-.scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
+/* ---------- tables: read like a ledger ---------- */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+table{width:100%;border-collapse:collapse;font-size:var(--t-md)}
 th{
-  text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--steel);
-  padding:7px 10px;border-bottom:1px solid var(--line);background:#F7F9FA;white-space:nowrap;
+  text-align:left;font-weight:700;font-size:var(--t-xs);letter-spacing:.06em;color:var(--steel);
+  padding:8px 11px;border-bottom:1px solid var(--line);background:var(--surface-2);
+  white-space:nowrap;text-transform:uppercase;
 }
-td{padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
-tr:last-child td{border-bottom:0}
+td{padding:9px 11px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
+tfoot td{font-weight:700;background:var(--surface-2);border-top:1.5px solid var(--line);border-bottom:0}
 .nowrap{white-space:nowrap}
+tbody tr[data-act]{cursor:pointer}
+tbody tr[data-act]:active{background:var(--surface-2)}
 
 /* ---------- log rows ---------- */
-.row{display:flex;flex-wrap:wrap;gap:8px 10px;padding:11px 12px;border-bottom:1px solid var(--line-2);align-items:center}
+.row{
+  display:flex;flex-wrap:wrap;gap:8px 10px;padding:12px 13px;
+  border-bottom:1px solid var(--line-2);align-items:center;min-height:var(--tap);
+}
 .row:last-child{border-bottom:0}
-.row .main{flex:1 1 58%;min-width:0}
-.row .ttl{font-weight:600;font-size:14.5px;word-break:break-word}
-.row .sub{font-size:12px;color:var(--steel);margin-top:2px}
-.row .amt{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
-.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.03em}
+.row[data-act]{cursor:pointer}
+.row[data-act]:active{background:var(--surface-2)}
+.row .main{flex:1 1 56%;min-width:0}
+.row .ttl{font-weight:600;font-size:var(--t-base);word-break:break-word;line-height:1.3}
+.row .sub{font-size:var(--t-sm);color:var(--steel);margin-top:3px;line-height:1.4}
+.row .amt{
+  flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;
+  font-variant-numeric:tabular-nums;font-weight:700;font-size:var(--t-lg);
+}
+.pill{
+  display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;
+  border-radius:var(--r-pill);letter-spacing:.04em;vertical-align:1px;text-transform:uppercase;
+}
 .pill.p{background:var(--paid-bg);color:var(--paid)}
 .pill.u{background:var(--due-bg);color:var(--due)}
-.pill.n{background:#EEF2F5;color:var(--ink-2)}
-.rowbtn{flex:0 0 auto;background:#F7F9FA;border:1px solid var(--line);border-radius:8px;
-  padding:6px 10px;color:var(--ink-2);font-size:12px;font-weight:600;line-height:1.1}
+.pill.n{background:var(--line-2);color:var(--ink-2)}
+.rowbtn{
+  flex:0 0 auto;min-height:38px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--r-sm);padding:8px 13px;color:var(--ink-2);
+  font-size:var(--t-md);font-weight:600;line-height:1.1;
+}
 .rowbtn:active{background:var(--line)}
 
 /* ---------- forms ---------- */
-.field{margin-bottom:10px}
-.field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.03em;margin-bottom:3px}
-.field input,.field select,.field textarea{
-  width:100%;min-width:0;max-width:100%;box-sizing:border-box;font-size:16px;
-  padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;
+.field{margin-bottom:11px;min-width:0}
+.field label{
+  display:block;font-size:var(--t-sm);font-weight:700;color:var(--ink-2);
+  letter-spacing:.02em;margin-bottom:5px;
 }
-.field input[type=date]{-webkit-appearance:none;appearance:none;min-height:42px}
-.f2>*{min-width:0}
-.f2 .field{margin-bottom:10px}
-*,*::before,*::after{box-sizing:border-box}
-.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--hivis);outline-offset:-1px;border-color:var(--hivis)}
+.field input,.field select,.field textarea{
+  width:100%;min-width:0;max-width:100%;font-size:16px;min-height:var(--tap);
+  padding:11px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface);color:inherit;
+}
+.field textarea{min-height:76px;resize:vertical}
+.field select{
+  appearance:none;-webkit-appearance:none;padding-right:34px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--steel) 50%),linear-gradient(135deg,var(--steel) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 20px,calc(100% - 12px) 20px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+.field input[type=date]{-webkit-appearance:none;appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:2px solid var(--hivis);outline-offset:-1px;border-color:var(--hivis);
+}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.f2>*,.f3>*{min-width:0}
+
 .btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;
-  padding:12px;border-radius:9px;border:0;background:var(--hivis);color:#241C00;font-weight:700;font-size:15px;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  min-height:var(--tap);padding:12px 14px;border-radius:var(--r-sm);border:1px solid transparent;
+  background:var(--hivis);color:#241C00;font-weight:700;font-size:var(--t-base);line-height:1.2;
 }
-.btn:active{background:var(--hivis-dk)}
-.btn.sec{background:#fff;border:1px solid var(--line);color:var(--ink)}
-.btn.dk{background:var(--ink);color:#fff}
-.btn.dgr{background:#fff;border:1px solid #E7B7B1;color:var(--due)}
-.btn.sm{width:auto;padding:8px 12px;font-size:13.5px}
-.btnrow{display:flex;gap:8px;margin-top:8px;align-items:stretch}
-.btnrow > .btn{min-width:0}
-.f2 > *{min-width:0}
-.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
-.seg button{flex:1;border:0;background:#fff;padding:10px 6px;font-size:13.5px;font-weight:600;color:var(--steel)}
-.seg button.on{background:var(--ink);color:#fff}
-.seg.pu button.on[data-v="Paid"]{background:var(--paid)}
-.seg.pu button.on[data-v="Unpaid"]{background:var(--due)}
-.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid var(--line-2);scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--ink-2)}
-.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.sec{background:var(--surface);border-color:var(--line);color:var(--ink-2)}
+.btn.dk{background:var(--ink);border-color:var(--ink);color:var(--on-dark)}
+.btn.dgr{background:var(--surface);border-color:var(--due);color:var(--due)}
+.btn:active{filter:brightness(.92)}
+.btn.sec:active,.btn.dgr:active{background:var(--surface-2);filter:none}
+.btn.dk:active{background:var(--ink-soft);filter:none}
+.btn.sm{width:auto;min-height:40px;padding:9px 14px;font-size:var(--t-md)}
+.btnrow{display:flex;gap:9px;margin-top:9px;align-items:stretch}
+.btnrow>.btn{min-width:0;flex:1}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface)}
+.seg button{
+  flex:1;border:0;background:var(--surface);min-height:var(--tap);padding:10px 6px;
+  font-size:var(--t-md);font-weight:600;color:var(--steel);
+}
+.seg button.on{background:var(--ink);color:var(--on-dark)}
+.seg.pu button.on[data-v="Paid"]{background:var(--paid);color:#fff}
+.seg.pu button.on[data-v="Unpaid"]{background:var(--due);color:#fff}
 
 /* ---------- bottom nav ---------- */
 .nav{
-  position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(6,1fr);
-  background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+  position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -1px 0 rgba(15,21,25,.04);
 }
-.nav button{background:none;border:0;padding:8px 2px 9px;color:var(--steel);font-size:10.5px;font-weight:600;line-height:1.2}
-.nav button svg{display:block;margin:0 auto 2px;width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav button{
+  position:relative;background:none;border:0;padding:9px 2px 10px;color:var(--steel);
+  font-size:10px;font-weight:600;line-height:1.2;min-width:0;overflow:hidden;
+}
+.nav button svg{
+  display:block;margin:0 auto 3px;width:22px;height:22px;
+  stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+}
 .nav button.on{color:var(--ink)}
 .nav button.on svg{stroke:var(--hivis-dk)}
+.nav button.on::before{
+  content:"";position:absolute;top:0;left:22%;right:22%;height:3px;
+  background:var(--hivis);border-radius:0 0 3px 3px;
+}
+.nav.n7 button,.nav.n8 button{font-size:9px;padding:8px 0 9px;letter-spacing:-.01em}
+.nav.n7 button svg,.nav.n8 button svg{width:19px;height:19px}
 
-.nav.n7 button,.nav.n8 button{font-size:9px;padding:7px 0 8px;letter-spacing:-.01em}
-.nav.n7 button svg,.nav.n8 button svg{width:18px;height:18px}
-.nav button{min-width:0;overflow:hidden}
-.logo{height:26px;width:auto;max-width:88px;object-fit:contain;border-radius:4px;background:#fff;padding:2px;flex:0 0 auto}
-.logobox{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+/* ---------- global search ---------- */
+.searchwrap{
+  position:fixed;left:0;right:0;bottom:var(--nav-h);z-index:45;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:8px 11px;display:flex;gap:9px;align-items:center;
+}
+.searchwrap input{
+  flex:1;min-width:0;min-height:40px;padding:10px 14px;border:1px solid var(--line);
+  border-radius:var(--r-pill);background:var(--surface-2);font-size:16px;color:inherit;
+}
+.searchwrap input:focus{outline:2px solid var(--hivis);outline-offset:-1px;background:var(--surface)}
+.searchwrap button{
+  flex:0 0 auto;background:none;border:0;color:var(--steel);
+  font-size:var(--t-md);font-weight:700;padding:8px 6px;
+}
+.spanel{
+  position:fixed;left:0;right:0;top:0;bottom:calc(var(--nav-h) + 57px);z-index:44;
+  background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 20px;
+}
+.shead{
+  font-size:var(--t-xs);font-weight:700;letter-spacing:.07em;color:var(--steel);
+  padding:12px 3px 6px;text-transform:uppercase;
+}
 
-.prt{position:fixed;inset:0;z-index:100;background:#fff;overflow-y:auto;padding:16px 14px calc(90px + env(safe-area-inset-bottom))}
-.prtbar{position:fixed;left:0;right:0;bottom:0;z-index:101;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
-.bill{max-width:760px;margin:0 auto;color:#000;font-size:12.5px}
-.bill h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;margin:0 0 2px}
+/* ---------- logo ---------- */
+.brandlogo{height:30px;max-width:130px;object-fit:contain;display:block}
+
+/* ---------- printable bill ---------- */
+.prt{
+  position:fixed;inset:0;z-index:100;background:#fff;overflow-y:auto;
+  padding:calc(16px + env(safe-area-inset-top)) 14px calc(94px + env(safe-area-inset-bottom));
+}
+.prtbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:101;display:flex;gap:9px;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  background:var(--surface);border-top:1px solid var(--line);
+}
+.bill{max-width:760px;margin:0 auto;color:#000;font-size:12.5px;background:#fff}
+.bill h1{font-family:'Barlow Condensed',sans-serif;font-size:23px;margin:0 0 2px}
 .bill .meta{font-size:11.5px;color:#333;margin-bottom:12px;line-height:1.6}
 .bill table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:14px}
-.bill th{background:#EEF2F5;border:1px solid #B9C4CC;padding:5px 6px;text-align:left;font-size:10.5px;letter-spacing:.03em}
+.bill th{background:#EEF2F5;border:1px solid #B9C4CC;padding:5px 6px;text-align:left;font-size:10.5px;letter-spacing:.04em;color:#000}
 .bill td{border:1px solid #D6DDE3;padding:4px 6px;vertical-align:top}
 .bill td.n,.bill th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bill tfoot td{font-weight:700;background:#F5F7F9}
-.bill .kpi{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.bill .kpi div{border:1px solid #B9C4CC;border-radius:6px;padding:6px 10px;min-width:100px}
-.bill .kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px}
-.bill .kpi span{font-size:9.5px;letter-spacing:.06em;color:#444}
-.bill h2{font-family:'Barlow Condensed',sans-serif;font-size:15px;margin:16px 0 6px;border-bottom:1.5px solid #000;padding-bottom:2px}
+.bill .kpi{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;background:none;border:0;padding:0;box-shadow:none}
+.bill .kpi div{border:1px solid #B9C4CC;border-radius:6px;padding:6px 10px;min-width:100px;background:#fff}
+.bill .kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px;color:#000}
+.bill .kpi span{font-size:9.5px;letter-spacing:.07em;color:#444}
+.bill h2{font-family:'Barlow Condensed',sans-serif;font-size:16px;margin:16px 0 6px;border-bottom:1.5px solid #000;padding-bottom:2px}
 .bill .sign{margin-top:26px;display:flex;justify-content:space-between;font-size:11px;color:#333}
 @media print{
-  body{background:#fff!important;padding:0!important}
+  body{background:#fff!important;padding:0!important;color:#000!important}
   body > *{display:none!important}
   body > #print{display:block!important}
   .prt{position:static;padding:0;overflow:visible}
@@ -213,68 +404,87 @@ tfoot td{font-weight:700;background:#F7F9FA;border-top:1px solid var(--line)}
   @page{margin:12mm}
 }
 
-.arow{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);
-  border-radius:10px;background:var(--surface);margin-bottom:7px;touch-action:none;user-select:none}
-.arow.drag{background:#FFF7DB;border-color:var(--hivis);box-shadow:0 6px 18px rgba(15,20,25,.16);opacity:.96}
-.arow .hnd{width:26px;flex:0 0 26px;color:var(--steel);font-size:17px;line-height:1;text-align:center;cursor:grab}
-.arow .anm{flex:1;font-weight:600;font-size:14px}
-.arow .asub{font-weight:400;font-size:11px;color:var(--steel);display:block}
-.arow .abtn{width:34px;height:32px;flex:0 0 34px;border:1px solid var(--line);border-radius:8px;
-  background:#F7F9FA;font-size:14px;color:var(--ink)}
+/* ---------- drag-to-arrange rows ---------- */
+.arow{
+  display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:var(--surface);margin-bottom:8px;
+  touch-action:none;user-select:none;min-height:var(--tap);box-shadow:var(--shadow-1);
+}
+.arow.drag{background:var(--hivis-bg);border-color:var(--hivis);box-shadow:var(--shadow-2);opacity:.97}
+.arow .hnd{width:26px;flex:0 0 26px;color:var(--steel);font-size:18px;line-height:1;text-align:center;cursor:grab}
+.arow .anm{flex:1;font-weight:600;font-size:var(--t-base);min-width:0}
+.arow .asub{font-weight:400;font-size:var(--t-xs);color:var(--steel);display:block;margin-top:2px}
+.arow .abtn{
+  width:38px;height:38px;flex:0 0 38px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface-2);font-size:15px;color:var(--ink-2);
+}
 
 /* ---------- sheet / modal ---------- */
-.sheet{position:fixed;inset:0;z-index:80;background:rgba(15,20,25,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{
+  position:fixed;inset:0;z-index:80;background:rgba(9,14,18,.58);
+  display:flex;align-items:flex-end;justify-content:center;
+  backdrop-filter:saturate(.9) blur(2px);
+}
 .sheet .box{
-  background:var(--bg);width:100%;max-width:820px;max-height:92vh;overflow-y:auto;
+  background:var(--bg);width:100%;max-width:820px;max-height:92vh;max-height:92dvh;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
   border-radius:16px 16px 0 0;padding:14px 12px calc(20px + env(safe-area-inset-bottom));
+  box-shadow:var(--shadow-2);
 }
-.sheet h3{font-size:18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-.x{background:none;border:0;font-size:22px;line-height:1;color:var(--steel);padding:0 4px}
+.sheet h3{font-size:var(--t-xl);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.x{background:none;border:0;font-size:26px;line-height:1;color:var(--steel);padding:2px 6px;min-height:var(--tap);min-width:var(--tap)}
+
+/* ---------- feedback ---------- */
 .toast{
-  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:90;
-  background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;font-weight:600;
-  box-shadow:0 6px 20px rgba(15,20,25,.3);
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(var(--nav-h) + 68px);z-index:90;max-width:min(92vw,420px);
+  background:var(--ink);color:var(--on-dark);padding:11px 18px;border-radius:var(--r-pill);
+  font-size:var(--t-md);font-weight:600;box-shadow:var(--shadow-2);text-align:center;
 }
-.empty{padding:26px 16px;text-align:center;color:var(--steel);font-size:13.5px}
-.warn{background:#FFF8E1;border:1px solid #F0D48A;color:#6B5300;padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:12px}
-.bar{height:5px;background:var(--line-2);border-radius:99px;overflow:hidden;margin-top:5px}
-.bar i{display:block;height:100%;background:var(--rent)}
-.lockwrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 18px;background:var(--ink)}
-.lock{width:100%;max-width:380px;color:#fff}
-.lock .lg{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;line-height:1.1}
-.lock .sm2{color:#93A3AF;font-size:13px;margin-top:6px;line-height:1.6}
-.lock input{width:100%;padding:14px;border-radius:10px;border:1px solid #33414B;background:#1C242B;color:#fff;font-size:18px;letter-spacing:.25em;text-align:center;margin-top:14px}
-.lock input::placeholder{letter-spacing:normal;color:#5C6B77}
-.lock .btn{margin-top:12px}
-.lock .err{background:#3A1D1A;border:1px solid #6B2C24;color:#FFB4A8;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-top:12px}
-.lock .skip{display:block;text-align:center;color:#93A3AF;font-size:12.5px;margin-top:16px;text-decoration:underline}
-.lockbtn{flex:0 0 auto;background:#222C34;border:1px solid #33414B;border-radius:8px;color:#93A3AF;padding:7px 9px;font-size:15px;line-height:1}
-.robar{background:var(--rent);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:5px 12px;text-align:center}
-/* fakt baghnyachya mode madhe: badal karnyache buttons lapavaayche,
-   pan entries chya rows disaylach havyat */
+@media (prefers-color-scheme: dark){ .toast{background:#2C3842;border:1px solid var(--ink-line)} }
+.empty{padding:30px 18px;text-align:center;color:var(--steel);font-size:var(--t-md);line-height:1.6}
+.warn{
+  background:var(--hivis-bg);border:1px solid var(--hivis);color:var(--hivis-dk);
+  padding:11px 13px;border-radius:var(--r-sm);font-size:var(--t-md);margin-bottom:var(--gap);line-height:1.5;
+}
+.warn b{color:inherit}
+.bar{height:6px;background:var(--line-2);border-radius:var(--r-pill);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--rent);border-radius:var(--r-pill)}
+
+/* ---------- read-only mode ---------- */
+.robar{
+  background:var(--rent);color:#fff;font-size:var(--t-sm);font-weight:700;
+  letter-spacing:.05em;padding:6px 12px;text-align:center;
+}
 body.ro button[data-act$="Add"],body.ro button[data-act="xlAllDone"],body.ro button[data-act="xlReset"],
 body.ro button[data-act="impJson"],body.ro button[data-act="snapList"],body.ro button[data-act="snapBack"],
-body.ro button[data-act="xlCopy"],body.ro button[data-act="siteEdit"],body.ro .rowbtn{display:none !important}
-/* English var, Hindi khali */
+body.ro button[data-act="xlCopy"],body.ro button[data-act="siteEdit"],body.ro .rowbtn{display:none!important}
 
-h3 i{font-family:'Barlow',sans-serif;font-weight:500}
-.hero .lbl i,.hsplit .k i{color:#7C8B98}
-.btn i{color:rgba(36,28,0,.62);font-size:10px}
+/* ---------- secondary hint text inside controls ---------- */
+h3 i{font-family:'Barlow',sans-serif;font-weight:500;font-style:normal}
+.hero .lbl i,.hsplit .k i{color:var(--on-dark-2)}
+.btn i{color:rgba(36,28,0,.62);font-size:10px;font-style:normal}
 .btn.dk i,.btn.sec i,.btn.dgr i{color:var(--steel)}
-.tab i{font-size:9.5px;color:#6B7A87}
-.seg button i{display:block;font-style:normal;font-size:9.5px;font-weight:500;color:var(--steel)}
-.seg button.on i{color:rgba(255,255,255,.7)}
-.searchwrap{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:45;
-  background:var(--surface);border-top:1px solid var(--line);padding:7px 10px;display:flex;gap:8px;align-items:center}
-.searchwrap input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:99px;background:#F4F7F9;font-size:15px}
-.searchwrap input:focus{outline:2px solid var(--hivis);outline-offset:-1px;background:#fff}
-.searchwrap button{flex:0 0 auto;background:none;border:0;color:var(--steel);font-size:13px;font-weight:700;padding:6px 8px}
-.spanel{position:fixed;left:0;right:0;top:0;bottom:calc(112px + env(safe-area-inset-bottom));z-index:44;
-  background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px 20px}
-.shead{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--steel);padding:10px 2px 6px}
-.brandlogo{height:30px;max-width:130px;object-fit:contain;display:block}
-@media (min-width:640px){ .kpis{grid-template-columns:repeat(4,1fr)} .k3{grid-template-columns:repeat(3,1fr)} }
-@media (prefers-reduced-motion:no-preference){ .sheet .box{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px)}} }
+.seg button i{display:block;font-style:normal;font-size:10px;font-weight:500;color:var(--steel)}
+.seg button.on i{color:rgba(255,255,255,.72)}
+
+/* ---------- wider screens ---------- */
+@media (min-width:640px){
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .k3{grid-template-columns:repeat(3,1fr)}
+  main{padding:16px 16px 32px}
+}
+@media (min-width:900px){
+  .hero .big{font-size:46px}
+}
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion: no-preference){
+  .sheet .box{animation:sheetUp .2s cubic-bezier(.2,.7,.3,1)}
+  @keyframes sheetUp{from{transform:translateY(26px);opacity:.6}}
+  .toast{animation:toastIn .18s ease-out}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}}
+}
 </style>
 </head>
 <body>
@@ -283,20 +493,49 @@ h3 i{font-family:'Barlow',sans-serif;font-weight:500}
 <div id="toast"></div>
 <div id="print"></div>
 <script>
-/* ---------- error disla tar screen var dakhva (blank page nako) ---------- */
-window.onerror = function (msg, src, line) {
+
+/* ---------- errors: never leave a blank screen, never trap the data ---------- */
+let LAST_ERROR = '';
+function showError(msg, line) {
+  LAST_ERROR = String(msg) + (line ? ' (line ' + line + ')' : '');
   try {
-    document.getElementById('app').innerHTML =
-      '<div style="padding:24px;font-family:system-ui"><div style="font-weight:700;font-size:18px;margin-bottom:8px">App madhe error</div>' +
-      '<div style="font-size:13px;color:#555;line-height:1.6">' + String(msg) + '<br>line ' + line + '</div>' +
-      '<div style="font-size:13px;margin-top:14px">Ha message Claude la pathva. Tumcha data suraksit aahe.</div></div>';
+    const app = document.getElementById('app');
+    const started = app && app.children.length;
+    const body = '<div style="font-weight:700;font-size:17px;margin-bottom:6px">Something went wrong</div>'
+      + '<div style="font-size:13px;color:#6B7A87;line-height:1.6;word-break:break-word">' + LAST_ERROR + '</div>'
+      + '<div style="font-size:13px;margin-top:10px;line-height:1.6">Your data is safe. Download a backup, then reload the app.</div>'
+      + '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'
+      + '<button class="btn sm" data-act="errBackup">Download backup</button>'
+      + '<button class="btn sec sm" data-act="errCopy">Copy message</button>'
+      + '<button class="btn sec sm" data-act="errReload">Reload</button>'
+      + (started ? '<button class="btn sec sm" data-act="errHide">Dismiss</button>' : '')
+      + '</div>';
+    if (!started) {
+      /* app never drew — take the whole screen so the buttons are reachable */
+      app.innerHTML = '<div style="padding:24px 18px;font-family:Barlow,system-ui">' + body + '</div>';
+      return;
+    }
+    let bar = document.getElementById('errbar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'errbar';
+      bar.style.cssText = 'position:fixed;left:10px;right:10px;bottom:calc(var(--nav-h) + 12px);z-index:95;'
+        + 'background:var(--surface);border:1px solid var(--due);border-radius:12px;padding:14px;'
+        + 'box-shadow:var(--shadow-2);max-width:800px;margin:0 auto;font-family:Barlow,system-ui';
+      document.body.appendChild(bar);
+    }
+    bar.innerHTML = body;
   } catch (e) { }
-};
-window.addEventListener('unhandledrejection', function (e) { console.error('promise error', e.reason); });
+}
+window.onerror = (msg, src, line) => { showError(msg, line); };
+window.addEventListener('unhandledrejection', e => {
+  console.error('promise error', e.reason);
+  showError((e.reason && e.reason.message) || e.reason || 'Unknown background error');
+});
 /* ============================================================
-   STORAGE  —  data kadhich jau naye yasathi
-   Claude madhe chalvla tar Claude chi storage, website var chalvla
-   tar phone madhli IndexedDB (+ localStorage backup + rojche snapshots)
+   STORAGE  —  built so the data can never quietly disappear.
+   Inside Claude it uses Claude's own store; on a website it uses the
+   phone's IndexedDB, with a localStorage copy and a daily snapshot.
    ============================================================ */
 const IDB = {
   db: null,
@@ -332,9 +571,9 @@ const Store = {
     let ok = false;
     try { if (window.indexedDB) { await IDB.set(k, v); ok = true; } } catch (e) { }
     try { if (v.length < 4500000) { localStorage.setItem(k, v); ok = true; } } catch (e) { }
-    if (!ok) throw new Error('storage madhe save hot nahi');
+    if (!ok) throw new Error('Could not save on this device');
   },
-  /* rojcha ek snapshot, shevatche 21 divas thevto */
+  /* one snapshot a day, keeping the last 21 days */
   async snapshot(v) {
     if (HAS_CLAUDE_STORE) return;
     try {
@@ -350,7 +589,7 @@ const Store = {
   async snapshotGet(k) { try { return await IDB.get(k); } catch (e) { return null; } }
 };
 
-/* browser la sanga: hi storage kadhi pusu nakos */
+/* ask the browser never to evict this storage */
 var PERSIST = false;
 async function askPersist() {
   try {
@@ -361,7 +600,7 @@ async function askPersist() {
   } catch (e) { }
 }
 
-/* ---------- juna service worker ani cache saaf (aadhichya version cha kachra) ---------- */
+/* ---------- clear out any service worker / cache left by an older build ---------- */
 (() => {
   try {
     if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
@@ -371,9 +610,37 @@ async function askPersist() {
   } catch (e) { }
 })();
 
+/* ---------- PWA manifest, built in the page ----------
+   The icon and the manifest used to be separate files next to index.html.
+   Building them here means this one file installs on a phone on its own,
+   wherever it is hosted. */
+const APP_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230F1519'/%3E%3Cpath d='M112 352h176v-72H112z' fill='%23F2A81D'/%3E%3Cpath d='M160 280V192h64l48 88' fill='none' stroke='%23F2A81D' stroke-width='27' stroke-linejoin='round'/%3E%3Cpath d='M288 248l80-64 32 48-64 48' fill='none' stroke='%23F2A81D' stroke-width='27' stroke-linejoin='round'/%3E%3Ccircle cx='160' cy='384' r='32' fill='%23F2A81D'/%3E%3Ccircle cx='248' cy='384' r='32' fill='%23F2A81D'/%3E%3C/svg%3E";
+(() => {
+  try {
+    const here = location.href.split('#')[0];
+    const mf = {
+      name: 'Site Manager', short_name: 'Site Mgr',
+      description: 'Site accounts — machine hours, diesel, expenses and vendor payments.',
+      start_url: here, scope: here.replace(/[^\/]*$/, ''),
+      display: 'standalone', orientation: 'portrait',
+      background_color: '#0F1519', theme_color: '#0F1519',
+      icons: [
+        { src: APP_ICON, sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
+        { src: APP_ICON, sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' }
+      ]
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(mf)], { type: 'application/manifest+json' }));
+    const link = document.createElement('link');
+    link.rel = 'manifest'; link.href = url;
+    document.head.appendChild(link);
+    const apple = document.querySelector('link[rel="apple-touch-icon"]');
+    if (apple) apple.href = APP_ICON;
+  } catch (e) { }
+})();
+
 /* ============================================================
    SITE MANAGEMENT SYSTEM  —  data layer
-   Excel madhli sagli automation ithe formulas mhanun lihileli aahe.
+   Every formula from the Excel workbook, rewritten here in JS.
    ============================================================ */
 const SEED = null;
 
@@ -382,7 +649,7 @@ const $ = s => document.querySelector(s);
 const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = v => {
-  if (typeof v === 'string') v = v.replace(/[,\s\u20B9]/g, '');   /* 1,000 kiwa Rs 1,000 pn chalel */
+  if (typeof v === 'string') v = v.replace(/[,\s\u20B9]/g, '');   /* accepts 1,000 and Rs 1,000 too */
   const n = parseFloat(v);
   return isFinite(n) ? n : 0;
 };
@@ -415,58 +682,27 @@ let DB = { sites: [], activeId: null };
 let TAB = 'dash';
 let UI = {};            // per-tab filters etc.
 let STORAGE_OK = true;
-let ROLE = 'admin';   /* main app madhe login nahi - sagla edit karta yeto */
-let ME = '';                 // 'admin' = sagla edit, 'view' = fakt baghaycha
-let LAST_TOUCH = Date.now();
-const CAN = () => true;
 
-/* ---------- passcode ---------- */
+/* ---------- hashing ----------
+   The app has no login; the only password is the one that guards
+   deleting a site (see delHash). Any `auth` block left in an older
+   saved database is kept untouched, just unused. */
 async function sha(txt) {
   try {
     const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
     return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
   } catch (e) {
+    /* http:// or an old webview has no crypto.subtle — fall back */
     let h = 5381; for (let i = 0; i < txt.length; i++) h = ((h * 33) ^ txt.charCodeAt(i)) >>> 0;
     return 'f' + h.toString(16);
   }
 }
 const salt = () => (DB.auth && DB.auth.salt) || 'vsms';
-const newSalt = () => uid() + uid();
-
-/* users: { uid, name, userId, role: 'admin' | 'view', hash } */
-function users() { return (DB.auth && DB.auth.users) || []; }
-function supers() { return (DB.auth && DB.auth.supervisors) || []; }
-const norm = s => String(s || '').trim().toLowerCase();
-
-async function makeUser(name, userId, password, role) {
-  return { uid: uid(), name: name || userId, userId: String(userId).trim(), role, hash: await sha(password + ':' + salt()) };
-}
-async function setupAdmin(name, userId, password) {
-  DB.auth = { salt: newSalt(), users: [], supervisors: [] };
-  DB.auth.users.push(await makeUser(name, userId, password, 'admin'));
-}
-async function checkLogin(userId, password) {
-  if (!DB.auth || !users().length) return { role: 'admin', name: 'Admin' };
-  const h = await sha(password + ':' + salt());
-  const u = users().find(x => norm(x.userId) === norm(userId) && x.hash === h);
-  return u ? { role: u.role, name: u.name, uid: u.uid } : null;
-}
-const locked = () => false;
-
-
-
-/* pratek site cha vegla passcode (admin la lagat nahi) */
-let SITEOK = {};
-function siteLocked() { return false; }
-async function checkSitePin(pin) {
-  const s = site();
-  return !!(s.pass && (await sha(pin + ':' + salt())) === s.pass);
-}
 
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
 
 /* ---------- storage ---------- */
-const APP_VERSION = 'v39 · 16-09-2026';
+const APP_VERSION = '1.0 · 18-09-2026';
 const MODES = ['Cash', 'Online / UPI', 'RTGS / NEFT', 'Cheque'];
 const KEY = 'vsms:db:v1';
 
@@ -483,13 +719,13 @@ async function load() {
   migrate();
 }
 
-/* juna version madhla data navin Excel-sync sathi taiyar karto */
+/* brings data from older versions up to what the Excel sync expects */
 function normSite(s) {
   if (!s || typeof s !== 'object') return null;
   s.id = s.id || uid();
   s.name = String(s.name || 'Site').trim() || 'Site';
   s.created = s.created || today();
-  /* saglya yaadya asaylach havyat */
+  /* every list must exist */
   ['machines', 'categories', 'people', 'vendors', 'dieselVendors', 'advance', 'reminders', 'bills',
    'machineLog', 'dieselLog', 'expenseLog', 'vendorPayments', 'murumLog', 'funds', 'ownerPayments'
   ].forEach(k => { if (!Array.isArray(s[k])) s[k] = []; });
@@ -499,12 +735,12 @@ function normSite(s) {
     packageRate: num(r.packageRate), packageUnits: num(r.packageUnits) || (r.basis === 'Daily' ? 30 : 240)
   }));
   s.mods = Object.assign({ machine: true, diesel: true, murum: false, vendor: true, funds: false, owner: false, stock: true }, s.mods || {});
-  /* diesel stock saglya sites la chalu (junya sites la pn ekda parat chalu kara) */
+  /* diesel stock on for every site (turn it back on for older sites once) */
   if (s.stockSeen !== 2) { s.stockSeen = 2; if (s.mods.diesel !== false) s.mods.stock = true; }
   s.stockOpening = num(s.stockOpening);
   s.murumUnit = s.murumUnit || 'Brass';
   s.xlRows = Object.assign({ ...BASE_ROWS }, s.xlRows || {});
-  /* masters madhle rikame / duplicate kaadhun taka */
+  /* drop blanks and duplicates from the masters */
   ['categories', 'people', 'vendors', 'dieselVendors', 'advance'].forEach(k => {
     s[k] = [...new Set(s[k].map(x => String(x == null ? '' : x).trim()).filter(Boolean))];
   });
@@ -515,7 +751,7 @@ function normSite(s) {
     owner: String(m.owner || '').trim(), operator: String(m.operator || '').trim(),
     make: String(m.make || '').trim(), monthlyRate: has(m.monthlyRate) ? num(m.monthlyRate) : ''
   })).filter(m => { if (seen[m.no.toLowerCase()]) return false; seen[m.no.toLowerCase()] = 1; return true; });
-  /* machine chi type Rate Master madhe nasel tar ti add kara */
+  /* add the machine's type to the Rate Master if it is missing */
   s.machines.forEach(m => {
     if (m.type && !s.rateMaster.some(r => r.type === m.type)) {
       s.rateMaster.push({ type: m.type, basis: m.type === 'Hiwa' ? 'Daily' : 'Hourly', packageRate: 0, packageUnits: m.type === 'Hiwa' ? 30 : 240 });
@@ -534,7 +770,7 @@ function normSite(s) {
     }
     const p = Date.parse(t);
     if (!isNaN(p)) return new Date(p).toISOString().slice(0, 10);
-    return '';                                                      /* olakhta ala nahi tar rikama */
+    return '';                                                      /* unrecognised date -> blank */
   };
   const N = v => has(v) ? num(v) : '';
   const S = v => String(v == null ? '' : v).trim();
@@ -563,7 +799,7 @@ function normSite(s) {
   s.billNext = num(s.billNext) || 1;
   s.reminders = s.reminders.filter(r => r && (r.vendor || r.note)).map(r => ({ id: r.id || uid(), vendor: S(r.vendor),
     due: D(r.due || r.date), amount: N(r.amount), note: S(r.note), done: !!r.done }));
-  /* data madhle naav masters madhe nasel tar add kara — nahitar dropdown madhe disat nahi */
+  /* add names found in the data to the masters, or they never reach the dropdowns */
   s.expenseLog.forEach(e => {
     if (e.category && !s.categories.includes(e.category)) s.categories.push(e.category);
     if (e.vendor && !s.vendors.includes(e.vendor)) s.vendors.push(e.vendor);
@@ -584,7 +820,7 @@ function normSite(s) {
   s.ownerPayments.forEach(p => { if (p.paidBy && !s.people.includes(p.paidBy)) s.people.push(p.paidBy); });
   s.funds.forEach(f => { if (f.person && !s.people.includes(f.person)) s.people.push(f.person); });
   if (!s.categories.length) s.categories = ['Miscellaneous'];
-  /* je module band aahet pan data aahe — te chalu kara, nahitar data lapto */
+  /* switch on any module that is off but already holds data, or the data hides */
   if (s.murumLog.length) s.mods.murum = true;
   if (s.dieselLog.length) s.mods.diesel = true;
   if (s.machineLog.length || s.machines.length) s.mods.machine = true;
@@ -605,7 +841,7 @@ function mgrLink() {
 function mgrList() { return (DB.managers || []); }
 function mgrFunds() { return (DB.mfunds || []); }
 
-/* manager la kiti milale, kiti kharch kela, kiti shillak */
+/* what a manager received, spent and still holds */
 function mgrStats(name) {
   const rec = mgrFunds().filter(f => f.manager === name).reduce((a, f) => a + num(f.amount), 0);
   let exp = 0, cnt = 0;
@@ -619,7 +855,7 @@ function mgrStats(name) {
   return { received: rec, spent: exp, entries: cnt, balance: rec - exp };
 }
 
-/* manager ne kontya site var kiti kharch kela */
+/* how much a manager spent on each site */
 function mgrBySite(name) {
   return (DB.sites || []).map(s => {
     let amt = 0, n = 0;
@@ -648,7 +884,7 @@ function migrate() {
   DB.mfunds = DB.mfunds.filter(f => f && f.manager).map(f => ({ id: f.id || uid(), manager: String(f.manager).trim(),
     date: String(f.date || '').slice(0, 10), amount: num(f.amount), from: String(f.from || ''), mode: String(f.mode || ''), remark: String(f.remark || '') }));
   DB.sites = DB.sites.map(normSite).filter(Boolean);
-  /* ekach id don sites la asel tar navin id */
+  /* two sites sharing an id: give the second a fresh one */
   const ids = {};
   DB.sites.forEach(s => { if (ids[s.id]) s.id = uid(); ids[s.id] = 1; });
   if (!DB.sites.length) DB.sites.push(blankSite('Site 1'));
@@ -656,7 +892,7 @@ function migrate() {
   save();
 }
 
-/* Excel madhe ajun na gelelya entries */
+/* entries not yet carried into Excel */
 function pending(s, k) { return (s[k] || []).filter(r => !r.xl); }
 function pendingCount(s) { return Object.keys(XL).reduce((a, k) => a + pending(s, k).length, 0); }
 
@@ -688,31 +924,37 @@ function xlBlock(s, k, startRow) {
   }).join('\n');
 }
 
+/* Writes are debounced, but every caller that awaits save() must still be
+   released — otherwise a second save() inside 120ms leaves the first await
+   hanging forever and that click never re-renders. */
 let saveTimer = null;
+let saveWaiting = [];
 function save() {
   clearTimeout(saveTimer);
   return new Promise(res => {
+    saveWaiting.push(res);
     saveTimer = setTimeout(async () => {
+      const waiting = saveWaiting; saveWaiting = [];
       const snapNeeded = DB.lastSnap !== today();
-      if (snapNeeded) DB.lastSnap = today();          /* stringify chya aadhi, mhanje he pn save hota */
+      if (snapNeeded) DB.lastSnap = today();          /* set before stringify so it is saved too */
       const json = JSON.stringify(DB);
       try {
         await Store.set(KEY, json); STORAGE_OK = true;
         if (snapNeeded) await Store.snapshot(json);
       } catch (e) { STORAGE_OK = false; console.error('save failed', e); }
-      res();
+      waiting.forEach(fn => { try { fn(); } catch (e) { } });
     }, 120);
   });
 }
 
-/* ---------- Excel sheet map (juna workbook la match hoto) ---------- */
+/* ---------- Excel sheet map (matches the old workbook) ---------- */
 const XL = {
-  machineLog: { sheet: 'Machine Log', cols: 'B te I', first: 3, last: 2045, key: 'machineLog' },
-  dieselLog: { sheet: 'Diesel Purchase', cols: 'B te I', first: 7, last: 505, key: 'dieselLog' },
-  expenseLog: { sheet: 'Expense Log', cols: 'B te I', first: 7, last: 813, key: 'expenseLog' },
-  vendorPayments: { sheet: 'Vendor Payment', cols: 'B te G', first: 8, last: 207, key: 'vendorPayments' }
+  machineLog: { sheet: 'Machine Log', cols: 'B to I', first: 3, last: 2045, key: 'machineLog' },
+  dieselLog: { sheet: 'Diesel Purchase', cols: 'B to I', first: 7, last: 505, key: 'dieselLog' },
+  expenseLog: { sheet: 'Expense Log', cols: 'B to I', first: 7, last: 813, key: 'expenseLog' },
+  vendorPayments: { sheet: 'Vendor Payment', cols: 'B to G', first: 8, last: 207, key: 'vendorPayments' }
 };
-/* jya row pasun tumchya sheet madhe pudhchi entry jaail */
+/* the row where the next entry lands in your sheet */
 const SEED_ROWS = { machineLog: 430, dieselLog: 47, expenseLog: 272, vendorPayments: 11 };
 const BASE_ROWS = { machineLog: 3, dieselLog: 7, expenseLog: 7, vendorPayments: 8 };
 
@@ -794,10 +1036,10 @@ function inRange(d, from, to) {
   return true;
 }
 
-/* --- vendor settlement: payment junya bill pasun vaparto (date nusar) --- */
-/* pratek entry sathi: final = Paid/Unpaid, paid = kiti rakkam lagli, by = koni dile */
+/* --- vendor settlement: a payment clears the oldest bills first, by date --- */
+/* per entry: final = Paid/Unpaid, paid = amount applied, bal = left, by = who paid */
 
-/* supervisor app chi link - tich folder madhla supervisor.html */
+/* link to the supervisor app — supervisor.html in the same folder */
 function supLink() {
   try {
     const u = location.href.split('#')[0].split('?')[0];
@@ -805,13 +1047,13 @@ function supLink() {
   } catch (e) { return 'supervisor.html'; }
 }
 
-/* --- murum: amount = qty x rate, kiwa direct amount --- */
+/* --- murum: amount = qty x rate, or a directly entered amount --- */
 function mAmt(r) {
   if (has(r.amount) && num(r.amount)) return num(r.amount);
   return num(r.qty) * num(r.rate);
 }
 
-/* ti machine chya sarvat pahilya divsachi entry aahe ka */
+/* is this the very first entry for that machine? */
 function firstDayFor(s, no, date, rec) {
   if (!no || !date) return false;
   const others = (s.machineLog || []).filter(r => sameNo(r.machineNo, no) && (!rec || r.id !== rec.id));
@@ -820,7 +1062,7 @@ function firstDayFor(s, no, date, rec) {
   return String(date) <= first;
 }
 
-/* ---------- diesel stock: aala kiti, bharla kiti, shillak kiti ---------- */
+/* ---------- diesel stock: received, filled, left ---------- */
 function stockDays(s) {
   const rec = {}, fil = {};
   (s.dieselLog || []).forEach(d => { if (d.date) rec[d.date] = (rec[d.date] || 0) + num(d.litres); });
@@ -853,7 +1095,7 @@ function nextBillNo(s) {
   const pre = s.billPrefix == null ? 'RB-' : s.billPrefix;
   return String(pre) + String(num(s.billNext) || 1);
 }
-/* nivadlelya period madhle machine ani tyanche tas (rate manually bharaycha) */
+/* machines and their hours for the chosen period (rate is typed in by hand) */
 function billLinesFrom(s, from, to, owner) {
   return s.machines
     .filter(m => !owner || m.owner === owner)
@@ -864,7 +1106,7 @@ function billLinesFrom(s, from, to, owner) {
     .filter(x => x.entries);
 }
 
-/* ---------- machine no che variants shodhun ek karnyasathi ---------- */
+/* ---------- find spellings of one machine number so they can be merged ---------- */
 function mKey(no) {
   const t = String(no || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/O/g, '0');
   const digits = t.replace(/[^0-9]/g, '');
@@ -939,7 +1181,7 @@ function renameMachine(s, from, to) {
 
 function settle(s) {
   const map = {};
-  const pool = {};                                     /* vendor -> vaparaychi urleli payment */
+  const pool = {};                                     /* vendor -> payment still available to apply */
   const payList = {};                                  /* vendor -> payments (date nusar) */
   (s.vendorPayments || []).forEach(p => {
     const v = p.vendor || '';
@@ -953,28 +1195,31 @@ function settle(s) {
     .concat((s.murumLog || []).map((m, i) => ({ id: m.id, vendor: m.vendor, date: m.date, amount: mAmt(m), st: st(m), by: m.paidBy, ord: i, kind: 1 })))
     .concat((s.dieselLog || []).map((d, i) => ({ id: d.id, vendor: d.vendor, date: d.date, amount: num(d.amount), st: st(d), by: d.paidBy, ord: i, kind: 2 })));
 
-  /* aadhi thet dilele */
+  /* first, the ones paid directly */
   ledger.forEach(x => {
-    if (x.st === 'Paid') map[x.id] = { final: 'Paid', paid: x.amount, by: x.by || '' };
-    else if (!x.vendor) map[x.id] = { final: 'Unpaid', paid: 0, by: '' };
+    if (x.st === 'Paid') map[x.id] = { final: 'Paid', paid: x.amount, bal: 0, by: x.by || '' };
+    else if (!x.vendor) map[x.id] = { final: 'Unpaid', paid: 0, bal: x.amount, by: '' };
   });
-  /* urleli udhaari: junya tarkh pasun payment lavaychi */
+  /* remaining credit: apply payments starting from the oldest date */
   const open = ledger.filter(x => x.st !== 'Paid' && x.vendor)
     .sort((a, b) => String(a.date || '9999').localeCompare(String(b.date || '9999')) || a.kind - b.kind || a.ord - b.ord);
   open.forEach(x => {
     const have = pool[x.vendor] || 0;
-    if (have <= 0.004) { map[x.id] = { final: 'Unpaid', paid: 0, by: '' }; return; }
+    if (have <= 0.004) { map[x.id] = { final: 'Unpaid', paid: 0, bal: x.amount, by: '' }; return; }
     const use = Math.min(have, x.amount);
     pool[x.vendor] = have - use;
     const full = use >= x.amount - 0.004;
     const who = (payList[x.vendor] || []).map(p => p.paidBy).filter(Boolean);
-    map[x.id] = { final: full ? 'Paid' : 'Unpaid', paid: use, by: full ? (who[who.length - 1] || 'vendor payment') : '' };
+    map[x.id] = {
+      final: full ? 'Paid' : 'Unpaid', paid: use, bal: Math.max(0, x.amount - use),
+      by: full ? (who.at(-1) || 'vendor payment') : ''
+    };
   });
   return map;
 }
 
 /* --- totals for the whole site (Plot Dashboard) --- */
-/* ---------- payment mode-wise total (saglya paid outflows) ---------- */
+/* ---------- totals by payment mode (every paid outflow) ---------- */
 function modeStats(s) {
   const o = {};
   const add = (m, amt) => { const k = String(m || '').trim() || 'Not set'; o[k] = (o[k] || 0) + num(amt); };
@@ -1007,7 +1252,7 @@ function totals(s) {
   const ownerPaid = (s.ownerPayments || []).reduce((a, r) => a + num(r.amount), 0);
   const vp = s.vendorPayments.reduce((a, p) => a + num(p.amount), 0);
   const rent = s.machines.reduce((a, m) => a + machineRent(s, m.no).rent, 0);
-  /* payment allocate zalyavar cha khara hishob (diesel ani murum sathi pn) */
+  /* the real position once payments are allocated (diesel and murum too) */
   const dsPaidFinal = s.dieselLog.filter(d => fin[d.id] && fin[d.id].final === 'Paid').reduce((a, d) => a + num(d.amount), 0);
   const dsUnpaidFinal = dsTotal - dsPaidFinal;
   const muPaidFinal = mu.filter(m => fin[m.id] && fin[m.id].final === 'Paid').reduce((a, m) => a + mAmt(m), 0);
@@ -1022,7 +1267,7 @@ function totals(s) {
   };
 }
 
-/* --- per person (Manager Dashboard + naav-nihay sheets) --- */
+/* --- per person (Manager Dashboard + the name-wise sheets) --- */
 function personStats(s, name) {
   const siteExp = s.expenseLog.filter(e => st(e) === 'Paid' && e.paidBy === name);
   const diesel = s.dieselLog.filter(d => st(d) === 'Paid' && d.paidBy === name);
@@ -1056,7 +1301,7 @@ function vendorStats(s, v) {
 }
 
 /* ============================================================
-   PAYMENT REMINDERS  —  vendor la dilela date
+   PAYMENT REMINDERS  —  the date promised to a vendor
    ============================================================ */
 function dueList(s) {
   return (s.reminders || []).filter(r => !r.done).slice().sort((a, b) => String(a.due).localeCompare(String(b.due)));
@@ -1074,10 +1319,10 @@ function dueState(d) {
   if (d === t) return 'today';
   return 'soon';
 }
-/* ya vendor chi aatachi baki */
+/* this vendor's balance right now */
 function vendorDue(s, v) { return remVendorStats(s, v).remaining; }
 
-/* phone chya calendar madhe reminder (ha app band asla tari phone notification deto) */
+/* a reminder in the phone calendar — it still alerts while this app is closed */
 function icsFor(s, listOrOne) {
   const list = Array.isArray(listOrOne) ? listOrOne : [listOrOne];
   const pad = n => String(n).padStart(2, '0');
@@ -1100,7 +1345,7 @@ function icsFor(s, listOrOne) {
   return L.join('\r\n');
 }
 
-/* app ughadla asel tar phone var notification */
+/* a phone notification while the app is open */
 async function notifyDue(s) {
   try {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
@@ -1110,15 +1355,15 @@ async function notifyDue(s) {
     if (DB.lastNotif === k) return;
     DB.lastNotif = k; save();
     const one = list[0];
-    new Notification(s.name + ' - payment', {
+    new Notification(s.name + ' — payment due', {
       body: list.length === 1
-        ? one.vendor + ' : ' + money(one.amount || vendorDue(s, one.vendor)) + ' (' + fmtDate(one.dute) + ')'
-        : list.length + ' payment aaj kiwa maage aahet'
+        ? one.vendor + ': ' + money(one.amount || vendorDue(s, one.vendor)) + ' (due ' + fmtDate(one.due) + ')'
+        : list.length + ' payments are due today or overdue'
     });
   } catch (e) { }
 }
 
-/* --- machine owner: rent payable vs dilele paise --- */
+/* --- machine owner: rent payable vs money already paid --- */
 function ownerList(s) { return [...new Set(s.machines.map(m => m.owner).filter(Boolean))].sort(); }
 function ownerStats(s, owner, from, to) {
   const ms = s.machines.filter(m => m.owner === owner);
@@ -1128,7 +1373,7 @@ function ownerStats(s, owner, from, to) {
   return { machines: ms, rent, paid, balance: rent - paid };
 }
 
-/* owner cha bill: period cha rent, period che payment, ani mage chi baki */
+/* owner bill: rent for the period, payments in it, and the earlier balance */
 function ownerBillData(s, owner, from, to) {
   const ms = s.machines.filter(m => m.owner === owner);
   const lines = ms.map(m => {
@@ -1139,7 +1384,7 @@ function ownerBillData(s, owner, from, to) {
   const pays = (s.ownerPayments || []).filter(p => p.owner === owner && inRange(p.date, from, to))
     .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
   const paid = pays.reduce((a, p) => a + num(p.amount), 0);
-  /* ya period chya aadhi cha hishob */
+  /* the position before this period */
   let prevRent = 0, prevPaid = 0;
   if (from) {
     const before = shiftDay(from, -1);
@@ -1159,14 +1404,14 @@ function dieselVendorStats(s, v) {
   const payments = (s.vendorPayments || []).filter(p => p.vendor === v).reduce((a, p) => a + num(p.amount), 0);
   const amount = sum('amount');
   return {
-    litres: sum('litres'), amount, bills: rows.length,
-    paid: direct, direct, payments,
+    litres: sum('litres'), amount, total: amount, bills: rows.length,
+    paid: direct, direct, payments, totalPaid: direct + payments,
     unpaid: rows.filter(r => st(r) === 'Unpaid').reduce((a, r) => a + num(r.amount), 0),
     remaining: amount - direct - payments
   };
 }
 
-/* vendor + diesel vendor ekatra yaadi (jyanchi kahi ghadamod aahe) */
+/* vendors and diesel vendors in one list (the ones with any activity) */
 function allVendors(s) {
   const out = (s.vendors || []).slice();
   (s.dieselVendors || []).forEach(v => { if (!out.includes(v)) out.push(v); });
@@ -1221,7 +1466,7 @@ function navItems(s) {
   if (m.vendor !== false) rest.push(['vendor', 'Vendor']);
   rest.push(['more', 'More']);
   const out = rest.slice();
-  out.splice(Math.floor(out.length / 2), 0, ['dash', 'Dashboard']);   /* Dashboard madhe */
+  out.splice(Math.floor(out.length / 2), 0, ['dash', 'Dashboard']);   /* Dashboard sits in the middle */
   return out;
 }
 
@@ -1241,7 +1486,7 @@ const SUBS = {
 const sub = t => { const l = subsFor(site(), t); return (l && l.some(x => x[0] === UI[t])) ? UI[t] : (l ? l[0][0] : ''); };
 
 
-/* ---------- browser chya naav suggestions band ---------- */
+/* ---------- switch off the browser's name suggestions ---------- */
 function noSuggest(root) {
   try {
     (root || document).querySelectorAll('input, textarea').forEach(el => {
@@ -1251,34 +1496,42 @@ function noSuggest(root) {
       el.setAttribute('autocorrect', 'off');
       el.setAttribute('spellcheck', 'false');
       el.setAttribute('autocapitalize', el.getAttribute('autocapitalize') || 'sentences');
-      if (!el.name) el.name = 'f' + Math.random().toString(36).slice(2, 8);   /* Chrome la autofill olakhu naye */
+      if (!el.name) el.name = 'f' + Math.random().toString(36).slice(2, 8);   /* keep Chrome from recognising these for autofill */
     });
   } catch (e) { }
 }
 
+let LAST_PLACE = '';
 function render() {
+  const keepY = window.scrollY || 0;
   const s = site();
   const nav = navItems(s);
   if (!nav.some(x => x[0] === TAB)) TAB = 'dash';
   const subList = subsFor(s, TAB);
   const tabs = subList ? subList.map(([k, l]) => `<button class="chip ${sub(TAB) === k ? 'on' : ''}" data-act="sub" data-v="${k}">${l}</button>`).join('') : '';
   $('#app').innerHTML = `
-  <div class="topbar">
-    <div class="tb-row">
-      ${DB.logo
-        ? `<div style="flex:0 0 auto"><img src="${DB.logo}" class="brandlogo" alt=""></div>`
-        : '<div class="brand">SITE MANAGER<span>VEERSHREE REALTY ACCOUNT</span></div>'}
-      <button class="sitepick" data-act="sites"><b>${esc(s.name)}</b><i>&#9660;</i></button>
+  <div class="stickyhead">
+    <div class="topbar">
+      <div class="tb-row">
+        ${DB.logo
+          ? `<div style="flex:0 0 auto"><img src="${DB.logo}" class="brandlogo" alt=""></div>`
+          : '<div class="brand">SITE MANAGER<span>VEERSHREE REALTY ACCOUNT</span></div>'}
+        <button class="sitepick" data-act="sites" aria-label="Change site"><b>${esc(s.name)}</b><i>&#9660;</i></button>
+      </div>
     </div>
+    ${tabs ? `<div class="chips chipbar">${tabs}</div>` : ''}
   </div>
-  ${tabs ? `<div class="chips" style="background:#fff;border-bottom:1px solid var(--line)">${tabs}</div>` : ''}
-  <main>${STORAGE_OK ? '' : '<div class="warn">This device is not saving data. Download a backup from <b>More &rarr; Excel</b> when you finish.</div>'}
+  <main>${STORAGE_OK ? '' : '<div class="warn">This device is not saving data. Download a backup from <b>More &rarr; Excel</b> before you close the app.</div>'}
     ${VIEW[TAB](s)}
   </main>
-  <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}">${ICON[k]}${l}</button>`).join('')}</nav>`;
-  try { renderSearch(); } catch (e) { }
+  <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}"${TAB === k ? ' aria-current="page"' : ''}>${ICON[k]}${l}</button>`).join('')}</nav>`;
+  renderSearch();
   noSuggest($('#app'));
-  window.scrollTo(0, 0);
+  /* only jump to the top when the screen actually changed — otherwise
+     "show more" and every edit would throw you back to the top of a long log */
+  const place = TAB + '/' + sub(TAB);
+  if (place !== LAST_PLACE) { LAST_PLACE = place; window.scrollTo(0, 0); }
+  else window.scrollTo(0, keepY);
 }
 
 const VIEW = {};
@@ -1312,7 +1565,7 @@ VIEW.dash = s => {
       </tbody>
       <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table></div>
-    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) tya-tya head madhe apoap dharle aahet.${s.mods.machine !== false ? ' Machine rent ' + money(t.rent) + ' vegla &mdash; Machine tab madhe.' : ''}</div>
+    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rent) + ' is kept separate &mdash; see the Machine tab.' : ''}</div>
   </div>
 
   <div class="card">
@@ -1339,16 +1592,16 @@ VIEW.dash = s => {
     if (!d.length) return '';
     const late = d.filter(dueLate);
     return `<div class="card" style="border-color:${late.length ? 'var(--due)' : 'var(--hivis)'}">
-      <h3>${late.length ? 'Payment due date talun gela' : 'Payment due date aala'}<small>${d.length}</small></h3>
+      <h3>${late.length ? 'Payment overdue' : 'Payment due soon'}<small>${d.length}</small></h3>
       ${d.slice(0, 6).map(r => `<div class="row" data-act="remEdit" data-v="${r.id}">
-        <div class="main"><div class="ttl">${esc(r.vendor || r.note || 'Payment')} ${dueLate(r) ? '<span class="pill u">talun gela</span>' : '<span class="pill n">' + fmtDate(r.due) + '</span>'}</div>
-        <div class="sub">${dueLate(r) ? fmtDate(r.due) + ' &middot; ' : ''}${r.vendor ? 'baki ' + money(remVendorStats(s, r.vendor).remaining) : ''}${r.note ? ' &middot; ' + esc(r.note) : ''}</div></div>
+        <div class="main"><div class="ttl">${esc(r.vendor || r.note || 'Payment')} ${dueLate(r) ? '<span class="pill u">overdue</span>' : '<span class="pill n">' + fmtDate(r.due) + '</span>'}</div>
+        <div class="sub">${dueLate(r) ? fmtDate(r.due) + ' &middot; ' : ''}${r.vendor ? 'balance ' + money(remVendorStats(s, r.vendor).remaining) : ''}${r.note ? ' &middot; ' + esc(r.note) : ''}</div></div>
         <div class="amt">${num(r.amount) ? money0(r.amount) : ''}</div></div>`).join('')}
       <div class="pad"><button class="btn sm" style="width:100%" data-act="sub" data-v="due" data-t="vendor">View all</button></div>
     </div>`;
   })()}
   ${DB.lastBackup === today() ? '' : `<div class="card"><h3>Daily backup</h3><div class="pad">
-    <div class="tiny" style="margin-bottom:8px">Roj ek tap &mdash; file phone chya <b>Downloads</b> with the date in the name.</div>
+    <div class="tiny" style="margin-bottom:8px">One tap a day. The file lands in <b>Downloads</b> with today's date in the name.</div>
     <button class="btn sm" style="width:100%" data-act="dayBackup">Download today's backup</button>
   </div></div>`}
   ${(() => {
@@ -1390,15 +1643,15 @@ function machineLogView(s) {
   const f = UI.mlFilter || '';
   const day = UI.mlDate || '';
   let rows = s.machineLog.slice().sort(byDateDesc);
-  if (day) rows = rows.filter(r => r.date === day);            /* aadhi tarikh */
-  const dayRows = rows.slice();                                 /* tya tarkhechi sagli */
+  if (day) rows = rows.filter(r => r.date === day);            /* date filter first */
+  const dayRows = rows.slice();                                 /* everything on that date */
   if (f === '__none') rows = rows.filter(r => !r.machineNo);
   else if (f) rows = rows.filter(r => r.machineNo === f);
   const noMachine = dayRows.filter(r => !r.machineNo).length;
-  /* tarikh nivadli asel tar fakt tya divshi chalalelya machine dakhva */
+  /* with a date picked, show only the machines that ran that day */
   const ty = UI.mlType || '';
   if (ty) rows = rows.filter(r => (machineType(s, r.machineNo) || '') === ty);
-  /* tya divshi kontya type chya machine chalalya */
+  /* which machine types ran that day */
   const typeList = [...new Set((day ? dayRows : s.machineLog)
     .map(r => machineType(s, r.machineNo) || '').filter(Boolean))]
     .sort((a, b) => s.machines.findIndex(m => m.type === a) - s.machines.findIndex(m => m.type === b));
@@ -1449,12 +1702,12 @@ function machineLogView(s) {
         <div class="amt">${dec(h)}<div class="tiny" style="font-weight:500">hr</div></div>
       </div>`;
     }).join('') : '<div class="empty">No entries yet. Tap "+ Machine entry" above to start.</div>'}
-    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="mlMore">Ajun ${rows.length - shown.length} entries dakhva</button></div>` : ''}
+    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="mlMore">Show ${rows.length - shown.length} more entries</button></div>` : ''}
   </div>
   ${(f && rows.length) ? `<div class="card"><div class="pad">
-    <div class="tiny" style="margin-bottom:8px;line-height:1.7"><b>${esc(f === '__none' ? 'Machine no nasleli' : f)}</b> chya <b>${rows.length}</b> entries (${dec(rows.reduce((a, r) => a + hoursOf(r), 0))} hours, ${dec(rows.reduce((a, r) => a + num(r.diesel), 0))} L diesel) ekach velela delete karta yetat.</div>
+    <div class="tiny" style="margin-bottom:8px;line-height:1.7"><b>${rows.length}</b> entries for <b>${esc(f === '__none' ? 'entries with no machine number' : f)}</b> (${dec(rows.reduce((a, r) => a + hoursOf(r), 0))} hours, ${dec(rows.reduce((a, r) => a + num(r.diesel), 0))} L diesel) ekach velela delete karta yetat.</div>
     <button class="btn dgr sm" style="width:100%" data-act="mlDelAll" data-v="${esc(f)}">Delete all entries of this machine</button>
-    <div class="tiny" style="margin-top:8px">Machine Master madhli machine rahil, fakt entries jatil.</div>
+    <div class="tiny" style="margin-top:8px">The machine stays in Machine Master — only the log entries go.</div>
   </div></div>` : ''}`;
 }
 
@@ -1538,9 +1791,9 @@ function machineMasterView(s) {
     const g = machineGroups(s);
     if (!g.length) return '';
     return `<div class="card mt" style="border-color:var(--hivis)"><h3>Same machine, different names<small>${g.length} group</small></h3>
-      <div class="pad" style="padding-bottom:6px"><div class="tiny" style="line-height:1.7">These look like the same machine (example <b>PC.o5</b> ani <b>PC.05</b>). "Merge" dabla ki saglya entries ekach naavavar jatil.</div></div>
+      <div class="pad" style="padding-bottom:6px"><div class="tiny" style="line-height:1.7">These look like one machine written two ways (say <b>PC.o5</b> and <b>PC.05</b>). Merge moves every entry onto a single name.</div></div>
       ${g.slice(0, 12).map(o => `<div class="row" style="display:block">
-        <div class="ttl">${esc(o.target)} <span class="tiny">&larr; ${o.items.length} naav, ${o.total} entries</span></div>
+        <div class="ttl">${esc(o.target)} <span class="tiny">&larr; ${o.items.length} names, ${o.total} entries</span></div>
         <div class="sub">${o.items.map(x => esc(x.no) + ' (' + x.n + ')').join('  ·  ')}</div>
         <div class="btnrow" style="margin-top:8px">
           <button class="btn sm" style="flex:1" data-act="mgMerge" data-v="${esc(o.key)}">Merge into ${esc(o.target)}</button>
@@ -1586,13 +1839,13 @@ function dieselLogView(s) {
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">TOTAL DIESEL</div><div class="v num">${dec(t.dsLitres)} L</div></div>
     <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(t.dsPaidFinal)}</div></div>
-    <div class="kpi r"><div class="k">BAKI</div><div class="v num">${money0(t.dsUnpaidFinal)}</div></div>
+    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(t.dsUnpaidFinal)}</div></div>
   </div>
   <div class="card">${shown.length ? shown.map(d => `<div class="row" data-act="dEdit" data-v="${d.id}">
       <div class="main"><div class="ttl">${esc(d.vendor)} <span class="pill ${fin[d.id] && fin[d.id].final === 'Paid' ? 'p' : 'u'}">${fin[d.id] && fin[d.id].final === 'Paid' ? (st(d) === 'Paid' ? 'Paid' : 'Paid (payment)') : 'Unpaid'}</span></div>
       <div class="sub">${fmtDate(d.date)} &middot; ${dec(d.litres)} L${num(d.litres) ? ' @ ' + dec(num(d.amount) / num(d.litres), 2) : ''}${d.paidBy ? ' &middot; ' + esc(d.paidBy) : ''}${d.bill && d.bill !== '-' ? ' &middot; Bill ' + esc(d.bill) : ''}</div></div>
-      <div class="amt">${money0(d.amount)}${(fin[d.id] && fin[d.id].final === 'Unpaid' && fin[d.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[d.id].paid)} dile</div>` : ''}</div></div>`).join('') : '<div class="empty">No diesel entries yet.</div>'}
-    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="dlMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
+      <div class="amt">${money0(d.amount)}${(fin[d.id] && fin[d.id].final === 'Unpaid' && fin[d.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[d.id].paid)} paid</div>` : ''}</div></div>`).join('') : '<div class="empty">No diesel entries yet.</div>'}
+    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="dlMore">Show ${rows.length - shown.length} more</button></div>` : ''}
   </div>`;
 }
 
@@ -1607,7 +1860,7 @@ function dieselSumView(s) {
     <div class="kpi r"><div class="k">UNPAID</div><div class="v num">${money0(t.dsUnpaid)}</div></div>
   </div>
   <div class="card"><h3>Vendor-wise</h3><div class="scroll"><table>
-    <thead><tr><th>Vendor</th><th class="n">Litres</th><th class="n">Amount</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Baki</th></tr></thead>
+    <thead><tr><th>Vendor</th><th class="n">Litres</th><th class="n">Amount</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Balance</th></tr></thead>
     <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr data-act="vBill" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div></td><td class="n">${dec(x.litres)}</td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>`; }).join('') || '<tr><td colspan="6" class="muted">Add a diesel vendor.</td></tr>'}</tbody>
   </table></div></div>
   <div class="card"><h3>Machine-wise diesel</h3><div class="scroll"><table>
@@ -1649,9 +1902,9 @@ function expenseLogView(s) {
       return `<div class="row" data-act="eEdit" data-v="${e.id}">
         <div class="main"><div class="ttl">${esc(e.desc || e.category)} <span class="pill ${fs.final === 'Paid' ? 'p' : 'u'}">${fs.final}</span></div>
         <div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}${e.vendor ? ' &middot; ' + esc(e.vendor) : ''}${fs.by ? ' &middot; ' + esc(fs.by) : ''}</div></div>
-        <div class="amt">${money0(e.amount)}${(fs.final === 'Unpaid' && fs.paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fs.paid)} dile</div><div class="tiny" style="font-weight:700;color:var(--due)">baki ${money0(fs.bal)}</div>` : ''}</div></div>`;
+        <div class="amt">${money0(e.amount)}${(fs.final === 'Unpaid' && fs.paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fs.paid)} paid</div><div class="tiny" style="font-weight:700;color:var(--due)">balance ${money0(fs.bal)}</div>` : ''}</div></div>`;
     }).join('') : '<div class="empty">Nothing here.</div>'}
-    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="exMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
+    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="exMore">Show ${rows.length - shown.length} more</button></div>` : ''}
   </div>`;
 }
 
@@ -1699,7 +1952,7 @@ function vendorPendView(s) {
     const list = byV[v]; const vs = v === '(no vendor)' ? null : vendorStats(s, v);
     return `<div class="card"><h3>${esc(v)}<small>balance ${money(list.reduce((a, e) => a + num(e.amount), 0))}</small></h3>
       ${list.map(e => `<div class="row" data-act="eEdit" data-v="${e.id}"><div class="main"><div class="ttl">${esc(e.desc || e.category)}</div><div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}</div></div>
-        <div class="amt">${money0(e.amount)}${(fin[e.id] && fin[e.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[e.id].paid)}</div><div class="tiny" style="font-weight:700;color:var(--due)">baki ${money0(fin[e.id].bal)}</div>` : ''}</div></div>`).join('')}
+        <div class="amt">${money0(e.amount)}${(fin[e.id] && fin[e.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[e.id].paid)}</div><div class="tiny" style="font-weight:700;color:var(--due)">balance ${money0(fin[e.id].bal)}</div>` : ''}</div></div>`).join('')}
       ${vs ? `<div class="pad"><button class="btn sm" data-act="vpAdd" data-v="${esc(v)}">Make payment</button></div>` : ''}
     </div>`;
   }).join('') || '<div class="card"><div class="empty">No pending vendor credit.</div></div>'}
@@ -1708,12 +1961,12 @@ function vendorPendView(s) {
     if (!dv.length) return '';
     return dv.map(o => {
       const bills = s.dieselLog.filter(d => d.vendor === o.v && fin[d.id] && fin[d.id].final === 'Unpaid').sort(byDateDesc);
-      return `<div class="card"><h3>${esc(o.v)}<small>baki ${money(o.x.remaining)}</small></h3>
+      return `<div class="card"><h3>${esc(o.v)}<small>balance ${money(o.x.remaining)}</small></h3>
         <div class="scroll"><table><tbody>
-          <tr><td class="muted">Ekun bill</td><td class="right n"><b>${money(o.x.amount)}</b></td></tr>
+          <tr><td class="muted">Total billed</td><td class="right n"><b>${money(o.x.amount)}</b></td></tr>
           <tr><td class="muted">Paid directly</td><td class="right n">${money(o.x.direct)}</td></tr>
-          <tr><td class="muted">Payment kele</td><td class="right n">${money(o.x.payments)}</td></tr>
-          <tr><td class="muted"><b>BAKI</b></td><td class="right n"><b style="color:var(--due)">${money(o.x.remaining)}</b></td></tr>
+          <tr><td class="muted">Payments made</td><td class="right n">${money(o.x.payments)}</td></tr>
+          <tr><td class="muted"><b>BALANCE</b></td><td class="right n"><b style="color:var(--due)">${money(o.x.remaining)}</b></td></tr>
         </tbody></table></div>
         ${bills.slice(0, 12).map(d => `<div class="row" data-act="dEdit" data-v="${d.id}"><div class="main"><div class="ttl">${fmtDate(d.date)}</div>
           <div class="sub">${dec(d.litres)} L${d.bill ? ' &middot; bill ' + esc(d.bill) : ''}</div></div><div class="amt">${money0(d.amount)}</div></div>`).join('')}
@@ -1732,7 +1985,7 @@ function vendorPayView(s) {
   ${due.length ? `<div class="card mt"><h3>Who to pay<small>${money(due.reduce((a, o) => a + o.x.remaining, 0))}</small></h3>
     ${due.map(o => `<div class="row">
       <div class="main"><div class="ttl">${esc(o.v)} ${o.d ? '<span class="pill n">diesel</span>' : ''}</div>
-      <div class="sub">ekun ${money(o.x.total || o.x.amount)} &middot; dile ${money((o.x.direct || 0) + (o.x.paid || o.x.payments || 0))}</div></div>
+      <div class="sub">Billed ${money(o.x.total)} &middot; paid ${money(o.x.totalPaid)}</div></div>
       <div class="amt" style="color:var(--due)">${money0(o.x.remaining)}</div>
       <button class="rowbtn" data-act="vpAdd" data-v="${esc(o.v)}" style="color:var(--hivis-dk)">Payment</button></div>`).join('')}
     <div class="pad tiny">A payment clears that vendor’s oldest bills first &mdash; diesel bills too.</div>
@@ -1775,17 +2028,17 @@ function excelView(s) {
   }).join('');
   return `
   <div class="card"><h3>Complete Excel file<small>ready to use</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">You get a fresh Excel file — Dashboard, Manager Account, Machine Log, Machine Rent, Diesel, ${s.mods.murum ? 'Murum, ' : ''}Expense Log, Vendor Payment${s.mods.owner ? ', Owner Payment' : ''}${s.mods.funds ? ', Paise Received' : ''}, Masters. Every sheet has <b>live formulas and dropdowns</b>, so the dashboards keep working even if you type the next entries in Excel itself.</div>
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">You get a fresh Excel file — Dashboard, Manager Account, Machine Log, Machine Rent, Diesel, ${s.mods.murum ? 'Murum, ' : ''}Expense Log, Vendor Payment${s.mods.owner ? ', Owner Payment' : ''}${s.mods.funds ? ', Money Received' : ''}, Masters. Every sheet has <b>live formulas and dropdowns</b>, so the dashboards keep working even if you type the next entries in Excel itself.</div>
     <button class="btn" data-act="xlsx">Download Excel file</button>
     <div class="tiny" style="margin-top:8px">All figures calculate automatically when you open the file.</div>
   </div></div>
-  ${tot ? `<div class="card"><h3>Paste rows into your old sheet<small>${tot} navin</small></h3>
+  ${tot ? `<div class="card"><h3>Paste rows into your old sheet<small>${tot} new</small></h3>
     ${cards}
     <div class="pad"><div class="tiny">Use this if you still work in your old Veershree_industrial_park.xlsx — only the new rows are copied.</div>
     <div class="btnrow" style="margin-top:8px"><button class="btn sec sm" style="flex:1" data-act="xlAllDone">All pasted - mark done</button></div></div>
   </div>` : ''}
-  <div class="card"><h3>Supervisor data<small>Reading Book app madhun</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Supervisor ne pathavlelya <b>site-data-....json</b> files here &mdash; <b>ekach velela kitihi files</b> nivadta yetat &mdash; machine reading ani diesel bills apoap Machine Log ani Diesel Purchase madhe jatil. Ekda ghetleli entry parat ghetli jat nahi.</div>
+  <div class="card"><h3>Supervisor data<small>from the Reading Book app</small></h3><div class="pad">
+    <div class="tiny" style="margin-bottom:10px;line-height:1.7">Pick the <b>site-data-….json</b> files your supervisor sent — <b>as many at once as you like</b>. Machine readings and diesel bills go straight into Machine Log and Diesel Purchase. An entry already imported is never taken twice.</div>
     <button class="btn sec sm" style="width:100%" data-act="impSup">Import reading files</button>
   </div></div>
   <div class="card"><h3>Data safety<small>${Store.mode === 'device' ? (PERSIST ? 'saved on this phone' : 'on this phone') : 'in Claude'}</small></h3><div class="pad">
@@ -1857,7 +2110,7 @@ function sitesView(s) {
     </div>
     <div class="tiny" style="margin-top:8px">PNG or JPG. The app shrinks it automatically, so it takes very little space.</div>
   </div></div>
-  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
+  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set' : 'not set'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">This password is needed to delete a site, so nothing is deleted by mistake. You can set it the first time you delete.</div>
     ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password</button><div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password — reset</button></div>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password</button>'}
   </div></div>
@@ -1866,7 +2119,7 @@ function sitesView(s) {
     <button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Open Excel and backup</button>
   </div></div>
   <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
-  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set aahe' : 'set nahi'}</small></h3><div class="pad">
+  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set' : 'not set'}</small></h3><div class="pad">
     <div class="tiny" style="margin-bottom:10px;line-height:1.7">This password is needed to delete a site, so nothing is deleted by mistake. You can set it the first time you delete.</div>
     ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password</button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password</button>'}
   </div></div>
@@ -1903,7 +2156,7 @@ VIEW.murum = s => {
       <div class="main"><div class="ttl">${esc(r.vendor || 'no supplier')} <span class="pill ${st(r) === 'Paid' ? 'p' : 'u'}">${st(r)}</span></div>
       <div class="sub">${fmtDate(r.date)} &middot; ${dec(r.qty)} ${esc(s.murumUnit || 'Brass')}${num(r.rate) ? ' @ ' + dec(r.rate, 0) : ''}${r.trips ? ' &middot; ' + dec(r.trips) + ' trip' : ''}${r.paidBy ? ' &middot; ' + esc(r.paidBy) : ''}${r.remark ? ' &middot; ' + esc(r.remark) : ''}</div></div>
       <div class="amt">${money0(mAmt(r))}</div></div>`).join('') : '<div class="empty">No murum entries yet.</div>'}
-    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="muMore">Ajun ${rows.length - shown.length} dakhva</button></div>` : ''}
+    ${rows.length > shown.length ? `<div class="pad center"><button class="btn sec sm" data-act="muMore">Show ${rows.length - shown.length} more</button></div>` : ''}
   </div>
   ${sups.length ? `<div class="card"><h3>Supplier-wise</h3><div class="scroll"><table>
     <thead><tr><th>Supplier</th><th class="n">${esc(s.murumUnit || 'Brass')}</th><th class="n">Trips</th><th class="n">Amount</th><th class="n">Balance</th></tr></thead>
@@ -1915,7 +2168,7 @@ VIEW.murum = s => {
     }).join('')}</tbody></table></div></div>` : ''}`;
 };
 
-/* ---------------- PAISE RECEIVED (funds) ---------------- */
+/* ---------------- MONEY RECEIVED (funds) ---------------- */
 function fundsView(s) {
   const rows = (s.funds || []).slice().sort(byDateDesc);
   const t = totals(s);
@@ -1964,7 +2217,7 @@ function ownerView(s) {
 
 /* ---------------- LOCK SCREEN ---------------- */
 
-/* ---------------- DUE DATES (payment cha divas) ---------------- */
+/* ---------------- DUE DATES (the day a payment is promised) ---------------- */
 function dueView(s) {
   const open = dueList(s);
   const done = (s.reminders || []).filter(r => r.done).sort((a, b) => String(b.due).localeCompare(String(a.due)));
@@ -1974,7 +2227,7 @@ function dueView(s) {
   <button class="btn" data-act="remAdd">+ Add payment due date</button>
 
   ${perm === 'granted' ? '' : `<div class="card mt"><div class="pad">
-    <div class="tiny" style="margin-bottom:8px;line-height:1.7">App ughadlyavar popup notification havа asel tar ekda parvangi dya. <b>App band asel tevha</b> no notification will come &mdash; for that use each reminder’s <b>Calendar</b> button — it puts an alarm in your phone calendar.</div>
+    <div class="tiny" style="margin-bottom:8px;line-height:1.7">Allow notifications once to get a popup when you open the app. <b>Nothing arrives while the app is closed</b> &mdash; for that use each reminder’s <b>Calendar</b> button — it puts an alarm in your phone calendar.</div>
     ${canNotify ? '<button class="btn sec sm" style="width:100%" data-act="notifyOn">Turn on notifications</button>' : '<div class="tiny">This browser does not support notifications.</div>'}
   </div></div>`}
 
@@ -1986,8 +2239,8 @@ function dueView(s) {
         <div style="display:flex;justify-content:space-between;gap:8px">
           <div class="main" data-act="remEdit" data-v="${r.id}">
             <div class="ttl">${esc(r.vendor || r.note || 'Payment')}
-              ${late ? '<span class="pill u">talun gela</span>' : tod ? '<span class="pill u">aaj</span>' : '<span class="pill n">' + fmtDate(r.due) + '</span>'}</div>
-            <div class="sub">${fmtDate(r.due)}${r.vendor ? ' &middot; ya vendor chi baki ' + money(bal) : ''}${r.note ? ' &middot; ' + esc(r.note) : ''}</div>
+              ${late ? '<span class="pill u">overdue</span>' : tod ? '<span class="pill u">today</span>' : '<span class="pill n">' + fmtDate(r.due) + '</span>'}</div>
+            <div class="sub">${fmtDate(r.due)}${r.vendor ? ' &middot; vendor balance ' + money(bal) : ''}${r.note ? ' &middot; ' + esc(r.note) : ''}</div>
           </div>
           <div class="amt">${num(r.amount) ? money0(r.amount) : ''}</div>
         </div>
@@ -2007,10 +2260,10 @@ function dueView(s) {
 
   <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
     <b>1.</b> Set a vendor and a date &mdash; example: Achit, 15th, ₹50,000.<br>
-    <b>2.</b> When that date is near, <b>Dashboard var laal/pivla card</b> shows up (from 3 days before).<br>
-    <b>3.</b> App ughadla ki <b>popup notification</b> yeto (ekda parvangi dilyavar).<br>
+    <b>2.</b> A <b>red or amber card appears on the Dashboard</b> from three days before.<br>
+    <b>3.</b> Opening the app shows a <b>popup notification</b>, once you have allowed them.<br>
     <b>4.</b> <b>Calendar</b> button puts the date and an alarm in your phone calendar &mdash; it rings even when the app is closed.<br>
-    <b>5.</b> Payment kelyavar <b>Done</b> or use "Make payment" to record it.
+    <b>5.</b> After paying, mark it <b>Done</b> or record it with "Make payment".
   </div></div>`;
 }
 
@@ -2037,7 +2290,7 @@ function stockView(s) {
 
   ${t.stock < -0.5 ? '<div class="warn">Stock is showing negative. A diesel bill may be missing, or the filled figure may be too high &mdash; please check.</div>' : ''}
 
-  <div class="card"><h3>Date-wise stock<small>${days.length} divas</small></h3>
+  <div class="card"><h3>Date-wise stock<small>${days.length} days</small></h3>
     <div class="scroll"><table>
       <thead><tr><th>Date</th><th class="n">Received</th><th class="n">Filled</th><th class="n">Day +/-</th><th class="n">Stock</th></tr></thead>
       <tbody>${days.length ? days.map(d => `<tr data-act="stkDay" data-v="${d.date}">
@@ -2056,8 +2309,8 @@ function stockView(s) {
   <div class="card"><h3>How this is calculated</h3><div class="pad tiny" style="line-height:1.9">
     <b>Received</b> = litres from that day’s diesel bills (Diesel tab)<br>
     <b>Filled</b> = diesel filled into machines that day (Machine tab)<br>
-    <b>Stock</b> = opening + ekun aalela &minus; ekun bharlela<br>
-    Udaharan: 3000 L aala, 2500 L bharla &rarr; 500 L shillak. Dusrya divshi 3000 aala ani 3500 bharla &rarr; tya divshi &minus;500, mhanje junya stock madhun 500 vaparla.
+    <b>Stock</b> = opening + total received &minus; total filled<br>
+    Example: 3000 L received, 2500 L filled &rarr; 500 L left. Next day 3000 received and 3500 filled &rarr; &minus;500 for that day, meaning 500 L came out of the earlier stock.
   </div></div>`;
 }
 
@@ -2089,7 +2342,7 @@ function mgrView(s) {
       const x = mgrStats(m.name);
       return `<div class="row" data-act="mgOpen" data-v="${m.id}">
         <div class="main"><div class="ttl">${esc(m.name)}</div>
-        <div class="sub">milale ${money(x.received)} &middot; kharch ${money(x.spent)} &middot; ${x.entries} entries</div></div>
+        <div class="sub">received ${money(x.received)} &middot; spent ${money(x.spent)} &middot; ${x.entries} entries</div></div>
         <div class="amt" style="color:${x.balance < 0 ? 'var(--due)' : 'inherit'}">${money0(x.balance)}
           <div class="tiny" style="font-weight:500">balance</div></div></div>`;
     }).join('') : '<div class="empty">No managers yet.</div>'}
@@ -2100,8 +2353,8 @@ function mgrView(s) {
   <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
     <b>1.</b> Add the manager here.<br>
     <b>2.</b> Record the money you give them with "+ Money given".<br>
-    <b>3.</b> Money received ti entry &mdash; <b>site nako</b>. Spent &mdash; <b>site nivadaycha</b>.<br>
-    <b>4.</b> Balance = money given &minus; what they spent, across all sites.<b>site chya Expense log</b> and money received goes to that manager’s account.
+    <b>3.</b> A money-received entry needs <b>no site</b>. A spend entry <b>must pick a site</b>.<br>
+    <b>4.</b> Balance = money given &minus; what they spent, across every site. Their spends land in that <b>site’s Expense log</b> and the money received goes to that manager’s account.
   </div></div>`;
 }
 
@@ -2316,7 +2569,7 @@ const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
 </styleSheet>`;
 
-/* rikami yaadi asel tar SUM karaycha nahi — nahitar circular reference hote */
+/* skip SUM on an empty list, or Excel reports a circular reference */
 const SUMR = (col, a, b) => b >= a ? `SUM($${col}$${a}:$${col}$${b})` : '0';
 
 /* ---------- workbook builder ---------- */
@@ -2452,7 +2705,7 @@ function buildWorkbook(s) {
   /* ---------- Vendor Payment ---------- */
   if (m.vendor !== false) {
     sheets.push(logSheet('Vendor Payment',
-      ['Sr No', 'Date', 'Vendor', 'Amount (Rs)', 'Paid By', 'Mode', 'Remark', 'Ya vendor la ekun dilele'],
+      ['Sr No', 'Date', 'Vendor', 'Amount (Rs)', 'Paid By', 'Mode', 'Remark', 'Total paid to this vendor'],
       [7, 13, 22, 14, 13, 14, 24, 18], vp,
       (r, n) => [
         F_(`IF($B${n}="","",COUNTA($B$3:$B${n}))`, SY.int),
@@ -2484,10 +2737,10 @@ function buildWorkbook(s) {
       { dv: [{ sq: `E3:E${opL}`, f: `Masters!$G$3:$G$${mstL}` }] }));
   }
 
-  /* ---------- Paise Milale ---------- */
+  /* ---------- Money Received ---------- */
   if (m.funds) {
-    sheets.push(logSheet('Paise Milale',
-      ['Sr No', 'Date', 'Naav', 'Amount (Rs)', 'Kunakadun', 'Mode', 'Remark'],
+    sheets.push(logSheet('Money Received',
+      ['Sr No', 'Date', 'Name', 'Amount (Rs)', 'Received From', 'Mode', 'Remark'],
       [7, 13, 18, 14, 18, 14, 26], fn,
       (r, n) => [
         F_(`IF($B${n}="","",COUNTA($B$3:$B${n}))`, SY.int),
@@ -2525,7 +2778,7 @@ function buildWorkbook(s) {
   if (m.machine !== false) {
     const rows = [];
     rows[0] = [T(s.name + '  \u2014  Machine Master', SY.title)];
-    rows[1] = ['Sr No', 'Machine No', 'Machine Type', 'Owner Name', 'Operator Name', 'Make', 'Ya machine cha rate'].map(c => T(c, SY.col));
+    rows[1] = ['Sr No', 'Machine No', 'Machine Type', 'Owner Name', 'Operator Name', 'Make', 'Rate for this machine'].map(c => T(c, SY.col));
     for (let i = 0; i < s.machines.length + 50; i++) {
       const mc = s.machines[i], n = i + 3;
       rows[n - 1] = [F_(`IF($B${n}="","",COUNTA($B$3:$B${n}))`, SY.int),
@@ -2549,7 +2802,7 @@ function buildWorkbook(s) {
         r ? N_(num(r.packageUnits) || 1, SY.int) : E_,
         F_(`IF(OR($C${n}="",$D${n}=""),"",$C${n}/$D${n})`, SY.dec2)];
     }
-    rr[s.rateMaster.length + 4] = [T('Hourly = rate 240 hours sathi. Daily = rate 30 divsansathi (Hiwa). Ithe rate badalla ki sagle rent apoap badaltat.', SY.note)];
+    rr[s.rateMaster.length + 4] = [T('Hourly = rate for 240 hours. Daily = rate for 30 days (Hiwa). Change a rate here and every rent recalculates.', SY.note)];
     sheets.push({
       name: 'Rate Master', freeze: 2, cols: [16, 12, 18, 14, 18], rows: rr, merges: ['A1:E1'], heights: { 1: 26, 2: 28 },
       dv: [{ sq: `B3:B${rmL}`, f: '"Hourly,Daily"' }]
@@ -2560,7 +2813,7 @@ function buildWorkbook(s) {
   {
     const rows = [];
     rows[0] = [T(s.name + '  \u2014  Masters (dropdown lists)', SY.title)];
-    rows[1] = ['Expense Category', '', 'Vendor', '', 'Diesel Vendor', '', 'Paid By (naav)'].map((c, i) => T(c, i % 2 === 0 ? SY.col : SY.col));
+    rows[1] = ['Expense Category', '', 'Vendor', '', 'Diesel Vendor', '', 'Paid By (name)'].map((c, i) => T(c, i % 2 === 0 ? SY.col : SY.col));
     const maxn = mstL - 2;
     for (let i = 0; i < maxn; i++) {
       const n = i + 3;
@@ -2578,14 +2831,14 @@ function buildWorkbook(s) {
   {
     const rows = [];
     rows[0] = [T(s.name + '  \u2014  Manager Account', SY.title)];
-    const head = ['Naav'].concat(m.funds ? ['Paise Milale'] : [], ['Site Expense'], m.murum ? ['Murum'] : [], m.diesel !== false ? ['Diesel'] : [],
-      m.vendor !== false ? ['Vendor Payment'] : [], m.owner ? ['Owner Payment'] : [], ['Total Kharch'], m.funds ? ['Shillak'] : []);
+    const head = ['Name'].concat(m.funds ? ['Money Received'] : [], ['Site Expense'], m.murum ? ['Murum'] : [], m.diesel !== false ? ['Diesel'] : [],
+      m.vendor !== false ? ['Vendor Payment'] : [], m.owner ? ['Owner Payment'] : [], ['Total Spent'], m.funds ? ['Balance'] : []);
     rows[1] = head.map(c => T(c, SY.col));
     const first = 3;
     s.people.forEach((p, i) => {
       const n = i + first, cells = [T(p)];
       const parts = [];
-      if (m.funds) cells.push(F_(`SUMIF('Paise Milale'!$C$3:$C$${fnL},$A${n},'Paise Milale'!$D$3:$D$${fnL})`));
+      if (m.funds) cells.push(F_(`SUMIF('Money Received'!$C$3:$C$${fnL},$A${n},'Money Received'!$D$3:$D$${fnL})`));
       cells.push(F_(`SUMIFS('Expense Log'!$F$3:$F$${elL},'Expense Log'!$H$3:$H$${elL},$A${n},'Expense Log'!$G$3:$G$${elL},"Paid")`)); parts.push('C');
       if (m.murum) { parts.push(colL(cells.length + 1)); cells.push(F_(`SUMIFS('Murum Log'!$F$3:$F$${muL},'Murum Log'!$H$3:$H$${muL},$A${n},'Murum Log'!$G$3:$G$${muL},"Paid")`)); }
       if (m.diesel !== false) { parts.push(colL(cells.length + 1)); cells.push(F_(`SUMIFS('Diesel Purchase'!$F$3:$F$${dlL},'Diesel Purchase'!$H$3:$H$${dlL},$A${n},'Diesel Purchase'!$G$3:$G$${dlL},"Paid")`)); }
@@ -2603,7 +2856,7 @@ function buildWorkbook(s) {
     });
     const tr = s.people.length + first;
     rows[tr - 1] = head.map((h, i) => i === 0 ? T('TOTAL', SY.bold) : F_(SUMR(colL(i + 1), first, tr - 1), SY.tot));
-    rows[tr + 1] = [T('Shillak = paise milale \u2212 ekun kharch. Jyanna advance milat nahi tyanchya samor "—" asto.', SY.note)];
+    rows[tr + 1] = [T('Balance = money received \u2212 total spent. People who do not take an advance show "—".', SY.note)];
     sheets.push({ name: 'Manager Account', freeze: 2, cols: [18].concat(head.slice(1).map(() => 15)), rows, merges: ['A1:' + colL(head.length) + '1'], heights: { 1: 26, 2: 28 } });
   }
 
@@ -2612,7 +2865,7 @@ function buildWorkbook(s) {
     const rows = [];
     const W = 6;
     rows[0] = [T(s.name + '  \u2014  Site Dashboard', SY.title)];
-    rows[1] = [T('Ha dashboard apoap update hoto. Khalchya sheets madhe entry kara.', SY.note)];
+    rows[1] = [T('This dashboard updates itself. Make your entries in the sheets below.', SY.note)];
 
     const exp = `SUM('Expense Log'!$F$3:$F$${elL})`;
     const dsl = m.diesel !== false ? `SUM('Diesel Purchase'!$F$3:$F$${dlL})` : '0';
@@ -2643,7 +2896,7 @@ function buildWorkbook(s) {
     if (m.machine !== false) {
       const opSum = m.owner ? `SUM('Owner Payment'!$D$3:$D$${opL})` : '0';
       rows[r - 1] = [T('MACHINE RENT', SY.head), T('', SY.head), T('', SY.head), T('', SY.head)]; r++;
-      rows[r - 1] = ['Rent payable (Rs)', 'Owner la dilele (Rs)', 'Baki (Rs)', ''].map(c => T(c, SY.col)); r++;
+      rows[r - 1] = ['Rent payable (Rs)', 'Paid to owner (Rs)', 'Balance (Rs)', ''].map(c => T(c, SY.col)); r++;
       rows[r - 1] = [F_(rent), F_(opSum), F_(`${rent}-${opSum}`, SY.tot)]; r += 2;
     }
 
@@ -2662,8 +2915,8 @@ function buildWorkbook(s) {
     r += 2;
 
     if (m.vendor !== false) {
-      rows[r - 1] = [T('VENDOR-WISE UDHAARI', SY.head), T('', SY.head), T('', SY.head), T('', SY.head), T('', SY.head)]; r++;
-      rows[r - 1] = ['Vendor', 'Ekun kaam (Rs)', 'Direct paid (Rs)', 'Payment kele (Rs)', 'Baki (Rs)'].map(c => T(c, SY.col)); r++;
+      rows[r - 1] = [T('VENDOR-WISE CREDIT', SY.head), T('', SY.head), T('', SY.head), T('', SY.head), T('', SY.head)]; r++;
+      rows[r - 1] = ['Vendor', 'Total billed (Rs)', 'Direct paid (Rs)', 'Payments made (Rs)', 'Balance (Rs)'].map(c => T(c, SY.col)); r++;
       const vs = r;
       s.vendors.forEach(v => {
         const n = r;
@@ -2741,13 +2994,13 @@ function exportExcel(s) {
     a.href = URL.createObjectURL(blob); a.download = name;
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
-    toast('Excel file download zali');
+    toast('Excel file downloaded');
   } catch (e) { console.error(e); toast('Excel banavtana problem ala'); }
 }
 
 /* ============================================================
-   BILL / PDF  —  machine ani vendor cha vegla report
-   Print daba -> phone madhe "Save as PDF"
+   BILL / PDF  —  separate reports per machine and per vendor.
+   Tap Print, then "Save as PDF" on the phone.
    ============================================================ */
 const bTag = () => (site().name || 'Site') + '  ·  ' + fmtDate(today());
 
@@ -2805,7 +3058,7 @@ function vendorBill(s, v) {
   const payments = dv ? x.payments : x.paid;
   const remaining = x.remaining;
 
-  /* saglya nondi ekatra, date pramane */
+  /* every entry together, in date order */
   let items = [];
   s.expenseLog.filter(e => e.vendor === v).forEach(e => items.push({
     date: e.date, kind: e.category || 'Expense', desc: e.desc || '', qty: '',
@@ -2892,7 +3145,7 @@ function openBill(html, name) {
 let PRINT_NAME = 'report';
 function closeBill() { $('#print').innerHTML = ''; document.body.style.overflow = ''; }
 
-/* ---------------- DAY BILL (nivadlelya tarkhecha sagla machine data) ---------------- */
+/* ---------------- DAY BILL (all machine data for one date) ---------------- */
 function dayBill(s, date, type) {
   let rows = s.machineLog.filter(r => r.date === date);
   if (type) rows = rows.filter(r => (machineType(s, r.machineNo) || '') === type);
@@ -3166,8 +3419,8 @@ function machineForm(s, rec) {
         <div class="field"><label>Remark</label><input id="f_rem" value="${esc(r.remark || '')}"></div>
       <div id="f_openwrap" style="display:none">
         <div class="field"><label>Opening diesel in machine (L)</label>
-          <input type="number" inputmode="decimal" step="0.1" id="f_open" value="${has(r.openDiesel) ? r.openDiesel : ''}" placeholder="machine aali tevha tankit kiti hota"></div>
-        <div class="tiny" style="margin:-6px 0 10px">He fakt <b>on that machine’s first day only</b> is asked. This is not counted as a diesel purchase &mdash; it is kept only as a record.</div>
+          <input type="number" inputmode="decimal" step="0.1" id="f_open" value="${has(r.openDiesel) ? r.openDiesel : ''}" placeholder="diesel in the tank on day one"></div>
+        <div class="tiny" style="margin:-6px 0 10px">Asked <b>only on that machine’s first day</b>. It is not counted as a diesel purchase &mdash; it is kept as a record.</div>
       </div>
       </div>
     </div></div>`,
@@ -3267,7 +3520,7 @@ function vpForm(s, rec, preVendor) {
         <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
         <div class="field"><label>Vendor</label><select id="f_v">${selOpts(allVendors(s), r.vendor, '— select —')}</select></div>
       </div>
-      <div id="f_bal" class="tiny" style="margin:-4px 0 10px">${vs ? 'Baki: <b>' + money(vs.remaining) + '</b>' : ''}</div>
+      <div id="f_bal" class="tiny" style="margin:-4px 0 10px">${vs ? 'Balance: <b>' + money(vs.remaining) + '</b>' : ''}</div>
       <div class="f2">
         <div class="field"><label>Amount paid (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
@@ -3287,7 +3540,7 @@ function vpForm(s, rec, preVendor) {
     rec ? () => { s.vendorPayments = s.vendorPayments.filter(x => x.id !== rec.id); } : null);
   document.getElementById('f_v').addEventListener('change', e => {
     const x = e.target.value ? (isDieselVendor(s, e.target.value) ? dieselVendorStats(s, e.target.value) : vendorStats(s, e.target.value)) : null;
-    document.getElementById('f_bal').innerHTML = e.target.value ? 'Baki: <b>' + money(x.remaining) + '</b>' : '';
+    document.getElementById('f_bal').innerHTML = e.target.value ? 'Balance: <b>' + money(x.remaining) + '</b>' : '';
   });
 }
 
@@ -3306,7 +3559,7 @@ function machineMasterForm(s, rec) {
       </div>
       <div class="f2">
         <div class="field"><label>Make</label><input id="f_make" value="${esc(r.make || '')}"></div>
-        <div class="field"><label>Rate for this machine</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.monthlyRate) ? r.monthlyRate : ''}" placeholder="Rate Master madhla"></div>
+        <div class="field"><label>Rate for this machine</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.monthlyRate) ? r.monthlyRate : ''}" placeholder="from Rate Master"></div>
       </div>
       <div class="tiny">Leave this empty to use the Rate Master rate for the type. Fill it only if this machine has its own rate.</div>
     </div></div>`,
@@ -3321,7 +3574,7 @@ function machineMasterForm(s, rec) {
       const used = s.machineLog.filter(l => l.machineNo === rec.no).length;
       const hrs = s.machineLog.filter(l => l.machineNo === rec.no).reduce((a, l) => a + hoursOf(l), 0);
       if (used) {
-        const both = confirm(rec.no + ' chya ' + used + ' log entries (' + dec(hrs) + ' hours) aahet.\n\nOK = machine ANI tichya saglya entries delete kara.\nCancel = fakt machine kaadha, entries rahtil.');
+        const both = confirm(rec.no + ' has ' + used + ' log entries (' + dec(hrs) + ' hours).\n\nOK = delete the machine AND all of its entries.\nCancel = remove only the machine, keep the entries.');
         if (both) s.machineLog = s.machineLog.filter(l => l.machineNo !== rec.no);
       }
       s.machines = s.machines.filter(x => x.id !== rec.id);
@@ -3336,15 +3589,15 @@ function rateForm(s, i) {
   openSheet(isNew ? 'New machine type' : 'Rate \u2014 ' + esc(r.type), `
     <div class="card"><div class="pad">
       ${isNew
-        ? `<div class="field"><label>Machine type name</label><input id="f_type" placeholder="udaharan: Dumper, Crane, Grader" autocomplete="off"></div>`
+        ? `<div class="field"><label>Machine type name</label><input id="f_type" placeholder="e.g. Dumper, Crane, Grader" autocomplete="off"></div>`
         : `<div class="field"><label>Machine type</label><input id="f_type" value="${esc(r.type)}"></div>
-           <div class="tiny" style="margin:-6px 0 10px">${used ? used + ' machine ya type chya aahet. Naav badalla tar tyanche pn badalel.' : 'Ya type chi ek pn machine nahi.'}</div>`}
+           <div class="tiny" style="margin:-6px 0 10px">${used ? used + ' machines use this type. Renaming it renames theirs too.' : 'No machine uses this type yet.'}</div>`}
       ${segField('Rate basis', 'f_basis', ['Hourly', 'Daily'], r.basis)}
       <div class="f2">
         <div class="field"><label>Package rate (Rs)</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.packageRate) && num(r.packageRate) ? r.packageRate : ''}"></div>
         <div class="field"><label>Package units</label><input type="number" inputmode="decimal" id="f_units" value="${has(r.packageUnits) ? r.packageUnits : ''}"></div>
       </div>
-      <div class="tiny" style="line-height:1.7">Udaharan: Poclain cha mahinyacha rate 240 hours sathi asel tar Package Rate = to rate, Units = 240. Hiwa sarkha divsavar asel tar Basis = Daily ani Units = 30.<br>Rate nantar bharla tari chalel.</div>
+      <div class="tiny" style="line-height:1.7">Example: if a Poclain is hired at a monthly rate covering 240 hours, set Package Rate = that rate and Units = 240. For a day-based machine like a Hiwa, set Basis = Daily and Units = 30.<br>Rate nantar bharla tari chalel.</div>
     </div></div>`,
     () => {
       const nm = val('f_type').trim();
@@ -3362,7 +3615,7 @@ function rateForm(s, i) {
       return true;
     },
     (!isNew && !used) ? () => {
-      if (!confirm(r.type + ' ha type kaadhaycha? Ya type chi ek pn machine nahi.')) return false;
+      if (!confirm('Remove the type ' + r.type + '? No machine uses it.')) return false;
       s.rateMaster = s.rateMaster.filter((x, k) => k !== i);
     } : null);
 }
@@ -3405,7 +3658,7 @@ function murumForm(s, rec) {
         <div class="field"><label>Rate / ${esc(u)}</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.rate) ? r.rate : ''}"></div>
         <div class="field"><label>Trips</label><input type="number" inputmode="numeric" id="f_trips" value="${has(r.trips) ? r.trips : ''}"></div>
       </div>
-      <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) && num(r.amount) ? r.amount : ''}" placeholder="apoap = ${esc(u)} x rate"></div>
+      <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) && num(r.amount) ? r.amount : ''}" placeholder="auto = ${esc(u)} × rate"></div>
       ${segField('Payment Status', 'f_st', ['Paid', 'Unpaid'], st(r), 'pu')}
       <div class="f2">
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
@@ -3431,7 +3684,7 @@ function murumForm(s, rec) {
   ['f_qty', 'f_rate'].forEach(id => document.getElementById(id).addEventListener('input', upd));
 }
 
-/* ---------- paise milale ---------- */
+/* ---------- money received ---------- */
 function fundsForm(s, rec) {
   const names = (s.advance || []).length ? s.advance : s.people;
   const r = rec || { date: today(), person: names[0] || '', amount: '', from: '', mode: 'Online / UPI', remark: '' };
@@ -3471,7 +3724,7 @@ function ownerPayForm(s, rec) {
         <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
         <div class="field"><label>Machine owner</label><select id="f_o">${selOpts(owners, r.owner, '— select —')}</select></div>
       </div>
-      <div id="f_bal" class="tiny" style="margin:-4px 0 10px">${os ? 'Rent baki: <b>' + money(os.balance) + '</b>' : ''}</div>
+      <div id="f_bal" class="tiny" style="margin:-4px 0 10px">${os ? 'Rent balance: <b>' + money(os.balance) + '</b>' : ''}</div>
       <div class="f2">
         <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="f_amt" value="${has(r.amount) ? r.amount : ''}"></div>
         <div class="field"><label>Paid by</label><select id="f_by">${selOpts(s.people, r.paidBy, '— select —')}</select></div>
@@ -3491,7 +3744,7 @@ function ownerPayForm(s, rec) {
     rec ? () => { s.ownerPayments = s.ownerPayments.filter(x => x.id !== rec.id); } : null);
   document.getElementById('f_o').addEventListener('change', e => {
     const x = e.target.value ? ownerStats(s, e.target.value) : null;
-    document.getElementById('f_bal').innerHTML = x ? 'Rent baki: <b>' + money(x.balance) + '</b>' : '';
+    document.getElementById('f_bal').innerHTML = x ? 'Rent balance: <b>' + money(x.balance) + '</b>' : '';
   });
 }
 
@@ -3587,10 +3840,10 @@ function siteForm(id) {
       }
       return true;
     },
-    null);   /* delete vegla: Sites madhe Delete button, password lagto */
+    null);   /* delete is separate: the Delete button under Sites, which needs the password */
 }
 
-/* ---------- company cha logo ---------- */
+/* ---------- company logo ---------- */
 function pickLogo() {
   const inp = document.createElement('input');
   inp.type = 'file'; inp.accept = 'image/*';
@@ -3628,13 +3881,13 @@ function remForm(s, id) {
   const vs = cur.vendor ? remVendorStats(s, cur.vendor) : null;
   openSheet(r ? 'Edit payment due date' : 'Add payment due date', `
     <div class="card"><div class="pad">
-      <div class="field"><label>Vendor</label><select id="r_v">${selOpts(allVendors(s), cur.vendor, '— vendor nako —')}</select></div>
-      <div id="r_bal" class="tiny" style="margin:-4px 0 10px">${vs ? 'Ya vendor chi baki: <b>' + money(vs.remaining) + '</b>' : ''}</div>
+      <div class="field"><label>Vendor</label><select id="r_v">${selOpts(allVendors(s), cur.vendor, '— no vendor —')}</select></div>
+      <div id="r_bal" class="tiny" style="margin:-4px 0 10px">${vs ? 'This vendor’s balance: <b>' + money(vs.remaining) + '</b>' : ''}</div>
       <div class="f2">
         <div class="field"><label>Payment due date</label><input type="date" id="r_d" value="${cur.due || ''}"></div>
-        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="r_a" value="${has(cur.amount) && num(cur.amount) ? cur.amount : ''}" placeholder="nasla tari chalel"></div>
+        <div class="field"><label>Amount (Rs)</label><input type="number" inputmode="decimal" id="r_a" value="${has(cur.amount) && num(cur.amount) ? cur.amount : ''}" placeholder="optional"></div>
       </div>
-      <div class="field"><label>Note</label><input id="r_n" value="${esc(cur.note || '')}" placeholder="udaharan: RTGS karaycha"></div>
+      <div class="field"><label>Note</label><input id="r_n" value="${esc(cur.note || '')}" placeholder="e.g. send RTGS"></div>
       <div class="tiny" style="line-height:1.7">When the date is near, an alert shows on the Dashboard and a notification appears when you open the app. You can also put it in your phone calendar.</div>
     </div></div>`,
     () => {
@@ -3649,11 +3902,11 @@ function remForm(s, id) {
   const sel = document.getElementById('r_v');
   if (sel) sel.addEventListener('change', e => {
     const x = e.target.value ? remVendorStats(s, e.target.value) : null;
-    document.getElementById('r_bal').innerHTML = x ? 'Ya vendor chi baki: <b>' + money(x.remaining) + '</b>' : '';
+    document.getElementById('r_bal').innerHTML = x ? 'This vendor’s balance: <b>' + money(x.remaining) + '</b>' : '';
   });
 }
 
-/* ---------- site delete (password lagto) ---------- */
+/* ---------- site delete (password required) ---------- */
 async function delHash(pw) { return await sha('del:' + String(pw).trim() + ':' + salt()); }
 
 function delPassForm(change) {
@@ -3661,7 +3914,7 @@ function delPassForm(change) {
     <div class="card"><div class="pad">
       ${change ? '<div class="field"><label>Old password</label><input id="d_old" type="password"></div>' : ''}
       <div class="field"><label>New password</label><input id="d_new" type="password" placeholder="kimaan 4 akshare"></div>
-      <div class="field"><label>Parat tach password</label><input id="d_new2" type="password"></div>
+      <div class="field"><label>Re-type password</label><input id="d_new2" type="password"></div>
       <div class="tiny" style="line-height:1.7">This password is only needed when deleting a site. Write it down somewhere.</div>
       ${change ? `<div class="btnrow" style="margin-top:10px"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password?</button></div>` : ''}
     </div></div>`,
@@ -3691,7 +3944,7 @@ function siteDeleteForm(id) {
     <div class="card"><div class="pad">
       <div class="warn" style="margin-bottom:12px">
         <b>${esc(s.name)}</b> and all its data will be gone for good:<br>
-        ${s.expenseLog.length} kharch entries, ${s.machineLog.length} machine entries, ${s.dieselLog.length} diesel bills, ${s.machines.length} machines &mdash; ekun ${money(t.grand)}.<br>
+        ${s.expenseLog.length} expense entries, ${s.machineLog.length} machine entries, ${s.dieselLog.length} diesel bills, ${s.machines.length} machines &mdash; ${money(t.grand)} in all.<br>
         This cannot be undone.
       </div>
       <div class="field"><label>Type the site name to confirm</label><input id="d_name" placeholder="${esc(s.name)}" autocapitalize="none"></div>
@@ -3699,7 +3952,7 @@ function siteDeleteForm(id) {
         ? '<div class="field"><label>Delete password</label><input id="d_pw" type="password"></div>'
         : `<div class="tiny" style="margin-bottom:10px">No delete password is set yet. Set one now &mdash; it will be needed next time.</div>
            <div class="field"><label>New delete password</label><input id="d_pw" type="password" placeholder="kimaan 4 akshare"></div>
-           <div class="field"><label>Parat tach password</label><input id="d_pw2" type="password"></div>`}
+           <div class="field"><label>Re-type password</label><input id="d_pw2" type="password"></div>`}
       <div class="tiny">Delete karnyaadhi <b>backup download</b> karun thevlela changla.</div>
     </div></div>`,
     () => {
@@ -3711,18 +3964,18 @@ function siteDeleteForm(id) {
           if (pw !== val('d_pw2')) return toast('Passwords do not match');
           DB.delPass = await delHash(pw);
         } else if (await delHash(pw) !== DB.delPass) return toast('Wrong password');
-        if (!confirm('"' + s.name + '" nakki delete karaycha?')) return;
+        if (!confirm('Delete "' + s.name + '" for good?')) return;
         DB.sites = DB.sites.filter(x => x.id !== s.id);
         if (!DB.sites.length) DB.sites.push(blankSite('Site 1'));
         if (!DB.sites.find(x => x.id === DB.activeId)) DB.activeId = DB.sites[0].id;
         UI = {}; TAB = 'more'; UI.more = 'sites';
         closeSheet(); await save(); render(); toast('Site deleted');
       })();
-      return false;                      /* async madhech close hoto */
+      return false;                      /* closed inside the async handler */
     }, null);
 }
 
-/* ---------- divas cha hishob (daily register) ---------- */
+/* ---------- the day's account (daily register) ---------- */
 function dayRegister(s, d) {
   const day = d || today();
   const exp = s.expenseLog.filter(e => e.date === day);
@@ -3773,13 +4026,13 @@ function dayRegisterSheet(s) {
   inp.addEventListener('change', e => { UI.regDate = e.target.value; document.getElementById('f_blk').value = dayRegister(s, e.target.value); });
 }
 
-/* ---------- juna sheet madhe paste karayche rows ---------- */
+/* ---------- rows to paste into the old sheet ---------- */
 function xlCopySheet(s, k) {
   const x = XL[k], rows = pending(s, k), start = num(s.xlRows[k]) || x.first;
   if (!rows.length) return toast('Nothing new here');
   const text = xlBlock(s, k, start);
   const end = start + rows.length - 1;
-  openSheet(x.sheet + ' &rarr; juna Excel', `
+  openSheet(x.sheet + ' &rarr; old Excel', `
     <div class="card"><div class="pad">
       <div class="tiny" style="margin-bottom:8px"><b>${rows.length}</b> rows. Open the <b>${esc(x.sheet)}</b> sheet in your old file, go to cell <b>B${start}</b> and paste (rows ${start}&ndash;${end}, columns ${x.cols}).</div>
       <textarea id="f_blk" rows="7" style="width:100%;font-family:ui-monospace,Menlo,monospace;font-size:11px;padding:8px;border:1px solid var(--line);border-radius:8px">${esc(text)}</textarea>
@@ -3817,7 +4070,7 @@ function shareText() {
   L.push('Manager-wise:');
   s.people.forEach(p => { const x = personStats(s, p); if (x.total) L.push('  ' + p + ': ' + money(x.total)); });
   const pend = s.vendors.map(v => ({ v, x: vendorStats(s, v) })).filter(o => o.x.remaining > 0);
-  if (pend.length) { L.push(''); L.push('Vendor baki:'); pend.forEach(o => L.push('  ' + o.v + ': ' + money(o.x.remaining))); }
+  if (pend.length) { L.push(''); L.push('Vendor balance:'); pend.forEach(o => L.push('  ' + o.v + ': ' + money(o.x.remaining))); }
   return L.join('\n');
 }
 
@@ -3845,7 +4098,7 @@ function exportCsv(kind) {
   toast('CSV downloaded');
 }
 
-/* ---------- supervisor chya Reading Book app madhlya files (ekach velela kitihi) ---------- */
+/* ---------- files from the supervisor's Reading Book app (any number at once) ---------- */
 function readFileText(f) {
   return new Promise((res, rej) => {
     const rd = new FileReader();
@@ -3862,7 +4115,7 @@ function importSupervisor(s) {
     const files = Array.from(inp.files || []);
     if (!files.length) return;
     files.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-    toast(files.length + ' file vachtoy...');
+    toast('Reading ' + files.length + ' file(s)…');
 
     const packs = [], bad = [];
     for (const f of files) {
@@ -3874,7 +4127,7 @@ function importSupervisor(s) {
       packs.push({ name: f.name, d, m, dl });
     }
     if (!packs.length) {
-      return alert('No Reading Book file was found.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+      return alert('No Reading Book file was found.' + (bad.length ? '\n\n' + bad.length + ' file(s) could not be read.' : ''));
     }
 
     const mTot = packs.reduce((a, p) => a + p.m.length, 0);
@@ -3882,13 +4135,13 @@ function importSupervisor(s) {
     const days = [...new Set([].concat(...packs.map(p => p.m.map(r => r.date).concat(p.dl.map(r => r.date)))))].filter(Boolean).sort();
     const sups = [...new Set(packs.map(p => p.d.supervisor).filter(Boolean))];
     const msg = packs.length + ' file\n' + mTot + ' machine entries, ' + dTot + ' diesel bills\n' +
-      (days.length ? days.length + ' divas (' + fmtDate(days[0]) + ' te ' + fmtDate(days[days.length - 1]) + ')\n' : '') +
+      (days.length ? days.length + ' days (' + fmtDate(days[0]) + ' to ' + fmtDate(days[days.length - 1]) + ')\n' : '') +
       (sups.length ? 'Supervisor: ' + sups.join(', ') + '\n' : '') +
-      (bad.length ? '\n' + bad.length + ' file chalali nahi, ti sodli.\n' : '') +
-      '\n"' + s.name + '" madhe ghyaychya?';
+      (bad.length ? '\n' + bad.length + ' file(s) could not be read and were skipped.\n' : '') +
+      '\nImport into "' + s.name + '"?';
     if (!confirm(msg)) return;
 
-    /* aadhi juna data snapshot madhe */
+    /* snapshot the old data first */
     try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
 
     let mAdd = 0, mDup = 0, newM = 0, dAdd = 0, dDup = 0, newV = 0, newP = 0;
@@ -3936,17 +4189,17 @@ function importSupervisor(s) {
     migrate();
     await save(); render();
     alert(packs.length + ' file ghetlya.\n\n' +
-      mAdd + ' machine entries ani ' + dAdd + ' diesel bills add zale.' +
-      ((mDup || dDup) ? '\n' + (mDup + dDup) + ' aadhich hote, te sodle.' : '') +
-      (newM ? '\n' + newM + ' navin machine add zalya - tyanche rate bhara.' : '') +
-      (newV ? '\n' + newV + ' navin diesel vendor add zale.' : '') +
-      (newP ? '\n' + newP + ' navin naav add zale.' : '') +
-      (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+      mAdd + ' machine entries and ' + dAdd + ' diesel bills added.' +
+      ((mDup || dDup) ? '\n' + (mDup + dDup) + ' were already there and were skipped.' : '') +
+      (newM ? '\n' + newM + ' new machines added \u2014 set their rates.' : '') +
+      (newV ? '\n' + newV + ' new diesel vendors added.' : '') +
+      (newP ? '\n' + newP + ' new names added.' : '') +
+      (bad.length ? '\n\n' + bad.length + ' file(s) could not be read.' : ''));
   };
   inp.click();
 }
 
-/* ---------- machine owner cha rent bill ---------- */
+/* ---------- rent bill for a machine owner ---------- */
 function ownerBillForm(s, owner) {
   const owners = ownerList(s);
   if (!owners.length) return toast('Add machine owners first');
@@ -3969,7 +4222,7 @@ function ownerBillForm(s, owner) {
       <div class="tiny" style="margin-top:8px">"Save" opens the bill &mdash; then tap <b>Print / Save as PDF</b>.</div>
     </div></div>`,
     () => { document.querySelector('[data-act="obMake"]'); return false; }, null);
-  /* Save cha button obMake madhe badla */
+  /* turn the Save button into obMake */
   const btn = document.querySelector('[data-act="sheetSave"]');
   if (btn) { btn.dataset.act = 'obMake'; btn.textContent = 'Make bill'; }
   const upd = () => {
@@ -3982,7 +4235,7 @@ function ownerBillForm(s, owner) {
   ['ob_o', 'ob_f', 'ob_t'].forEach(id => { const e = document.getElementById(id); if (e) e.addEventListener('change', upd); });
 }
 
-/* ---------- machine cha kram badalnyacha screen (hold karun sarkva) ---------- */
+/* ---------- reorder machines (hold and drag) ---------- */
 let AORDER = [];
 
 function arrangeRows(s) {
@@ -4003,7 +4256,7 @@ function arrangeForm(s) {
   if (AORDER.length < 2) return toast('Need at least 2 machines');
   openSheet('Machine order', `
     <div class="card"><div class="pad">
-      <div class="tiny" style="margin-bottom:10px;line-height:1.7">Machine <b>hold karun var-khali sarkva</b>, or move it with the buttons on the right. This order is used in the Machine Log chips, the Summary and everywhere else.</div>
+      <div class="tiny" style="margin-bottom:10px;line-height:1.7"><b>Hold a machine and drag it up or down</b>, or move it with the buttons on the right. This order is used in the Machine Log chips, the Summary and everywhere else.</div>
       <div id="alist">${arrangeRows(s)}</div>
     </div></div>`,
     () => {
@@ -4060,13 +4313,13 @@ function bindDrag(s) {
 
 let PENDING_IMPORT = null;
 
-/* file madhun sites kaadhto — juna format, navin format, ek site, sites chi yaadi */
+/* pull sites out of a file — old format, new format, a single site, or a list */
 function readSites(d) {
   if (!d || typeof d !== 'object') return null;
   if (Array.isArray(d)) return d.filter(x => x && x.expenseLog !== undefined || x && x.name);
   if (Array.isArray(d.sites)) return d.sites;
   if (d.site && typeof d.site === 'object' && d.site.name) return [d.site];
-  if (d.name && (d.expenseLog || d.machineLog || d.machines)) return [d];      /* ek site ch aahe */
+  if (d.name && (d.expenseLog || d.machineLog || d.machines)) return [d];      /* a single site */
   return null;
 }
 
@@ -4094,7 +4347,7 @@ function importJson(fromLock) {
       const list = clean.map(s => {
         const t = totals(s);
         return `<div class="row"><div class="main"><div class="ttl">${esc(s.name)}</div>
-          <div class="sub">${s.expenseLog.length} kharch &middot; ${s.machineLog.length} machine &middot; ${s.dieselLog.length} diesel${s.murumLog.length ? ' &middot; ' + s.murumLog.length + ' murum' : ''}</div></div>
+          <div class="sub">${s.expenseLog.length} expense &middot; ${s.machineLog.length} machine &middot; ${s.dieselLog.length} diesel${s.murumLog.length ? ' &middot; ' + s.murumLog.length + ' murum' : ''}</div></div>
           <div class="amt">${money(t.grand)}</div></div>`;
       }).join('');
       const same = clean.filter(s => DB.sites.some(x => x.name.trim().toLowerCase() === s.name.trim().toLowerCase()));
@@ -4102,10 +4355,10 @@ function importJson(fromLock) {
         <div class="card">${list}</div>
         <div class="card"><div class="pad">
           <div class="tiny" style="margin-bottom:10px;line-height:1.8">
-            <b>Add</b> &mdash; ya sites tumchya aatachya ${DB.sites.length} site sobat add hotil. <b>Nothing existing is lost.</b><br>
+            <b>Add</b> &mdash; these sites join the ${DB.sites.length} you already have. <b>Nothing existing is lost.</b><br>
             <b>Replace everything</b> &mdash; everything here is replaced by what is in this file.
           </div>
-          ${same.length ? `<div class="warn" style="margin-bottom:10px">"${esc(same[0].name)}" ya naavachi site aadhich aahe. Add kelya var ti <b>(2)</b> mhanun vegli disel &mdash; donhi rahtil.</div>` : ''}
+          ${same.length ? `<div class="warn" style="margin-bottom:10px">A site called "${esc(same[0].name)}" already exists. On Add it comes in separately as <b>(2)</b> &mdash; both are kept.</div>` : ''}
           <button class="btn" data-act="impAdd">Add</button>
           <div class="btnrow"><button class="btn dgr sm" style="flex:1" data-act="impReplace">Replace everything</button></div>
           <div class="tiny" style="margin-top:8px">Either way a snapshot of your current data is taken first &mdash; you can restore it from Data safety.</div>
@@ -4117,7 +4370,7 @@ function importJson(fromLock) {
 }
 
 async function applyImport(clean, add) {
-  try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }   /* badalnyaadhi juna data suraksit */
+  try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }   /* keep the old data safe before changing anything */
   if (add) {
     clean.forEach(s => {
       let nm = s.name, n = 2;
@@ -4132,7 +4385,7 @@ async function applyImport(clean, add) {
   }
   migrate(); UI = {}; TAB = 'dash';
   closeSheet(); await save(); render();
-  toast(add ? clean.length + ' site add zali' : 'Imported');
+  toast(add ? clean.length + ' site(s) added' : 'Imported');
 }
 
 /* ============================================================
@@ -4146,13 +4399,6 @@ document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act, v = el.dataset.v, s = site();
 
-  LAST_TOUCH = Date.now();
-
-
-
-  /* ----- view mode: fakt baghaycha ----- */
-
-
   if (a === 'sheetBg' && e.target !== el) return;
   if (a === 'sheetBg' || a === 'sheetClose') return closeSheet();
   if (a === 'sheetSave') {
@@ -4163,6 +4409,20 @@ document.addEventListener('click', async e => {
     if (SHEET && SHEET.onDelete) { if (SHEET.onDelete() === false) return; }
     closeSheet(); await save(); render(); toast('Deleted'); return;
   }
+
+  /* ----- error bar: these must work even when the app failed to draw ----- */
+  if (a === 'errBackup') {
+    try { download('site-manager-backup-' + today() + '.json', JSON.stringify(DB), 'application/json'); }
+    catch (er) { alert('Backup failed: ' + er); }
+    return;
+  }
+  if (a === 'errCopy') {
+    try { await navigator.clipboard.writeText(LAST_ERROR); toast('Message copied'); }
+    catch (er) { alert(LAST_ERROR); }
+    return;
+  }
+  if (a === 'errReload') { location.reload(); return; }
+  if (a === 'errHide') { const b = document.getElementById('errbar'); if (b) b.remove(); return; }
 
   switch (a) {
     case 'tab': TAB = v; render(); break;
@@ -4178,11 +4438,11 @@ document.addEventListener('click', async e => {
       const list = v === '__none' ? s.machineLog.filter(r => !r.machineNo) : s.machineLog.filter(r => r.machineNo === v);
       if (!list.length) break;
       const hrs = list.reduce((a, r) => a + hoursOf(r), 0);
-      if (!confirm((v === '__none' ? 'Machine no nasleli' : v) + ' chya ' + list.length + ' entries (' + dec(hrs) + ' hours) kayamchya delete hotil.\n\nNakki?')) break;
+      if (!confirm(list.length + ' entries (' + dec(hrs) + ' hours) for ' + (v === '__none' ? 'rows with no machine number' : v) + ' will be deleted for good.\n\nAre you sure?')) break;
       const ids = {}; list.forEach(r => ids[r.id] = 1);
       s.machineLog = s.machineLog.filter(r => !ids[r.id]);
       UI.mlFilter = '';
-      await save(); render(); toast(list.length + ' entries delete zalya');
+      await save(); render(); toast(list.length + ' entries deleted');
       break;
     }
     case 'dlMore': UI.dlMore = (UI.dlMore || 50) + 100; render(); break;
@@ -4206,14 +4466,15 @@ document.addEventListener('click', async e => {
     case 'opEdit': ownerPayForm(s, s.ownerPayments.find(x => x.id === v)); break;
     case 'dayReg': dayRegisterSheet(s); break;
     case 'qClear': {
-      UI.q = '';
+      UI.q = ''; UI.qMore = false;
       const b = document.getElementById('q_box');
       if (b) { b.value = ''; b.blur(); }
       renderSearch(); break;
     }
+    case 'qMore': UI.qMore = true; renderSearchPanel(); break;
     case 'sOpen': {
       const k = el.dataset.k;
-      UI.q = '';
+      UI.q = ''; UI.qMore = false;
       const b = document.getElementById('q_box');
       if (b) { b.value = ''; b.blur(); }
       renderSearch();
@@ -4230,7 +4491,7 @@ document.addEventListener('click', async e => {
     }
     case 'logoPick': pickLogo(); break;
     case 'logoOff':
-      if (!confirm('Logo kaadhaycha?')) break;
+      if (!confirm('Remove the logo?')) break;
       delete DB.logo; await save(); render(); toast('Logo removed');
       break;
     case 'remAdd': remForm(s, null); break;
@@ -4301,33 +4562,33 @@ document.addEventListener('click', async e => {
       let moved = 0;
       list.forEach(o => o.items.forEach(x => { if (x.no !== o.target) moved += renameMachine(s, x.no, o.target); }));
       migrate(); await save(); render();
-      alert(list.length + ' group ek zale.\n' + moved + ' entries navin naavavar gelya.\n\nMachine Master madhe rate parat tapasa.');
+      alert(list.length + ' groups merged.\n' + moved + ' entries moved onto the new name.\n\nCheck the rates again in Machine Master.');
       break;
     }
     case 'mgEdit': {
       const o = machineGroups(s).find(x => x.key === v);
       if (!o) break;
-      const nm = prompt('Ya ' + o.items.length + ' naavansathi ek naav:\n' + o.items.map(x => x.no).join(', '), o.target);
+      const nm = prompt('One name for these ' + o.items.length + ':\n' + o.items.map(x => x.no).join(', '), o.target);
       if (!nm || !nm.trim()) break;
       try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
       let moved = 0;
       o.items.forEach(x => { if (x.no !== nm.trim()) moved += renameMachine(s, x.no, nm.trim()); });
-      migrate(); await save(); render(); toast(moved + ' entries ' + nm.trim() + ' var gelya');
+      migrate(); await save(); render(); toast(moved + ' entries moved to ' + nm.trim());
       break;
     }
     case 'mRename': {
       const m = s.machines.find(x => x.id === v);
       if (!m) break;
-      const nm = prompt('Navin machine no:', m.no);
+      const nm = prompt('New machine number:', m.no);
       if (!nm || !nm.trim() || nm.trim() === m.no) break;
       try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
       const moved = renameMachine(s, m.no, nm.trim());
-      migrate(); await save(); render(); toast(moved + ' entries badalya');
+      migrate(); await save(); render(); toast(moved + ' entries renamed');
       break;
     }
     case 'stkOpen': {
       const cur = num(s.stockOpening);
-      const v2 = prompt('App suru kartana site var kiti diesel shillak hota? (litre)\n\nMahit nasel tar 0 theva.', cur ? String(cur) : '0');
+      const v2 = prompt('How much diesel was already on site when you started using the app? (litres)\n\nLeave it 0 if you do not know.', cur ? String(cur) : '0');
       if (v2 == null) break;
       s.stockOpening = num(v2);
       await save(); render(); toast('Opening stock ' + dec(s.stockOpening) + ' L');
@@ -4339,8 +4600,8 @@ document.addEventListener('click', async e => {
       const fil = d.fills.reduce((a, x) => a + num(x.diesel), 0);
       openSheet(fmtDate(v), `
         <div class="card"><div class="scroll"><table><tbody>
-          <tr><td class="muted">Aala (received)</td><td class="right n"><b>${dec(rec)} L</b></td></tr>
-          <tr><td class="muted">Bharla (filled)</td><td class="right n"><b>${dec(fil)} L</b></td></tr>
+          <tr><td class="muted">Received</td><td class="right n"><b>${dec(rec)} L</b></td></tr>
+          <tr><td class="muted">Filled</td><td class="right n"><b>${dec(fil)} L</b></td></tr>
           <tr><td class="muted">Difference for the day</td><td class="right n"><b style="color:${rec - fil < 0 ? 'var(--due)' : 'var(--paid)'}">${rec - fil > 0 ? '+' : ''}${dec(rec - fil)} L</b></td></tr>
         </tbody></table></div></div>
         <div class="card"><h3>Diesel bills<small>${d.bills.length}</small></h3>
@@ -4352,7 +4613,7 @@ document.addEventListener('click', async e => {
         </div>
         <div class="card"><h3>Filled into machines<small>${d.fills.length}</small></h3>
           ${d.fills.length ? d.fills.map(r => `<div class="row" data-act="mlEdit" data-v="${r.id}">
-            <div class="main"><div class="ttl">${esc(r.machineNo || 'machine nahi')}</div>
+            <div class="main"><div class="ttl">${esc(r.machineNo || 'No machine number')}</div>
             <div class="sub">${dec(hoursOf(r))} hr${hoursOf(r) && num(r.diesel) ? ' &middot; ' + dec(num(r.diesel) / hoursOf(r), 2) + ' L/hr' : ''}</div></div>
             <div class="amt">${dec(r.diesel)} L</div></div>`).join('')
             : '<div class="empty">No machine was filled that day.</div>'}
@@ -4363,7 +4624,7 @@ document.addEventListener('click', async e => {
       const m = a === 'mgEdit' ? mgrList().find(x => x.id === v) : null;
       openSheet(m ? 'Manager' : 'New manager', `
         <div class="card"><div class="pad">
-          <div class="field"><label>Manager name</label><input id="g_nm" value="${m ? esc(m.name) : ''}" placeholder="udaharan: Suhas Sir"></div>
+          <div class="field"><label>Manager name</label><input id="g_nm" value="${m ? esc(m.name) : ''}" placeholder="e.g. Suhas Sir"></div>
           <div class="field"><label>Mobile (optional)</label><input id="g_mo" type="tel" inputmode="numeric" value="${m ? esc(m.mobile || '') : ''}"></div>
           <div class="tiny">This name must match the name in that manager’s app, so their data links correctly.</div>
         </div></div>`,
@@ -4385,8 +4646,8 @@ document.addEventListener('click', async e => {
         },
         m ? () => {
           const x = mgrStats(m.name);
-          if (x.entries || x.received) { alert('This manager has data (' + x.entries + ' entries, ' + money(x.received) + ' milale). Aadhi to data baghun ghya - manager kaadhla tari entries rahtil.'); }
-          if (!confirm(m.name + ' la yaadi madhun kaadhaycha?')) return false;
+          if (x.entries || x.received) { alert('This manager has data (' + x.entries + ' entries, ' + money(x.received) + ' received). Look through it first — removing the manager keeps the entries.'); }
+          if (!confirm('Remove ' + m.name + ' from the list?')) return false;
           DB.managers = DB.managers.filter(x2 => x2.id !== m.id);
         } : null);
       break;
@@ -4396,7 +4657,7 @@ document.addEventListener('click', async e => {
       const f = a === 'mgFundEdit' ? mgrFunds().find(x => x.id === v) : null;
       const mgr = f ? f.manager : (mgrList().find(x => x.id === v) || {}).name;
       if (!mgr) break;
-      openSheet(f ? 'Money given' : 'Manager la paise dile', `
+      openSheet(f ? 'Money given' : 'Money given to manager', `
         <div class="card"><div class="pad">
           <div class="tiny" style="margin-bottom:10px">Manager: <b>${esc(mgr)}</b></div>
           <div class="f2">
@@ -4424,11 +4685,11 @@ document.addEventListener('click', async e => {
       const box = document.getElementById('f_mgrlink');
       try { box.focus(); box.setSelectionRange(0, box.value.length); } catch (er) { }
       try { await navigator.clipboard.writeText(mgrLink()); toast('Link copied'); }
-      catch (er) { toast('Link selected - long press to copy'); }
+      catch (er) { toast('Link selected — long press to copy'); }
       break;
     }
     case 'mgLinkWa':
-      window.open('https://wa.me/?text=' + encodeURIComponent('Manager app - roj paise milale ani kharch ithe bhara:\n' + mgrLink()), '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent('Manager app — record money received and money spent here every day:\n' + mgrLink()), '_blank');
       break;
     case 'mgImport': importManager(); break;
     case 'mArrange': arrangeForm(s); break;
@@ -4578,13 +4839,13 @@ document.addEventListener('click', async e => {
       const list = s.machineLog.filter(l => l.machineNo === m.no);
       const hrs = list.reduce((a, l) => a + hoursOf(l), 0);
       if (!list.length) {
-        if (!confirm(m.no + ' delete karaychi?')) break;
+        if (!confirm('Delete ' + m.no + '?')) break;
       } else {
-        const both = confirm(m.no + ' chya ' + list.length + ' log entries (' + dec(hrs) + ' hours) aahet.\n\nOK = machine ANI tichya saglya entries delete kara.\nCancel = fakt machine kaadha, entries rahtil.');
+        const both = confirm(m.no + ' has ' + list.length + ' log entries (' + dec(hrs) + ' hours).\n\nOK = delete the machine AND all of its entries.\nCancel = remove only the machine, keep the entries.');
         if (both) s.machineLog = s.machineLog.filter(l => l.machineNo !== m.no);
       }
       s.machines = s.machines.filter(x => x.id !== m.id);
-      await save(); render(); toast(m.no + ' delete zali');
+      await save(); render(); toast(m.no + ' deleted');
       break;
     }
     case 'rmEdit': rateForm(s, +v); break;
@@ -4614,7 +4875,7 @@ document.addEventListener('click', async e => {
       const box = document.getElementById('f_blk');
       box.focus(); box.setSelectionRange(0, box.value.length);
       try { await navigator.clipboard.writeText(box.value); toast('Copied'); }
-      catch (err) { try { document.execCommand('copy'); toast('Copied'); } catch (e2) { toast('Text selected - long press to copy'); } }
+      catch (err) { try { document.execCommand('copy'); toast('Copied'); } catch (e2) { toast('Text selected — long press to copy'); } }
       break;
     }
     case 'xlFile': {
@@ -4653,11 +4914,11 @@ document.addEventListener('click', async e => {
       const box = document.getElementById('f_suplink');
       try { box.focus(); box.setSelectionRange(0, box.value.length); } catch (er) { }
       try { await navigator.clipboard.writeText(supLink()); toast('Link copied'); }
-      catch (er) { toast('Link selected - long press to copy'); }
+      catch (er) { toast('Link selected — long press to copy'); }
       break;
     }
     case 'supLinkWa':
-      window.open('https://wa.me/?text=' + encodeURIComponent('Reading Book app - roj machine reading ani diesel ithe bhara:\n' + supLink()), '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent('Reading Book app — record machine readings and diesel here every day:\n' + supLink()), '_blank');
       break;
     case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
     case 'impReplace':
@@ -4710,10 +4971,159 @@ document.addEventListener('change', e => {
   if (a === 'rentTo') { UI.rentTo = el.value; render(); }
 });
 
+/* ============================================================
+   GLOBAL SEARCH
+   One box that reaches every entry on the active site.
+   ============================================================ */
+function searchKinds(s) {
+  const m = s.mods || {};
+  return [
+    { k: 'l', rows: m.machine !== false ? s.machineLog : [], label: 'Machine log',
+      fmt: r => ({
+        ttl: (r.machineNo || 'No machine no') + (machineType(s, r.machineNo) ? ' · ' + machineType(s, r.machineNo) : ''),
+        sub: [fmtDate(r.date), hoursOf(r) ? dec(hoursOf(r)) + ' hrs' : '', num(r.diesel) ? dec(r.diesel) + ' L' : '', r.remark].filter(Boolean).join(' · '),
+        amt: hoursOf(r) ? dec(hoursOf(r)) + ' hrs' : ''
+      }) },
+    { k: 'd', rows: m.diesel !== false ? s.dieselLog : [], label: 'Diesel purchases',
+      fmt: r => ({
+        ttl: r.vendor || 'Diesel',
+        sub: [fmtDate(r.date), num(r.litres) ? dec(r.litres) + ' L' : '', r.bill ? 'bill ' + r.bill : '', r.paidBy, r.remark].filter(Boolean).join(' · '),
+        amt: money0(r.amount)
+      }) },
+    { k: 'e', rows: s.expenseLog, label: 'Expenses',
+      fmt: r => ({
+        ttl: r.desc || r.category || 'Expense',
+        sub: [fmtDate(r.date), r.category, r.vendor, r.paidBy, r.mode, r.remark].filter(Boolean).join(' · '),
+        amt: money0(r.amount)
+      }) },
+    { k: 'm', rows: m.murum ? (s.murumLog || []) : [], label: 'Murum',
+      fmt: r => ({
+        ttl: r.vendor || 'Murum',
+        sub: [fmtDate(r.date), num(r.qty) ? dec(r.qty) + ' ' + (s.murumUnit || '') : '', num(r.rate) ? 'rate ' + dec(r.rate, 0) : '', r.paidBy, r.remark].filter(Boolean).join(' · '),
+        amt: money0(mAmt(r))
+      }) },
+    { k: 'v', rows: m.vendor !== false ? (s.vendorPayments || []) : [], label: 'Vendor payments',
+      fmt: r => ({
+        ttl: r.vendor || 'Payment',
+        sub: [fmtDate(r.date), r.paidBy, r.mode, r.remark].filter(Boolean).join(' · '),
+        amt: money0(r.amount)
+      }) },
+    { k: 'o', rows: m.owner ? (s.ownerPayments || []) : [], label: 'Owner payments',
+      fmt: r => ({
+        ttl: r.owner || 'Owner payment',
+        sub: [fmtDate(r.date), r.paidBy, r.mode, r.remark].filter(Boolean).join(' · '),
+        amt: money0(r.amount)
+      }) },
+    { k: 'f', rows: m.funds ? (s.funds || []) : [], label: 'Money received',
+      fmt: r => ({
+        ttl: r.person || 'Received',
+        sub: [fmtDate(r.date), r.from ? 'from ' + r.from : '', r.mode, r.remark].filter(Boolean).join(' · '),
+        amt: money0(r.amount)
+      }) },
+    { k: 'M', rows: s.machines || [], label: 'Machines',
+      fmt: r => ({
+        ttl: r.no,
+        sub: [r.type, r.owner, r.operator, r.make].filter(Boolean).join(' · '),
+        amt: has(r.monthlyRate) && num(r.monthlyRate) ? money0(r.monthlyRate) : ''
+      }) },
+    { k: 'r', rows: s.reminders || [], label: 'Payment due dates',
+      fmt: r => ({
+        ttl: (r.vendor || r.note || 'Payment') + (r.done ? ' — done' : ''),
+        sub: ['due ' + fmtDate(r.due), r.vendor && r.note ? r.note : ''].filter(Boolean).join(' · '),
+        amt: num(r.amount) ? money0(r.amount) : ''
+      }) }
+  ];
+}
+
+/* every word in the query has to appear somewhere in the row */
+function rowMatches(rec, terms) {
+  const hay = Object.keys(rec)
+    .filter(k => k !== 'id' && k !== 'xl')
+    .map(k => rec[k])
+    .filter(v => v !== '' && v != null)
+    .join(' ')
+    .toLowerCase();
+  return terms.every(t => hay.includes(t));
+}
+
+function searchHits(s, q) {
+  const terms = String(q).toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return [];
+  return searchKinds(s).map(g => {
+    const hits = (g.rows || []).filter(r => rowMatches(r, terms));
+    hits.sort((a, b) => String(b.date || b.due || '').localeCompare(String(a.date || a.due || '')));
+    return { ...g, hits };
+  }).filter(g => g.hits.length);
+}
+
+const SEARCH_SHOW = 8;
+
+function searchPanelHtml(s, q) {
+  const groups = searchHits(s, q);
+  const total = groups.reduce((a, g) => a + g.hits.length, 0);
+  if (!total) {
+    return `<div class="card"><div class="empty">Nothing on <b>${esc(s.name)}</b> matches “${esc(q)}”.<br>
+      Try a vendor name, a machine number, an amount or a word from a remark.</div></div>`;
+  }
+  return `<div class="tiny" style="padding:2px 3px 0">${total} match${total === 1 ? '' : 'es'} on ${esc(s.name)}</div>`
+    + groups.map(g => {
+      const show = g.hits.slice(0, UI.qMore ? 200 : SEARCH_SHOW);
+      return `<div class="shead">${g.label} · ${g.hits.length}</div>
+      <div class="card">${show.map(r => {
+        const f = g.fmt(r);
+        return `<div class="row" data-act="sOpen" data-k="${g.k}" data-v="${r.id}">
+          <div class="main"><div class="ttl">${esc(f.ttl)}</div>${f.sub ? `<div class="sub">${esc(f.sub)}</div>` : ''}</div>
+          ${f.amt ? `<div class="amt">${f.amt}</div>` : ''}</div>`;
+      }).join('')}
+      ${g.hits.length > show.length ? `<div class="pad"><button class="btn sec sm" style="width:100%" data-act="qMore">Show all ${g.hits.length}</button></div>` : ''}
+      </div>`;
+    }).join('');
+}
+
+function ensureSearchBar() {
+  let w = document.getElementById('searchbar');
+  if (!w) {
+    w = document.createElement('div');
+    w.id = 'searchbar';
+    w.className = 'searchwrap';
+    w.innerHTML = '<input id="q_box" type="text" enterkeyhint="search" placeholder="Search entries — vendor, machine, amount, remark" aria-label="Search entries">'
+      + '<button type="button" data-act="qClear">Clear</button>';
+    document.body.appendChild(w);
+    const box = w.querySelector('#q_box');
+    box.setAttribute('autocomplete', 'off');
+    box.setAttribute('autocorrect', 'off');
+    box.setAttribute('spellcheck', 'false');
+    box.addEventListener('input', e => { UI.q = e.target.value; UI.qMore = false; renderSearchPanel(); });
+    box.addEventListener('keydown', e => { if (e.key === 'Escape') { UI.q = ''; box.value = ''; box.blur(); renderSearch(); } });
+  }
+  const box = document.getElementById('q_box');
+  if (box && document.activeElement !== box && box.value !== (UI.q || '')) box.value = UI.q || '';
+  const clr = w.querySelector('[data-act="qClear"]');
+  if (clr) clr.style.display = String(UI.q || '').trim() ? '' : 'none';
+}
+
+function renderSearchPanel() {
+  const q = String(UI.q || '').trim();
+  let p = document.getElementById('spanel');
+  if (!q) { if (p) p.remove(); return; }
+  if (!p) {
+    p = document.createElement('div');
+    p.id = 'spanel';
+    p.className = 'spanel';
+    document.body.appendChild(p);
+  }
+  p.innerHTML = searchPanelHtml(site(), q);
+}
+
+function renderSearch() {
+  ensureSearchBar();
+  renderSearchPanel();
+}
+
 /* ---------- go ---------- */
 (async () => { await load(); render(); try { notifyDue(site()); } catch (e) { } })();
 
-/* ---------- manager chya app madhlya files (ekach velela kitihi) ---------- */
+/* ---------- files from the manager app (any number at once) ---------- */
 function importManager() {
   const inp = document.createElement('input');
   inp.type = 'file'; inp.accept = '.json,application/json'; inp.multiple = true;
@@ -4721,7 +5131,7 @@ function importManager() {
     const files = Array.from(inp.files || []);
     if (!files.length) return;
     files.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-    toast(files.length + ' file vachtoy...');
+    toast('Reading ' + files.length + ' file(s)…');
 
     const packs = [], bad = [];
     for (const f of files) {
@@ -4732,26 +5142,26 @@ function importManager() {
       if (!fu.length && !ex.length) { bad.push(f.name); continue; }
       packs.push({ name: f.name, d, fu, ex });
     }
-    if (!packs.length) return alert('No manager file was found.' + (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+    if (!packs.length) return alert('No manager file was found.' + (bad.length ? '\n\n' + bad.length + ' file(s) could not be read.' : ''));
 
     const mgrs = [...new Set(packs.map(p => p.d.manager))];
     const fTot = packs.reduce((a, p) => a + p.fu.length, 0);
     const eTot = packs.reduce((a, p) => a + p.ex.length, 0);
     const eAmt = packs.reduce((a, p) => a + p.ex.reduce((x, r) => x + num(r.amount), 0), 0);
     const fAmt = packs.reduce((a, p) => a + p.fu.reduce((x, r) => x + num(r.amount), 0), 0);
-    /* kontya site madhe jail te aadhi dakhva */
+    /* show which site it will go into first */
     const siteMap = {}, missing = [];
     packs.forEach(p => p.ex.forEach(r => {
       const s2 = siteByName(r.site);
       if (s2) siteMap[s2.name] = (siteMap[s2.name] || 0) + 1;
-      else if (!missing.includes(r.site || '(site nahi)')) missing.push(r.site || '(site nahi)');
+      else if (!missing.includes(r.site || '(no site)')) missing.push(r.site || '(no site)');
     }));
     const msg = packs.length + ' file  |  Manager: ' + mgrs.join(', ') + '\n' +
-      fTot + ' paise milale (' + money(fAmt) + ')\n' +
-      eTot + ' kharch entries (' + money(eAmt) + ')\n\n' +
-      'Site-wise: ' + (Object.keys(siteMap).map(k => k + ' ' + siteMap[k]).join(', ') || 'kahi nahi') + '\n' +
-      (missing.length ? '\nHya site sapadlya nahit: ' + missing.join(', ') + '\n(tya entries sodlya jatil)\n' : '') +
-      (bad.length ? '\n' + bad.length + ' file chalali nahi.\n' : '') + '\nGhyaychya?';
+      fTot + ' money-received entries (' + money(fAmt) + ')\n' +
+      eTot + ' expense entries (' + money(eAmt) + ')\n\n' +
+      'Site-wise: ' + (Object.keys(siteMap).map(k => k + ' ' + siteMap[k]).join(', ') || 'none') + '\n' +
+      (missing.length ? '\nThese sites were not found: ' + missing.join(', ') + '\n(those entries will be skipped)\n' : '') +
+      (bad.length ? '\n' + bad.length + ' file(s) could not be read.\n' : '') + '\nImport them?';
     if (!confirm(msg)) return;
 
     try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }
@@ -4789,11 +5199,11 @@ function importManager() {
     migrate();
     await save(); render();
     alert(packs.length + ' file ghetlya.\n\n' +
-      fAdd + ' paise-milale entries ani ' + eAdd + ' kharch entries add zalya.' +
-      ((fDup || eDup) ? '\n' + (fDup + eDup) + ' aadhich hote, te sodle.' : '') +
-      (skip ? '\n' + skip + ' entries chi site sapadli nahi, tya sodlya.' : '') +
-      (newMgr ? '\n' + newMgr + ' navin manager add zale.' : '') +
-      (bad.length ? '\n\n' + bad.length + ' file chalali nahi.' : ''));
+      fAdd + ' money-received entries and ' + eAdd + ' expense entries added.' +
+      ((fDup || eDup) ? '\n' + (fDup + eDup) + ' were already there and were skipped.' : '') +
+      (skip ? '\n' + skip + ' entries had no matching site and were skipped.' : '') +
+      (newMgr ? '\n' + newMgr + ' new managers added.' : '') +
+      (bad.length ? '\n\n' + bad.length + ' file(s) could not be read.' : ''));
   };
   inp.click();
 }
@@ -4811,6 +5221,11 @@ function blLines() {
 }
 
 function blSheet(s) {
+  /* every route into this sheet sets BDRAFT first, but if one ever does not,
+     start a blank bill rather than take the whole app down */
+  if (!BDRAFT || !Array.isArray(BDRAFT.items)) {
+    BDRAFT = { no: nextBillNo(s), date: today(), owner: '', mobile: '', site: s.name || '', from: '', to: '', items: [], received: '', note: '' };
+  }
   const tot = BDRAFT.items.reduce((a, i) => a + num(i.amount), 0);
   const past = [...new Set(ownerList(s).concat((s.bills || []).map(b => b.owner)).filter(Boolean))]
     .filter(o => o !== BDRAFT.owner).slice(0, 8);
@@ -5017,8 +5432,8 @@ function dashBill(s) {
     ${vend.length ? `<h2>Vendor pending</h2>
     <table>
       <thead><tr><th>Vendor</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead>
-      <tbody>${vend.map(o => `<tr><td>${esc(o.v)}</td><td class="n">${money0(o.x.total || o.x.amount)}</td>
-        <td class="n">${money0((o.x.direct || 0) + (o.x.paid || o.x.payments || 0))}</td><td class="n">${money0(o.x.remaining)}</td></tr>`).join('')}</tbody>
+      <tbody>${vend.map(o => `<tr><td>${esc(o.v)}</td><td class="n">${money0(o.x.total)}</td>
+        <td class="n">${money0(o.x.totalPaid)}</td><td class="n">${money0(o.x.remaining)}</td></tr>`).join('')}</tbody>
       <tfoot><tr><td>TOTAL DUE</td><td class="n"></td><td class="n"></td><td class="n">${money0(vend.reduce((a, o) => a + o.x.remaining, 0))}</td></tr></tfoot>
     </table>` : ''}
 
@@ -5104,7 +5519,7 @@ function dieselReport(s, from, to, vendor) {
   </div>`;
 }
 
-/* ---------- report cha period vicharaycha ---------- */
+/* ---------- ask for the report period ---------- */
 function reportForm(s, kind, machine) {
   UI.repKind = kind; UI.repMachine = machine || '';
   const title = kind === 'exp' ? 'Expense report' : kind === 'dsl' ? 'Diesel report' : 'Machine report - ' + machine;
