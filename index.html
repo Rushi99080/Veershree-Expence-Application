@@ -5,15 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Site Manager</title>
 <meta name="description" content="Site accounts — machine hours, diesel, expenses and vendor payments.">
-<meta name="theme-color" content="#333333" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#22262E" media="(prefers-color-scheme: dark)">
-<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#212528">
+<meta name="color-scheme" content="light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Site Manager">
 <meta name="format-detection" content="telephone=no">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23333333'/%3E%3Cpath d='M14 44h22v-9H14z' fill='%23BB9F88'/%3E%3Cpath d='M20 35v-11h8l6 11' fill='none' stroke='%2397A887' stroke-width='3.4' stroke-linejoin='round'/%3E%3Cpath d='M36 31l10-8 4 6-8 6' fill='none' stroke='%2397A887' stroke-width='3.4' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='48' r='4' fill='%23BB9F88'/%3E%3Ccircle cx='31' cy='48' r='4' fill='%23BB9F88'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23212528'/%3E%3Cpath d='M14 44h22v-9H14z' fill='%23C2A98F'/%3E%3Cpath d='M20 35v-11h8l6 11' fill='none' stroke='%23C2A98F' stroke-width='3.4' stroke-linejoin='round'/%3E%3Cpath d='M36 31l10-8 4 6-8 6' fill='none' stroke='%23C2A98F' stroke-width='3.4' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='48' r='4' fill='%23C2A98F'/%3E%3Ccircle cx='31' cy='48' r='4' fill='%23C2A98F'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,56 +21,58 @@
 /* ===========================================================
    SITE MANAGER — design system
 
-   Palette: slate / olive / sage / cream / tan / brown.
-   Each colour carries one meaning and keeps it everywhere:
+   White paper, near-black text, deep earth accents.
+   The palette is carried by the accents and the dark chrome,
+   never by the page — the reading surface stays white so the
+   text is the strongest thing on screen.
      charcoal + slate   chrome (header, hero)
-     brown              action and attention
-     olive + sage       settled / paid
+     deep brown         action and attention
+     dark olive         settled / paid
      brick              overdue and delete
      slate blue         rent and information
    Every pairing below clears WCAG AA at its own size.
    =========================================================== */
 :root{
-  color-scheme: light dark;
+  color-scheme: light;   /* the app is always light — see note below */
 
   /* — chrome — */
-  --ink:#333333;           /* header, hero, primary dark */
-  --ink-soft:#414A5A;      /* raised block on dark */
-  --ink-line:#4E6081;      /* divider on dark */
-  --on-dark:#FFF7E3;       /* cream text on dark */
-  --on-dark-2:#BCC1B2;     /* muted text on dark — AA on --ink and --ink-soft */
-  --accent-on-dark:#BB9F88; /* tan: the accent where the background is dark */
+  --ink:#212528;           /* header, hero, dark buttons */
+  --ink-soft:#313944;      /* raised block on dark */
+  --ink-line:#3F4956;      /* divider on dark */
+  --on-dark:#FFFFFF;       /* text on dark */
+  --on-dark-2:#A9B1A4;     /* muted text on dark */
+  --accent-on-dark:#C2A98F; /* tan: the accent where the background is dark */
 
-  /* — surfaces — */
-  --bg:#F5F0E1;            /* the page: a ledger sheet */
-  --surface:#FFFDF7;       /* cards */
-  --surface-2:#F1ECDC;     /* table head, inset rows */
+  /* — surfaces: white paper — */
+  --bg:#F1F2EF;            /* the page, a shade off white so cards lift */
+  --surface:#FFFFFF;       /* cards — pure white */
+  --surface-2:#F3F4F0;     /* table head, inset rows */
 
   /* — text — */
-  --ink-2:#3C4450;         /* strong secondary */
-  --steel:#656B5A;         /* muted */
+  --ink-2:#262C33;         /* strong secondary */
+  --steel:#535B49;         /* muted — deep olive, still clearly readable */
 
   /* — rules — */
-  --line:#DCD5C0;
-  --line-2:#EBE6D5;
+  --line:#D4D8CE;
+  --line-2:#E7E9E3;
 
-  /* — accent (brown): buttons, active state, attention — */
-  --accent:#99735A;
-  --accent-strong:#67472C; /* button fill, and accent text on light */
-  --on-accent:#FFF7E3;
-  --hivis:#99735A;         /* kept: the app refers to these by name */
-  --hivis-dk:#67472C;
-  --hivis-bg:#F3E7D9;
+  /* — accent (deep brown): buttons, active state, attention — */
+  --accent:#6E4D36;
+  --accent-strong:#523620; /* button fill, and accent text on white */
+  --on-accent:#FFFFFF;
+  --hivis:#6E4D36;         /* kept: the app refers to these by name */
+  --hivis-dk:#523620;
+  --hivis-bg:#F0E6DD;
 
   /* — status — */
-  --paid:#4F5A46;          /* olive */
-  --paid-bg:#E2E7D4;       /* sage tint */
-  --due:#93402E;           /* brick — the one hue outside the palette,
+  --paid:#38442F;          /* dark olive */
+  --paid-bg:#E4EADA;
+  --due:#7A3122;           /* brick — the one hue outside the palette,
                               added because overdue money and Delete
                               need to read as danger at a glance */
-  --due-bg:#F6E3DD;
-  --rent:#4E6081;          /* slate blue */
-  --rent-bg:#E4E9F1;
+  --due-bg:#F6E3DE;
+  --rent:#364762;          /* slate blue */
+  --rent-bg:#E5E9F0;
 
   /* — type scale — */
   --t-xs:11px; --t-sm:12.5px; --t-md:13.5px; --t-base:15px;
@@ -81,33 +82,15 @@
   --r:12px; --r-sm:9px; --r-pill:999px;
   --tap:44px;
   --gap:12px;
-  --shadow-1:0 1px 2px rgba(51,51,51,.06);
-  --shadow-2:0 8px 28px rgba(51,51,51,.20);
-  --nav-h:calc(60px + env(safe-area-inset-bottom));
+  --shadow-1:0 1px 2px rgba(33,37,40,.07);
+  --shadow-2:0 8px 28px rgba(33,37,40,.22);
+  --nav-h:calc(66px + env(safe-area-inset-bottom));
 }
 
-@media (prefers-color-scheme: dark){
-  :root{
-    --ink:#22262E; --ink-soft:#2C3340; --ink-line:#3D4655;
-    --on-dark:#FFF7E3; --on-dark-2:#9AA08F; --accent-on-dark:#BB9F88;
-    --bg:#1B1E24; --surface:#252930; --surface-2:#2C313A;
-    --ink-2:#D6D2C4; --steel:#9AA08F;
-    --line:#39404A; --line-2:#30353D;
-    --accent:#BB9F88; --accent-strong:#BB9F88; --on-accent:#2A2016;
-    --hivis:#BB9F88; --hivis-dk:#CBB49E; --hivis-bg:#33291F;
-    --paid:#97A887; --paid-bg:#242C20;
-    --due:#D08472; --due-bg:#33201B;
-    --rent:#8FA5C4; --rent-bg:#1F2833;
-    --shadow-1:0 1px 2px rgba(0,0,0,.4);
-    --shadow-2:0 8px 28px rgba(0,0,0,.55);
-  }
-  body{color:#E8E4D8}
-  .kpi,.card,.arow{box-shadow:none}
-  .hero{border:1px solid var(--ink-line)}   /* hero is darker than the page, so outline it */
-  .topbar{box-shadow:0 1px 0 var(--ink-line)}
-  img.brandlogo{background:#fff}
-}
-
+/* The app stays light whatever the phone is set to. A site ledger is read
+   outdoors in daylight, and every printed bill is black on white, so the
+   screen matching the paper matters more than following the phone theme. */
+body.searching{padding-bottom:calc(var(--nav-h) + 62px)}
 *,*::before,*::after{box-sizing:border-box}
 *{-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
@@ -118,7 +101,7 @@ body{
   font-family:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   font-size:var(--t-base);
   line-height:1.45;
-  padding-bottom:calc(var(--nav-h) + 58px);
+  padding-bottom:calc(var(--nav-h) + 14px);
   -webkit-font-smoothing:antialiased;
   overscroll-behavior-y:none;
 }
@@ -148,16 +131,18 @@ a{color:var(--rent)}
   box-shadow:0 1px 0 rgba(0,0,0,.2);
 }
 .tb-row{display:flex;align-items:center;gap:9px}
-.brand{
-  font-family:'Barlow Condensed',sans-serif;font-size:var(--t-lg);font-weight:600;
-  letter-spacing:.02em;line-height:1;flex:0 0 auto;
+.greet{flex:1 1 auto;min-width:0}
+.greet b{
+  display:block;font-family:'Barlow Condensed',sans-serif;font-size:var(--t-xl);
+  font-weight:600;letter-spacing:.01em;line-height:1.1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.brand span{
-  display:block;font-size:10px;font-family:'Barlow',sans-serif;font-weight:500;
-  color:var(--on-dark-2);letter-spacing:.09em;margin-top:3px;
+.greet span{
+  display:block;font-size:var(--t-sm);font-weight:500;color:var(--on-dark-2);
+  margin-top:2px;letter-spacing:.02em;
 }
 .sitepick{
-  flex:1 1 auto;min-width:0;min-height:var(--tap);
+  width:100%;margin-top:10px;min-width:0;min-height:var(--tap);
   display:flex;align-items:center;gap:7px;justify-content:space-between;
   background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:var(--r-sm);
   padding:8px 12px;color:var(--on-dark);
@@ -335,8 +320,8 @@ tbody tr[data-act]:active{background:var(--surface-2)}
   font-size:var(--t-md);font-weight:600;color:var(--steel);
 }
 .seg button.on{background:var(--ink);color:var(--on-dark)}
-.seg.pu button.on[data-v="Paid"]{background:var(--paid);color:#FFF7E3}
-.seg.pu button.on[data-v="Unpaid"]{background:var(--due);color:#FFF7E3}
+.seg.pu button.on[data-v="Paid"]{background:var(--paid);color:#FFFFFF}
+.seg.pu button.on[data-v="Unpaid"]{background:var(--due);color:#FFFFFF}
 
 /* ---------- bottom nav ---------- */
 .nav{
@@ -359,6 +344,17 @@ tbody tr[data-act]:active{background:var(--surface-2)}
   content:"";position:absolute;top:0;left:22%;right:22%;height:3px;
   background:var(--accent);border-radius:0 0 3px 3px;
 }
+/* Dashboard is the home of the app — give it a solid disc so the thumb
+   finds it without reading the labels. */
+.nav button[data-v="dash"] svg{
+  width:32px;height:32px;padding:7px;border-radius:50%;
+  background:var(--ink);stroke:#FFFFFF;stroke-width:1.9;margin-bottom:2px;
+  box-shadow:var(--shadow-1);
+}
+.nav button[data-v="dash"].on svg{background:var(--accent-strong);stroke:#FFFFFF}
+.nav.n7 button[data-v="dash"] svg,.nav.n8 button[data-v="dash"] svg{width:30px;height:30px;padding:6px}
+/* search sits in the nav now, and lights up while the box is open */
+.nav button[data-v="search"].on svg{stroke:var(--accent-strong)}
 .nav.n7 button,.nav.n8 button{font-size:9px;padding:8px 0 9px;letter-spacing:-.01em}
 .nav.n7 button svg,.nav.n8 button svg{width:19px;height:19px}
 
@@ -397,7 +393,7 @@ tbody tr[data-act]:active{background:var(--surface-2)}
    separated by a rule so it still reads when printed in black.
    =========================================================== */
 .prt{
-  position:fixed;inset:0;z-index:100;background:#FFFDF7;overflow-y:auto;
+  position:fixed;inset:0;z-index:100;background:#FFFFFF;overflow-y:auto;
   padding:calc(16px + env(safe-area-inset-top)) 14px calc(94px + env(safe-area-inset-bottom));
 }
 .prtbar{
@@ -406,53 +402,60 @@ tbody tr[data-act]:active{background:var(--surface-2)}
   background:var(--surface);border-top:1px solid var(--line);
 }
 .bill{
-  max-width:760px;margin:0 auto;background:#FFFDF7;color:#333333;
-  font-size:12.5px;line-height:1.5;
+  max-width:760px;margin:0 auto;background:transparent;color:#1C1F22;
+  font-size:12.5px;line-height:1.5;position:relative;z-index:1;
+}
+/* watermark: fixed, so the browser repeats it on every printed page */
+.wm{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:0}
+.wm img{
+  max-width:64%;max-height:50%;object-fit:contain;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 .bill h1{
   font-family:'Barlow Condensed',sans-serif;font-size:24px;margin:0 0 3px;
-  color:#333333;letter-spacing:.01em;
+  color:#1C1F22;letter-spacing:.01em;
 }
 .bill .meta{
-  font-size:11.5px;color:#5A5344;margin-bottom:14px;line-height:1.65;
-  border-bottom:2.5px solid #67472C;padding-bottom:10px;
+  font-size:11.5px;color:#4C5243;margin-bottom:14px;line-height:1.65;
+  border-bottom:2.5px solid #523620;padding-bottom:10px;
 }
-.bill .meta b{color:#333333}
+.bill .meta b{color:#1C1F22}
 .bill table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:15px}
 .bill th{
-  background:#EDE7D5;border:1px solid #C6BDA3;padding:6px;text-align:left;
-  font-size:10.5px;letter-spacing:.05em;color:#4A4335;text-transform:uppercase;font-weight:700;
+  background:#EDEEE9;border:1px solid #B9BEB1;padding:6px;text-align:left;
+  font-size:10.5px;letter-spacing:.05em;color:#2F352A;text-transform:uppercase;font-weight:700;
 }
-.bill td{border:1px solid #DDD5BF;padding:5px 6px;vertical-align:top;color:#333333}
+.bill td{border:1px solid #D5D9CE;padding:5px 6px;vertical-align:top;color:#1C1F22}
 .bill td.n,.bill th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.bill tbody tr:nth-child(even) td{background:#FAF6EA}
-.bill tfoot td{font-weight:700;background:#EDE7D5;border-top:1.5px solid #67472C;color:#333333}
+.bill tbody tr:nth-child(even) td{background:#F7F8F5}
+.bill tfoot td{font-weight:700;background:#EDEEE9;border-top:1.5px solid #523620;color:#1C1F22}
 .bill .kpi{
   display:flex;flex-wrap:wrap;gap:7px;margin-bottom:15px;
   background:none;border:0;padding:0;box-shadow:none;
 }
 .bill .kpi div{
-  border:1px solid #C6BDA3;border-left:3px solid #99735A;border-radius:5px;
-  padding:7px 11px;min-width:104px;background:#FFFDF7;
+  border:1px solid #C7CBBF;border-left:3px solid #6E4D36;border-radius:5px;
+  padding:7px 11px;min-width:104px;background:#FFFFFF;
 }
-.bill .kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:18px;color:#333333;line-height:1.1}
-.bill .kpi span{font-size:9.5px;letter-spacing:.08em;color:#6B6354;text-transform:uppercase;font-weight:600}
+.bill .kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:18px;color:#1C1F22;line-height:1.1}
+.bill .kpi span{font-size:9.5px;letter-spacing:.08em;color:#555C4C;text-transform:uppercase;font-weight:600}
 .bill h2{
   font-family:'Barlow Condensed',sans-serif;font-size:16px;margin:18px 0 7px;
-  color:#333333;border-bottom:1.5px solid #99735A;padding-bottom:3px;letter-spacing:.02em;
+  color:#1C1F22;border-bottom:1.5px solid #6E4D36;padding-bottom:3px;letter-spacing:.02em;
 }
 .bill .sign{
   margin-top:30px;display:flex;justify-content:space-between;
-  font-size:11px;color:#5A5344;border-top:1px solid #DDD5BF;padding-top:12px;
+  font-size:11px;color:#4C5243;border-top:1px solid #D5D9CE;padding-top:12px;
 }
 @media print{
-  body{background:#fff!important;padding:0!important;color:#333!important}
+  body{background:#fff!important;padding:0!important;color:#1C1F22!important}
   body > *{display:none!important}
   body > #print{display:block!important}
   .prt{position:static;padding:0;overflow:visible;background:#fff}
   .prtbar{display:none!important}
-  .bill{max-width:none;font-size:11px;background:#fff}
-  .bill tbody tr:nth-child(even) td{background:#F7F4EC}
+  .bill{max-width:none;font-size:11px;background:transparent}
+  .wm{display:grid!important}
+  .bill tbody tr:nth-child(even) td{background:#F5F6F3}
   @page{margin:12mm}
 }
 
@@ -493,7 +496,6 @@ tbody tr[data-act]:active{background:var(--surface-2)}
   background:var(--ink);color:var(--on-dark);padding:11px 18px;border-radius:var(--r-pill);
   font-size:var(--t-md);font-weight:600;box-shadow:var(--shadow-2);text-align:center;
 }
-@media (prefers-color-scheme: dark){ .toast{background:#3A414D;border:1px solid var(--ink-line)} }
 .empty{padding:30px 18px;text-align:center;color:var(--steel);font-size:var(--t-md);line-height:1.6}
 .warn{
   background:var(--hivis-bg);border:1px solid var(--accent);color:var(--hivis-dk);
@@ -505,7 +507,7 @@ tbody tr[data-act]:active{background:var(--surface-2)}
 
 /* ---------- read-only mode ---------- */
 .robar{
-  background:var(--rent);color:#FFF7E3;font-size:var(--t-sm);font-weight:700;
+  background:var(--rent);color:#FFFFFF;font-size:var(--t-sm);font-weight:700;
   letter-spacing:.05em;padding:6px 12px;text-align:center;
 }
 body.ro button[data-act$="Add"],body.ro button[data-act="xlAllDone"],body.ro button[data-act="xlReset"],
@@ -667,7 +669,7 @@ async function askPersist() {
    The icon and the manifest used to be separate files next to index.html.
    Building them here means this one file installs on a phone on its own,
    wherever it is hosted. */
-const APP_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23333333'/%3E%3Cpath d='M112 352h176v-72H112z' fill='%23BB9F88'/%3E%3Cpath d='M160 280V192h64l48 88' fill='none' stroke='%2397A887' stroke-width='27' stroke-linejoin='round'/%3E%3Cpath d='M288 248l80-64 32 48-64 48' fill='none' stroke='%2397A887' stroke-width='27' stroke-linejoin='round'/%3E%3Ccircle cx='160' cy='384' r='32' fill='%23BB9F88'/%3E%3Ccircle cx='248' cy='384' r='32' fill='%23BB9F88'/%3E%3C/svg%3E";
+const APP_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23212528'/%3E%3Cpath d='M112 352h176v-72H112z' fill='%23C2A98F'/%3E%3Cpath d='M160 280V192h64l48 88' fill='none' stroke='%23C2A98F' stroke-width='27' stroke-linejoin='round'/%3E%3Cpath d='M288 248l80-64 32 48-64 48' fill='none' stroke='%23C2A98F' stroke-width='27' stroke-linejoin='round'/%3E%3Ccircle cx='160' cy='384' r='32' fill='%23C2A98F'/%3E%3Ccircle cx='248' cy='384' r='32' fill='%23C2A98F'/%3E%3C/svg%3E";
 (() => {
   try {
     const here = location.href.split('#')[0];
@@ -676,7 +678,7 @@ const APP_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
       description: 'Site accounts — machine hours, diesel, expenses and vendor payments.',
       start_url: here, scope: here.replace(/[^\/]*$/, ''),
       display: 'standalone', orientation: 'portrait',
-      background_color: '#333333', theme_color: '#333333',
+      background_color: '#FFFFFF', theme_color: '#212528',
       icons: [
         { src: APP_ICON, sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
         { src: APP_ICON, sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' }
@@ -753,6 +755,17 @@ async function sha(txt) {
 const salt = () => (DB.auth && DB.auth.salt) || 'vsms';
 
 const site = () => DB.sites.find(s => s.id === DB.activeId) || DB.sites[0];
+
+/* ---------- who is using the app, and what time of day it is ---------- */
+const userName = () => (DB.userName || 'Rushi');
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 5) return 'Good night';
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  if (h < 21) return 'Good evening';
+  return 'Good night';
+}
 
 /* ---------- storage ---------- */
 const APP_VERSION = '1.0 · 18-09-2026';
@@ -1501,7 +1514,8 @@ function monthSeries(s, fin) {
 const ICON = {
   dash: '<svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-5H3zM13 8h8V3h-8z"/></svg>',
   machine: '<svg viewBox="0 0 24 24"><path d="M4 18h10v-4H4zM6 14V9h4l3 5M14 12l5-4 2 3-4 3"/><circle cx="7" cy="19.5" r="1.6"/><circle cx="12" cy="19.5" r="1.6"/></svg>',
-  diesel: '<svg viewBox="0 0 24 24"><path d="M4 20V5a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v15M3 20h12M6 9h5M15 8l3 2v7a1.6 1.6 0 0 0 3 0v-9l-2.5-2.5"/></svg>',
+  search: '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
+  manager: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20v-1.5C3 16 5.7 15 9 15s6 1 6 3.5V20M16.5 15.3c2.1.5 3.5 1.5 3.5 3.2V20"/><circle cx="16.8" cy="8.4" r="2.6"/></svg>',
   expense: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>',
   vendor: '<svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></svg>',
   murum: '<svg viewBox="0 0 24 24"><path d="M3 19h18L12 6zM8.5 19l3.5-5 3.5 5"/></svg>',
@@ -1512,10 +1526,10 @@ function navItems(s) {
   const m = s.mods || {};
   const rest = [];
   if (m.machine !== false) rest.push(['machine', 'Machine']);
-  if (m.diesel !== false) rest.push(['diesel', 'Diesel']);
-  if (m.murum) rest.push(['murum', 'Murum']);
-  if (m.stock) rest.push(['stock', 'Stock']);
   rest.push(['expense', 'Expense']);
+  if (m.murum) rest.push(['murum', 'Murum']);
+  rest.push(['search', 'Search']);
+  rest.push(['manager', 'Managers']);
   if (m.vendor !== false) rest.push(['vendor', 'Vendor']);
   rest.push(['more', 'More']);
   const out = rest.slice();
@@ -1525,17 +1539,23 @@ function navItems(s) {
 
 function subsFor(s, t) {
   const m = s.mods || {};
-  if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary'], ['bill', 'Billing'], ['rent', 'Rent']].concat(m.owner ? [['owner', 'Owner']] : []).concat([['mast', 'Machines']]);
-  if (t === 'more') return [['mgr', 'Managers'], ['excel', 'Excel'], ['set', 'Settings']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
+  if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary']]
+    .concat(m.diesel !== false ? [['dsl', 'Diesel'], ['dslsum', 'Diesel summary']] : [])
+    .concat(m.stock ? [['stock', 'Stock']] : [])
+    .concat([['bill', 'Billing'], ['rent', 'Rent']])
+    .concat(m.owner ? [['owner', 'Owner']] : [])
+    .concat([['mast', 'Machines']]);
+  if (t === 'more') return [['excel', 'Excel'], ['set', 'Settings']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
   return SUBS[t];
 }
 const SUBS = {
-  machine: [['log', 'Daily log'], ['sum', 'Summary'], ['bill', 'Billing'], ['rent', 'Rent'], ['mast', 'Machines']],
-  diesel: [['log', 'Purchases'], ['sum', 'Summary']],
+  machine: [['log', 'Daily log'], ['sum', 'Summary'], ['dsl', 'Diesel'], ['dslsum', 'Diesel summary'], ['bill', 'Billing'], ['rent', 'Rent'], ['mast', 'Machines']],
   expense: [['log', 'Entries'], ['sum', 'Summary']],
   vendor: [['pend', 'Pending'], ['due', 'Due dates'], ['pay', 'Payments'], ['sum', 'Summary']],
   more: [['excel', 'Excel Sync'], ['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]
 };
+/* tabs that are a single screen with no chips */
+SUBS.manager = null;
 const sub = t => { const l = subsFor(site(), t); return (l && l.some(x => x[0] === UI[t])) ? UI[t] : (l ? l[0][0] : ''); };
 
 
@@ -1559,25 +1579,29 @@ function render() {
   const keepY = window.scrollY || 0;
   const s = site();
   const nav = navItems(s);
-  if (!nav.some(x => x[0] === TAB)) TAB = 'dash';
+  /* 'search' lives in the nav but is a toggle, not a screen — so a tab is
+     only valid if it is in the nav AND has a view behind it */
+  if (!nav.some(x => x[0] === TAB) || !VIEW[TAB]) TAB = 'dash';
   const subList = subsFor(s, TAB);
   const tabs = subList ? subList.map(([k, l]) => `<button class="chip ${sub(TAB) === k ? 'on' : ''}" data-act="sub" data-v="${k}">${l}</button>`).join('') : '';
   $('#app').innerHTML = `
   <div class="stickyhead">
     <div class="topbar">
       <div class="tb-row">
-        ${DB.logo
-          ? `<div style="flex:0 0 auto"><img src="${DB.logo}" class="brandlogo" alt=""></div>`
-          : '<div class="brand">SITE MANAGER<span>VEERSHREE REALTY ACCOUNT</span></div>'}
-        <button class="sitepick" data-act="sites" aria-label="Change site"><b>${esc(s.name)}</b><i>&#9660;</i></button>
+        <div class="greet"><b>Hello ${esc(userName())}</b><span>${esc(greeting())}</span></div>
+        ${DB.logo ? `<img src="${DB.logo}" class="brandlogo" alt="">` : ''}
       </div>
+      <button class="sitepick" data-act="sites" aria-label="Change site"><b>${esc(s.name)}</b><i>&#9660;</i></button>
     </div>
     ${tabs ? `<div class="chips chipbar">${tabs}</div>` : ''}
   </div>
   <main>${STORAGE_OK ? '' : '<div class="warn">This device is not saving data. Download a backup from <b>More &rarr; Excel</b> before you close the app.</div>'}
     ${VIEW[TAB](s)}
   </main>
-  <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}"${TAB === k ? ' aria-current="page"' : ''}>${ICON[k]}${l}</button>`).join('')}</nav>`;
+  <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => {
+    const on = k === 'search' ? SEARCH_ON : (TAB === k && !SEARCH_ON);
+    return `<button class="${on ? 'on' : ''}" data-act="tab" data-v="${k}"${on && k !== 'search' ? ' aria-current="page"' : ''}>${ICON[k]}${l}</button>`;
+  }).join('')}</nav>`;
   renderSearch();
   noSuggest($('#app'));
   /* only jump to the top when the screen actually changed — otherwise
@@ -1684,6 +1708,9 @@ VIEW.dash = s => {
 /* ---------------- MACHINE ---------------- */
 VIEW.machine = s => {
   const k = sub('machine');
+  if (k === 'dsl') return dieselLogView(s);
+  if (k === 'dslsum') return dieselSumView(s);
+  if (k === 'stock') return stockView(s);
   if (k === 'bill') return billingView(s);
   if (k === 'owner') return ownerView(s);
   if (k === 'log') return machineLogView(s);
@@ -1879,7 +1906,7 @@ function machineMasterView(s) {
 }
 
 /* ---------------- DIESEL ---------------- */
-VIEW.diesel = s => sub('diesel') === 'log' ? dieselLogView(s) : dieselSumView(s);
+VIEW.manager = s => mgrView(s);
 
 function dieselLogView(s) {
   const fin = settle(s);
@@ -2068,7 +2095,7 @@ function vendorSumView(s) {
 }
 
 /* ---------------- MORE ---------------- */
-VIEW.stock = s => stockView(s);
+
 VIEW.more = s => { const k = sub('more'); return k === 'set' ? settingsView(s) : k === 'mgr' ? mgrView(s) : k === 'funds' ? fundsView(s) : k === 'excel' ? excelView(s) : k === 'person' ? personView(s) : k === 'mast' ? mastersView(s) : sitesView(s); };
 
 /* ---------------- EXCEL SYNC ---------------- */
@@ -2154,32 +2181,6 @@ function sitesView(s) {
     <div class="pad"><button class="btn" data-act="siteAdd">+ New site</button></div>
   </div>
   <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
-
-  <div class="card"><h3>Company logo</h3><div class="pad">
-    ${DB.logo ? `<div style="background:var(--ink);border-radius:10px;padding:12px;text-align:center;margin-bottom:10px"><img src="${DB.logo}" style="height:38px;max-width:70%;object-fit:contain"></div>` : '<div class="tiny" style="margin-bottom:10px">Logo takla ki var davikade "SITE MANAGER" chya jaagi to disel.</div>'}
-    <div class="btnrow">
-      <button class="btn sec sm" style="flex:1" data-act="logoPick">${DB.logo ? 'Logo badla' : 'Logo taka'}</button>
-      ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoOff">Remove</button>' : ''}
-    </div>
-    <div class="tiny" style="margin-top:8px">PNG or JPG. The app shrinks it automatically, so it takes very little space.</div>
-  </div></div>
-  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set' : 'not set'}</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">This password is needed to delete a site, so nothing is deleted by mistake. You can set it the first time you delete.</div>
-    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password</button><div class="btnrow"><button class="btn sec sm" style="flex:1" data-act="delPassForgot">Forgot password — reset</button></div>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password</button>'}
-  </div></div>
-  <div class="card"><h3>Backup and Excel</h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px">Take the Excel file and backup from <b>More &rarr; Excel</b>.</div>
-    <button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Open Excel and backup</button>
-  </div></div>
-  <div class="tiny" style="text-align:center;margin:-4px 0 12px;color:var(--steel)">App version <b>${APP_VERSION}</b></div>
-  <div class="card"><h3>Site delete password<small>${DB.delPass ? 'set' : 'not set'}</small></h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px;line-height:1.7">This password is needed to delete a site, so nothing is deleted by mistake. You can set it the first time you delete.</div>
-    ${DB.delPass ? '<button class="btn sec sm" style="width:100%" data-act="delPassChange">Change password</button>' : '<button class="btn sec sm" style="width:100%" data-act="delPassSet">Set password</button>'}
-  </div></div>
-  <div class="card"><h3>Backup and Excel</h3><div class="pad">
-    <div class="tiny" style="margin-bottom:10px">Take the Excel file and backup from <b>More &rarr; Excel</b>.</div>
-    <button class="btn sec sm" style="width:100%" data-act="sub" data-v="excel" data-t="more">Open Excel and backup</button>
-  </div></div>
 
   <div class="card"><h3>How this app works</h3><div class="pad tiny" style="line-height:1.6">
     <b>1. Expenses:</b> Expense &rarr; New expense. If the money was paid, mark Paid and pick the name; if it is on credit, leave it Unpaid and pick the vendor.<br>
@@ -2338,7 +2339,7 @@ function stockView(s) {
 
   <div class="btnrow" style="margin:0 0 12px">
     <button class="btn sec" style="flex:1" data-act="stkOpen">Opening stock</button>
-    <button class="btn sec" style="flex:1" data-act="sub" data-v="log" data-t="diesel">Diesel bills</button>
+    <button class="btn sec" style="flex:1" data-act="sub" data-v="dsl" data-t="machine">Diesel bills</button>
   </div>
 
   ${t.stock < -0.5 ? '<div class="warn">Stock is showing negative. A diesel bill may be missing, or the filled figure may be too high &mdash; please check.</div>' : ''}
@@ -3129,7 +3130,7 @@ function vendorBill(s, v) {
   const pays = (s.vendorPayments || []).filter(p => p.vendor === v)
     .slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
-  const row = it => `<tr><td>${fmtDate(it.date)}</td><td>${esc(it.kind)}</td><td>${esc(it.desc)}${it.qty ? ' <span style="color:#6B6354">(' + it.qty + ')</span>' : ''}</td>
+  const row = it => `<tr><td>${fmtDate(it.date)}</td><td>${esc(it.kind)}</td><td>${esc(it.desc)}${it.qty ? ' <span style="color:#555C4C">(' + it.qty + ')</span>' : ''}</td>
     <td class="n">${money0(it.amount)}</td>
     <td class="n">${it.f.alloc > 0.5 ? money0(it.f.alloc) : (it.f.final === 'Paid' ? money0(it.amount) : '-')}</td>
     <td class="n">${it.f.final === 'Paid' ? '0' : money0(it.f.bal != null ? it.f.bal : it.amount)}</td>
@@ -3185,9 +3186,15 @@ function vendorBill(s, v) {
 }
 
 /* ---------------- print screen ---------------- */
+function watermarkHtml() {
+  if (!DB.watermark) return '';
+  const op = Math.max(2, Math.min(40, num(DB.wmOpacity) || 7)) / 100;
+  return `<div class="wm"><img src="${DB.watermark}" style="opacity:${op}" alt=""></div>`;
+}
+
 function openBill(html, name) {
   PRINT_NAME = name || 'report';
-  $('#print').innerHTML = `<div class="prt">${html}</div>
+  $('#print').innerHTML = `<div class="prt">${watermarkHtml()}${html}</div>
     <div class="prtbar">
       <button class="btn" style="flex:1" data-act="prtGo">Print / Save as PDF</button>
       <button class="btn sec sm" style="flex:0 0 30%" data-act="prtClose">Close</button>
@@ -3897,6 +3904,44 @@ function siteForm(id) {
 }
 
 /* ---------- company logo ---------- */
+/* The watermark is stored bigger than the header logo — it is printed
+   across a whole A4 page, so a 320px wide picture would look ragged. */
+function pickWatermark() {
+  pickImage(900, 900, async dataUrl => {
+    DB.watermark = dataUrl;
+    if (!DB.wmOpacity) DB.wmOpacity = 7;
+    await save(); render(); toast('Watermark added');
+  });
+}
+
+function pickImage(maxW, maxH, done) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = () => {
+    const f = inp.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onerror = () => alert('Could not read the image.');
+    rd.onload = () => {
+      const img = new Image();
+      img.onerror = () => alert('Could not open that image.');
+      img.onload = async () => {
+        try {
+          let w = img.width, h = img.height;
+          const sc = Math.min(maxW / w, maxH / h, 1);
+          w = Math.max(1, Math.round(w * sc)); h = Math.max(1, Math.round(h * sc));
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          await done(c.toDataURL('image/png'));
+        } catch (e) { alert('Could not save that image.'); }
+      };
+      img.src = rd.result;
+    };
+    rd.readAsDataURL(f);
+  };
+  inp.click();
+}
+
 function pickLogo() {
   const inp = document.createElement('input');
   inp.type = 'file'; inp.accept = 'image/*';
@@ -3917,7 +3962,7 @@ function pickLogo() {
           c.width = w; c.height = h;
           c.getContext('2d').drawImage(img, 0, 0, w, h);
           DB.logo = c.toDataURL('image/png');
-          await save(); render(); toast('Logo lavla');
+          await save(); render(); toast('Logo added');
         } catch (e) { alert('Could not save the logo.'); }
       };
       img.src = rd.result;
@@ -4395,8 +4440,8 @@ function importJson(fromLock) {
       const clean = sites.map(s => normSite(JSON.parse(JSON.stringify(s)))).filter(Boolean);
       if (!clean.length) return alert('Could not read the data in this file.');
       const has = DB.sites && DB.sites.some(s => s.expenseLog.length || s.machineLog.length || s.dieselLog.length || s.murumLog.length);
-      if (!has || fromLock) { await applyImport(clean, false); return; }
-      PENDING_IMPORT = clean;
+      if (!has || fromLock) { await applyImport(clean, false, d); return; }
+      PENDING_IMPORT = clean; PENDING_RAW = d;
       const list = clean.map(s => {
         const t = totals(s);
         return `<div class="row"><div class="main"><div class="ttl">${esc(s.name)}</div>
@@ -4422,9 +4467,21 @@ function importJson(fromLock) {
   inp.click();
 }
 
-async function applyImport(clean, add) {
+let PENDING_RAW = null;
+
+async function applyImport(clean, add, raw) {
   try { await Store.snapshot(JSON.stringify(DB)); } catch (e) { }   /* keep the old data safe before changing anything */
   if (add) {
+    /* an Add can still bring managers the current file does not have */
+    if (raw && Array.isArray(raw.managers)) {
+      raw.managers.forEach(m => {
+        if (m && m.name && !DB.managers.some(x => String(x.name).trim().toLowerCase() === String(m.name).trim().toLowerCase())) DB.managers.push(m);
+      });
+    }
+    if (raw && Array.isArray(raw.mfunds)) {
+      const seen = new Set(DB.mfunds.map(f => f.id));
+      raw.mfunds.forEach(f => { if (f && !seen.has(f.id)) DB.mfunds.push(f); });
+    }
     clean.forEach(s => {
       let nm = s.name, n = 2;
       while (DB.sites.some(x => x.name.trim().toLowerCase() === nm.trim().toLowerCase())) nm = s.name + ' (' + (n++) + ')';
@@ -4434,7 +4491,22 @@ async function applyImport(clean, add) {
     });
     DB.activeId = DB.sites[DB.sites.length - 1].id;
   } else {
-    DB = { sites: clean, activeId: clean[0].id, delPass: DB.delPass, lastSnap: null };
+    /* Replace swaps the sites. Managers, the logo, the watermark and your
+       name are app-level settings — take them from the file if it has them,
+       otherwise keep the ones already here rather than wiping them. */
+    DB = {
+      sites: clean,
+      activeId: clean[0].id,
+      delPass: (raw && raw.delPass) || DB.delPass,
+      lastSnap: null,
+      lastBackup: DB.lastBackup,
+      managers: (raw && Array.isArray(raw.managers) && raw.managers.length) ? raw.managers : DB.managers,
+      mfunds: (raw && Array.isArray(raw.mfunds) && raw.mfunds.length) ? raw.mfunds : DB.mfunds,
+      logo: (raw && raw.logo) || DB.logo,
+      watermark: (raw && raw.watermark) || DB.watermark,
+      wmOpacity: (raw && raw.wmOpacity) || DB.wmOpacity,
+      userName: (raw && raw.userName) || DB.userName
+    };
   }
   migrate(); UI = {}; TAB = 'dash';
   closeSheet(); await save(); render();
@@ -4478,7 +4550,9 @@ document.addEventListener('click', async e => {
   if (a === 'errHide') { const b = document.getElementById('errbar'); if (b) b.remove(); return; }
 
   switch (a) {
-    case 'tab': TAB = v; render(); break;
+    case 'tab':
+      if (v === 'search') { toggleSearch(); break; }   /* a toggle, not a screen */
+      TAB = v; render(); break;
     case 'sub': UI[el.dataset.t || TAB] = v; if (el.dataset.t) TAB = el.dataset.t; render(); break;
     case 'mlFilter': UI.mlFilter = v; UI.mlMore = 60; render(); break;
     case 'mlMore': UI.mlMore = (UI.mlMore || 60) + 100; render(); break;
@@ -4519,17 +4593,16 @@ document.addEventListener('click', async e => {
     case 'opEdit': ownerPayForm(s, s.ownerPayments.find(x => x.id === v)); break;
     case 'dayReg': dayRegisterSheet(s); break;
     case 'qClear': {
-      UI.q = ''; UI.qMore = false;
       const b = document.getElementById('q_box');
-      if (b) { b.value = ''; b.blur(); }
-      renderSearch(); break;
+      if (b && String(b.value || '').trim()) {   /* first tap clears, second closes */
+        UI.q = ''; UI.qMore = false; b.value = ''; renderSearch(); b.focus();
+      } else { SEARCH_ON = false; UI.q = ''; UI.qMore = false; render(); }
+      break;
     }
     case 'qMore': UI.qMore = true; renderSearchPanel(); break;
     case 'sOpen': {
       const k = el.dataset.k;
-      UI.q = ''; UI.qMore = false;
-      const b = document.getElementById('q_box');
-      if (b) { b.value = ''; b.blur(); }
+      UI.q = ''; UI.qMore = false; SEARCH_ON = false;
       renderSearch();
       if (k === 'e') expenseForm(s, s.expenseLog.find(x => x.id === v));
       else if (k === 'd') dieselForm(s, s.dieselLog.find(x => x.id === v));
@@ -4543,6 +4616,15 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'logoPick': pickLogo(); break;
+    case 'wmPick': pickWatermark(); break;
+    case 'wmOff':
+      if (!confirm('Remove the bill watermark?')) break;
+      delete DB.watermark; delete DB.wmOpacity;
+      await save(); render(); toast('Watermark removed'); break;
+    case 'userSave': {
+      DB.userName = val('us_nm').trim();
+      await save(); render(); toast('Name saved'); break;
+    }
     case 'logoOff':
       if (!confirm('Remove the logo?')) break;
       delete DB.logo; await save(); render(); toast('Logo removed');
@@ -4973,34 +5055,10 @@ document.addEventListener('click', async e => {
     case 'supLinkWa':
       window.open('https://wa.me/?text=' + encodeURIComponent('Reading Book app — record machine readings and diesel here every day:\n' + supLink()), '_blank');
       break;
-    case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
+    case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT, raw = PENDING_RAW; PENDING_IMPORT = null; PENDING_RAW = null; await applyImport(d, true, raw); } break;
     case 'impReplace':
       if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
-        const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
-      }
-      break;
-    case 'expJson': download('site-manager-backup-' + today() + '.json', JSON.stringify(DB), 'application/json'); toast('Backup downloaded'); break;
-    case 'impJson': importJson(); break;
-    case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
-    case 'impReplace':
-      if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
-        const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
-      }
-      break;
-    case 'expJson': download('site-manager-backup-' + today() + '.json', JSON.stringify(DB), 'application/json'); toast('Backup downloaded'); break;
-    case 'impJson': importJson(); break;
-    case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
-    case 'impReplace':
-      if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
-        const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
-      }
-      break;
-    case 'expJson': download('site-manager-backup-' + today() + '.json', JSON.stringify(DB), 'application/json'); toast('Backup downloaded'); break;
-    case 'impJson': importJson(); break;
-    case 'impAdd': if (PENDING_IMPORT) { const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, true); } break;
-    case 'impReplace':
-      if (PENDING_IMPORT && confirm('Everything here will be replaced by what is in this file. Are you sure?')) {
-        const d = PENDING_IMPORT; PENDING_IMPORT = null; await applyImport(d, false);
+        const d = PENDING_IMPORT, raw = PENDING_RAW; PENDING_IMPORT = null; PENDING_RAW = null; await applyImport(d, false, raw);
       }
       break;
     case 'expCsv': exportCsv(v); break;
@@ -5013,6 +5071,12 @@ document.addEventListener('click', async e => {
   }
 });
 
+document.addEventListener('change', async e => {
+  if (e.target && e.target.id === 'wm_op') {
+    DB.wmOpacity = num(e.target.value) || 7;
+    await save(); render(); return;
+  }
+});
 document.addEventListener('change', e => {
   const md = e.target.closest('[data-act="mlDateIn"]');
   if (md) { UI.mlDate = md.value || ''; UI.mlFilter = ''; UI.mlMore = 0; render(); return; }
@@ -5147,7 +5211,7 @@ function ensureSearchBar() {
     box.setAttribute('autocorrect', 'off');
     box.setAttribute('spellcheck', 'false');
     box.addEventListener('input', e => { UI.q = e.target.value; UI.qMore = false; renderSearchPanel(); });
-    box.addEventListener('keydown', e => { if (e.key === 'Escape') { UI.q = ''; box.value = ''; box.blur(); renderSearch(); } });
+    box.addEventListener('keydown', e => { if (e.key === 'Escape') { SEARCH_ON = false; UI.q = ''; render(); } });
   }
   const box = document.getElementById('q_box');
   if (box && document.activeElement !== box && box.value !== (UI.q || '')) box.value = UI.q || '';
@@ -5168,9 +5232,30 @@ function renderSearchPanel() {
   p.innerHTML = searchPanelHtml(site(), q);
 }
 
+let SEARCH_ON = false;
+
 function renderSearch() {
+  if (!SEARCH_ON) {
+    const bar = document.getElementById('searchbar');
+    const panel = document.getElementById('spanel');
+    if (bar) bar.remove();
+    if (panel) panel.remove();
+    document.body.classList.remove('searching');
+    return;
+  }
+  document.body.classList.add('searching');
   ensureSearchBar();
   renderSearchPanel();
+}
+
+function toggleSearch() {
+  SEARCH_ON = !SEARCH_ON;
+  if (!SEARCH_ON) { UI.q = ''; UI.qMore = false; }
+  render();
+  if (SEARCH_ON) {
+    const b = document.getElementById('q_box');
+    if (b) b.focus();
+  }
 }
 
 /* ---------- go ---------- */
@@ -5392,13 +5477,37 @@ function settingsView(s) {
     <button class="btn sec sm" style="width:100%" data-act="blSet">Save</button>
   </div></div>
 
-  <div class="card"><h3>Company logo</h3><div class="pad">
+  <div class="card"><h3>Your name<small>shown in the header</small></h3><div class="pad">
+    <div class="field"><label>Name</label><input id="us_nm" value="${esc(DB.userName || '')}" placeholder="${esc(userName())}"></div>
+    <div class="tiny" style="margin-bottom:10px">The header greets you with this name and the time of day &mdash; right now: <b>${esc(greeting())}, ${esc(userName())}</b>.</div>
+    <button class="btn sec sm" style="width:100%" data-act="userSave">Save name</button>
+  </div></div>
+
+  <div class="card"><h3>Company logo<small>header</small></h3><div class="pad">
     ${DB.logo ? `<div style="text-align:center;margin-bottom:10px"><img src="${DB.logo}" style="max-height:60px;max-width:180px;object-fit:contain"></div>`
-      : '<div class="tiny" style="margin-bottom:10px">Add a logo and it shows in the top left instead of "SITE MANAGER".</div>'}
+      : '<div class="tiny" style="margin-bottom:10px">Add a logo and it shows at the top right of the header.</div>'}
     <div class="btnrow">
       <button class="btn sec sm" style="flex:1" data-act="logoPick">${DB.logo ? 'Change logo' : 'Add logo'}</button>
-      ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoDel">Remove</button>' : ''}
+      ${DB.logo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="logoOff">Remove</button>' : ''}
     </div>
+  </div></div>
+
+  <div class="card"><h3>Bill watermark<small>printed behind every PDF</small></h3><div class="pad">
+    ${DB.watermark
+      ? `<div style="text-align:center;margin-bottom:10px;border:1px solid var(--line);border-radius:9px;padding:14px;background:#fff">
+           <img src="${DB.watermark}" style="max-height:92px;max-width:70%;object-fit:contain;opacity:${(num(DB.wmOpacity) || 7) / 100}">
+           <div class="tiny" style="margin-top:6px">This is how it prints</div>
+         </div>
+         <div class="field"><label>How strong</label><select id="wm_op">
+           ${[['4', 'Very faint'], ['7', 'Faint (recommended)'], ['12', 'Medium'], ['18', 'Strong']]
+             .map(([v2, l]) => `<option value="${v2}"${String(num(DB.wmOpacity) || 7) === v2 ? ' selected' : ''}>${l}</option>`).join('')}
+         </select></div>`
+      : '<div class="tiny" style="margin-bottom:10px;line-height:1.7">Add a logo here and it prints faintly behind every bill and report &mdash; machine bills, vendor bills, owner bills, the dashboard PDF, all of them. It repeats on every page.</div>'}
+    <div class="btnrow">
+      <button class="btn sec sm" style="flex:1" data-act="wmPick">${DB.watermark ? 'Change watermark' : 'Add watermark'}</button>
+      ${DB.watermark ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="wmOff">Remove</button>' : ''}
+    </div>
+    ${DB.watermark ? '<div class="tiny" style="margin-top:8px">A plain logo on a white or transparent background prints best.</div>' : ''}
   </div></div>
 
   <div class="card"><h3>Payment reminders</h3><div class="pad">
