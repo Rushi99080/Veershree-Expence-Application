@@ -353,8 +353,16 @@ tbody tr[data-act]:active{background:var(--surface-2)}
 }
 .nav button[data-v="dash"].on svg{background:var(--accent-strong);stroke:#FFFFFF}
 .nav.n7 button[data-v="dash"] svg,.nav.n8 button[data-v="dash"] svg{width:30px;height:30px;padding:6px}
-/* search sits in the nav now, and lights up while the box is open */
-.nav button[data-v="search"].on svg{stroke:var(--accent-strong)}
+/* Search is a floating button above the nav, thumb-side. It is an action,
+   not a place, so it does not belong among the tabs. */
+.fab{
+  position:fixed;right:14px;bottom:calc(var(--nav-h) + 12px);z-index:46;
+  width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;
+  background:var(--accent-strong);color:#FFFFFF;box-shadow:var(--shadow-2);
+}
+.fab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.fab:active{filter:brightness(.92)}
+body.searching .fab{bottom:calc(var(--nav-h) + 70px);background:var(--ink)}
 .nav.n7 button,.nav.n8 button{font-size:9px;padding:8px 0 9px;letter-spacing:-.01em}
 .nav.n7 button svg,.nav.n8 button svg{width:19px;height:19px}
 
@@ -403,22 +411,24 @@ tbody tr[data-act]:active{background:var(--surface-2)}
 }
 .bill{
   max-width:760px;margin:0 auto;background:transparent;color:#1C1F22;
-  font-size:12.5px;line-height:1.5;position:relative;z-index:1;
+  font-size:12.5px;line-height:1.5;
 }
-/* watermark: fixed, so the browser repeats it on every printed page */
-.wm{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:0}
-.wm img{
-  max-width:64%;max-height:50%;object-fit:contain;
+/* letterhead: title and details on the left, the logo top right */
+.bill .bhead{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+  border-bottom:2.5px solid #523620;padding-bottom:10px;margin-bottom:14px;
+}
+.bill .bhead-txt{flex:1 1 auto;min-width:0}
+.bill .blogo{
+  flex:0 0 auto;max-width:36%;object-fit:contain;display:block;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 .bill h1{
   font-family:'Barlow Condensed',sans-serif;font-size:24px;margin:0 0 3px;
   color:#1C1F22;letter-spacing:.01em;
 }
-.bill .meta{
-  font-size:11.5px;color:#4C5243;margin-bottom:14px;line-height:1.65;
-  border-bottom:2.5px solid #523620;padding-bottom:10px;
-}
+.bill .meta{font-size:11.5px;color:#4C5243;line-height:1.65}
+.bill > .meta{border-bottom:2.5px solid #523620;padding-bottom:10px;margin-bottom:14px}
 .bill .meta b{color:#1C1F22}
 .bill table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:15px}
 .bill th{
@@ -453,10 +463,12 @@ tbody tr[data-act]:active{background:var(--surface-2)}
   body > #print{display:block!important}
   .prt{position:static;padding:0;overflow:visible;background:#fff}
   .prtbar{display:none!important}
-  .bill{max-width:none;font-size:11px;background:transparent}
-  .wm{display:grid!important}
+  .bill{max-width:none;font-size:11px;background:transparent;padding:13mm 11mm}
   .bill tbody tr:nth-child(even) td{background:#F5F6F3}
-  @page{margin:12mm}
+  /* margin:0 is what stops the browser printing its own header and footer
+     (the site URL, the date, "Page 1 of 1"). The page margin comes back as
+     padding on the bill, so the layout is unchanged. */
+  @page{margin:0}
 }
 
 /* ---------- drag-to-arrange rows ---------- */
@@ -944,6 +956,9 @@ function siteByName(nm) {
 function migrate() {
   if (!DB || typeof DB !== 'object') DB = { sites: [], activeId: null };
   if (!Array.isArray(DB.sites)) DB.sites = [];
+  /* the faint watermark became the printed bill logo — carry it over */
+  if (DB.watermark && !DB.billLogo) { DB.billLogo = DB.watermark; DB.billLogoSize = 'md'; }
+  delete DB.watermark; delete DB.wmOpacity;
   if (!Array.isArray(DB.managers)) DB.managers = [];
   if (!Array.isArray(DB.mfunds)) DB.mfunds = [];
   DB.managers = DB.managers.filter(m => m && m.name).map(m => ({ id: m.id || uid(), name: String(m.name).trim(), mobile: String(m.mobile || '').trim() }));
@@ -1515,6 +1530,8 @@ const ICON = {
   dash: '<svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-5H3zM13 8h8V3h-8z"/></svg>',
   machine: '<svg viewBox="0 0 24 24"><path d="M4 18h10v-4H4zM6 14V9h4l3 5M14 12l5-4 2 3-4 3"/><circle cx="7" cy="19.5" r="1.6"/><circle cx="12" cy="19.5" r="1.6"/></svg>',
   search: '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
+  close: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  diesel: '<svg viewBox="0 0 24 24"><path d="M4 20V5a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v15M3 20h12M6 9h5M15 8l3 2v7a1.6 1.6 0 0 0 3 0v-9l-2.5-2.5"/></svg>',
   manager: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20v-1.5C3 16 5.7 15 9 15s6 1 6 3.5V20M16.5 15.3c2.1.5 3.5 1.5 3.5 3.2V20"/><circle cx="16.8" cy="8.4" r="2.6"/></svg>',
   expense: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>',
   vendor: '<svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3zM3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></svg>',
@@ -1528,7 +1545,7 @@ function navItems(s) {
   if (m.machine !== false) rest.push(['machine', 'Machine']);
   rest.push(['expense', 'Expense']);
   if (m.murum) rest.push(['murum', 'Murum']);
-  rest.push(['search', 'Search']);
+  if (m.diesel !== false) rest.push(['diesel', 'Diesel']);
   rest.push(['manager', 'Managers']);
   if (m.vendor !== false) rest.push(['vendor', 'Vendor']);
   rest.push(['more', 'More']);
@@ -1539,17 +1556,16 @@ function navItems(s) {
 
 function subsFor(s, t) {
   const m = s.mods || {};
-  if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary']]
-    .concat(m.diesel !== false ? [['dsl', 'Diesel'], ['dslsum', 'Diesel summary']] : [])
-    .concat(m.stock ? [['stock', 'Stock']] : [])
-    .concat([['bill', 'Billing'], ['rent', 'Rent']])
+  if (t === 'machine') return [['log', 'Daily log'], ['sum', 'Summary'], ['bill', 'Billing'], ['rent', 'Rent']]
     .concat(m.owner ? [['owner', 'Owner']] : [])
     .concat([['mast', 'Machines']]);
+  if (t === 'diesel') return [['log', 'Purchases'], ['sum', 'Summary']].concat(m.stock ? [['stock', 'Stock']] : []);
   if (t === 'more') return [['excel', 'Excel'], ['set', 'Settings']].concat(m.funds ? [['funds', 'Money received']] : []).concat([['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]);
   return SUBS[t];
 }
 const SUBS = {
-  machine: [['log', 'Daily log'], ['sum', 'Summary'], ['dsl', 'Diesel'], ['dslsum', 'Diesel summary'], ['bill', 'Billing'], ['rent', 'Rent'], ['mast', 'Machines']],
+  machine: [['log', 'Daily log'], ['sum', 'Summary'], ['bill', 'Billing'], ['rent', 'Rent'], ['mast', 'Machines']],
+  diesel: [['log', 'Purchases'], ['sum', 'Summary'], ['stock', 'Stock']],
   expense: [['log', 'Entries'], ['sum', 'Summary']],
   vendor: [['pend', 'Pending'], ['due', 'Due dates'], ['pay', 'Payments'], ['sum', 'Summary']],
   more: [['excel', 'Excel Sync'], ['person', 'Person-wise'], ['mast', 'Masters'], ['sites', 'Sites']]
@@ -1598,10 +1614,8 @@ function render() {
   <main>${STORAGE_OK ? '' : '<div class="warn">This device is not saving data. Download a backup from <b>More &rarr; Excel</b> before you close the app.</div>'}
     ${VIEW[TAB](s)}
   </main>
-  <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => {
-    const on = k === 'search' ? SEARCH_ON : (TAB === k && !SEARCH_ON);
-    return `<button class="${on ? 'on' : ''}" data-act="tab" data-v="${k}"${on && k !== 'search' ? ' aria-current="page"' : ''}>${ICON[k]}${l}</button>`;
-  }).join('')}</nav>`;
+  <button class="fab" data-act="fabSearch" aria-label="${SEARCH_ON ? 'Close search' : 'Search'}">${SEARCH_ON ? ICON.close : ICON.search}</button>
+  <nav class="nav n${nav.length}" style="grid-template-columns:repeat(${nav.length},1fr)">${nav.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" data-act="tab" data-v="${k}"${TAB === k ? ' aria-current="page"' : ''}>${ICON[k]}${l}</button>`).join('')}</nav>`;
   renderSearch();
   noSuggest($('#app'));
   /* only jump to the top when the screen actually changed — otherwise
@@ -1706,11 +1720,13 @@ VIEW.dash = s => {
 };
 
 /* ---------------- MACHINE ---------------- */
+VIEW.diesel = s => {
+  const k = sub('diesel');
+  return k === 'stock' ? stockView(s) : k === 'sum' ? dieselSumView(s) : dieselLogView(s);
+};
+
 VIEW.machine = s => {
   const k = sub('machine');
-  if (k === 'dsl') return dieselLogView(s);
-  if (k === 'dslsum') return dieselSumView(s);
-  if (k === 'stock') return stockView(s);
   if (k === 'bill') return billingView(s);
   if (k === 'owner') return ownerView(s);
   if (k === 'log') return machineLogView(s);
@@ -1863,7 +1879,7 @@ function machineRentView(s) {
 
 function machineMasterView(s) {
   return `
-  <div class="btnrow" style="margin:0 0 12px">
+  <div class="btnrow" style="margin:9px 0 12px">
     <button class="btn" style="flex:1" data-act="mAdd">+ Add machine</button>
     <button class="btn sec" style="flex:1" data-act="mArrange">Arrange order</button>
   </div>
@@ -1915,7 +1931,7 @@ function dieselLogView(s) {
   const t = totals(s);
   return `
   <button class="btn" data-act="dAdd">+ Diesel entry</button>
-  <div class="btnrow" style="margin:0 0 12px"><button class="btn sec sm" style="flex:1" data-act="dslBill">Diesel report PDF</button></div>
+  <div class="btnrow" style="margin:9px 0 12px"><button class="btn sec sm" style="flex:1" data-act="dslBill">Diesel report PDF</button></div>
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">TOTAL DIESEL</div><div class="v num">${dec(t.dsLitres)} L</div></div>
     <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(t.dsPaidFinal)}</div></div>
@@ -1964,7 +1980,7 @@ function expenseLogView(s) {
   const tm = s.expenseLog.filter(e => monthKey(e.date) === monthKey(today())).reduce((a, e) => a + num(e.amount), 0);
   return `
   <button class="btn" data-act="eAdd">+ New expense</button>
-  <div class="btnrow" style="margin:0 0 12px"><button class="btn sec sm" style="flex:1" data-act="expBill">Expense report PDF</button></div>
+  <div class="btnrow" style="margin:9px 0 12px"><button class="btn sec sm" style="flex:1" data-act="expBill">Expense report PDF</button></div>
   <div class="kpis k3 mt">
     <div class="kpi"><div class="k">TOTAL</div><div class="v num">${money0(t.expTotal)}</div></div>
     <div class="kpi"><div class="k">THIS MONTH</div><div class="v num">${money0(tm)}</div></div>
@@ -2249,7 +2265,7 @@ function ownerView(s) {
   const pays = (s.ownerPayments || []).slice().sort(byDateDesc);
   const T = owners.reduce((a, o) => { const x = ownerStats(s, o); return { r: a.r + x.rent, p: a.p + x.paid, b: a.b + x.balance }; }, { r: 0, p: 0, b: 0 });
   return `
-  <div class="btnrow" style="margin:0 0 12px">
+  <div class="btnrow" style="margin:9px 0 12px">
     <button class="btn" style="flex:1" data-act="opAdd">+ Owner payment</button>
     <button class="btn sec" style="flex:1" data-act="obOpen">Make bill</button>
   </div>
@@ -2337,9 +2353,9 @@ function stockView(s) {
     </div>
   </div>
 
-  <div class="btnrow" style="margin:0 0 12px">
+  <div class="btnrow" style="margin:9px 0 12px">
     <button class="btn sec" style="flex:1" data-act="stkOpen">Opening stock</button>
-    <button class="btn sec" style="flex:1" data-act="sub" data-v="dsl" data-t="machine">Diesel bills</button>
+    <button class="btn sec" style="flex:1" data-act="sub" data-v="log" data-t="diesel">Diesel bills</button>
   </div>
 
   ${t.stock < -0.5 ? '<div class="warn">Stock is showing negative. A diesel bill may be missing, or the filled figure may be too high &mdash; please check.</div>' : ''}
@@ -2386,7 +2402,7 @@ function mgrView(s) {
     </div>
   </div>
 
-  <div class="btnrow" style="margin:0 0 12px">
+  <div class="btnrow" style="margin:9px 0 12px">
     <button class="btn" style="flex:1" data-act="mgAdd">+ Add manager</button>
     <button class="btn sec" style="flex:1" data-act="mgImport">Import files</button>
   </div>
@@ -3058,8 +3074,21 @@ function exportExcel(s) {
    ============================================================ */
 const bTag = () => (site().name || 'Site') + '  ·  ' + fmtDate(today());
 
+const BILL_LOGO_PX = { sm: 42, md: 58, lg: 78 };
+const billLogoPx = () => BILL_LOGO_PX[DB.billLogoSize] || BILL_LOGO_PX.md;
+
+function billLogoImg() {
+  return DB.billLogo
+    ? `<img class="blogo" src="${DB.billLogo}" style="max-height:${billLogoPx()}px" alt="">`
+    : '';
+}
+
 function billHead(title, sub) {
-  return `<h1>${esc(title)}</h1><div class="meta">${esc(bTag())}${sub ? '<br>' + sub : ''}</div>`;
+  return `<div class="bhead">
+    <div class="bhead-txt"><h1>${esc(title)}</h1>
+      <div class="meta">${esc(bTag())}${sub ? '<br>' + sub : ''}</div></div>
+    ${billLogoImg()}
+  </div>`;
 }
 const kpi = list => `<div class="kpi">${list.filter(Boolean).map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join('')}</div>`;
 
@@ -3186,15 +3215,9 @@ function vendorBill(s, v) {
 }
 
 /* ---------------- print screen ---------------- */
-function watermarkHtml() {
-  if (!DB.watermark) return '';
-  const op = Math.max(2, Math.min(40, num(DB.wmOpacity) || 7)) / 100;
-  return `<div class="wm"><img src="${DB.watermark}" style="opacity:${op}" alt=""></div>`;
-}
-
 function openBill(html, name) {
   PRINT_NAME = name || 'report';
-  $('#print').innerHTML = `<div class="prt">${watermarkHtml()}${html}</div>
+  $('#print').innerHTML = `<div class="prt">${html}</div>
     <div class="prtbar">
       <button class="btn" style="flex:1" data-act="prtGo">Print / Save as PDF</button>
       <button class="btn sec sm" style="flex:0 0 30%" data-act="prtClose">Close</button>
@@ -3365,11 +3388,14 @@ function billInvoice(s, b) {
   const hrs = (b.items || []).reduce((a, i) => a + num(i.hours), 0);
   const co = s.co || {};
   return `<div class="bill">
-    <h1>${esc(co.name || s.name || 'MACHINE RENT BILL')}</h1>
-    <div class="meta">
-      ${[co.line1, co.line2].filter(Boolean).map(esc).join('<br>')}${(co.line1 || co.line2) ? '<br>' : ''}
-      ${co.mobile ? 'Mobile: ' + esc(co.mobile) : ''}${co.email ? (co.mobile ? '  |  ' : '') + 'Email: ' + esc(co.email) : ''}
-      ${co.gstin ? '<br>GSTIN: ' + esc(co.gstin) : ''}
+    <div class="bhead">
+      <div class="bhead-txt"><h1>${esc(co.name || s.name || 'MACHINE RENT BILL')}</h1>
+        <div class="meta">
+          ${[co.line1, co.line2].filter(Boolean).map(esc).join('<br>')}${(co.line1 || co.line2) ? '<br>' : ''}
+          ${co.mobile ? 'Mobile: ' + esc(co.mobile) : ''}${co.email ? (co.mobile ? '  |  ' : '') + 'Email: ' + esc(co.email) : ''}
+          ${co.gstin ? '<br>GSTIN: ' + esc(co.gstin) : ''}
+        </div></div>
+      ${billLogoImg()}
     </div>
 
     <h2 style="text-align:center;letter-spacing:.06em">INVOICE / BILL</h2>
@@ -3904,13 +3930,13 @@ function siteForm(id) {
 }
 
 /* ---------- company logo ---------- */
-/* The watermark is stored bigger than the header logo — it is printed
-   across a whole A4 page, so a 320px wide picture would look ragged. */
-function pickWatermark() {
-  pickImage(900, 900, async dataUrl => {
-    DB.watermark = dataUrl;
-    if (!DB.wmOpacity) DB.wmOpacity = 7;
-    await save(); render(); toast('Watermark added');
+/* Stored bigger than the header logo: it is printed, and print resolution
+   is far higher than a phone screen. */
+function pickBillLogo() {
+  pickImage(600, 600, async dataUrl => {
+    DB.billLogo = dataUrl;
+    if (!DB.billLogoSize) DB.billLogoSize = 'md';
+    await save(); render(); toast('Bill logo added');
   });
 }
 
@@ -4503,8 +4529,8 @@ async function applyImport(clean, add, raw) {
       managers: (raw && Array.isArray(raw.managers) && raw.managers.length) ? raw.managers : DB.managers,
       mfunds: (raw && Array.isArray(raw.mfunds) && raw.mfunds.length) ? raw.mfunds : DB.mfunds,
       logo: (raw && raw.logo) || DB.logo,
-      watermark: (raw && raw.watermark) || DB.watermark,
-      wmOpacity: (raw && raw.wmOpacity) || DB.wmOpacity,
+      billLogo: (raw && (raw.billLogo || raw.watermark)) || DB.billLogo,
+      billLogoSize: (raw && raw.billLogoSize) || DB.billLogoSize,
       userName: (raw && raw.userName) || DB.userName
     };
   }
@@ -4550,10 +4576,12 @@ document.addEventListener('click', async e => {
   if (a === 'errHide') { const b = document.getElementById('errbar'); if (b) b.remove(); return; }
 
   switch (a) {
-    case 'tab':
-      if (v === 'search') { toggleSearch(); break; }   /* a toggle, not a screen */
-      TAB = v; render(); break;
-    case 'sub': UI[el.dataset.t || TAB] = v; if (el.dataset.t) TAB = el.dataset.t; render(); break;
+    case 'fabSearch': toggleSearch(); break;
+    /* Moving to any other screen closes the search box. Without this the box
+       stayed open over the new screen and the nav kept its old highlight, so
+       the tap looked like it had done nothing. */
+    case 'tab': closeSearch(); TAB = v; render(); break;
+    case 'sub': closeSearch(); UI[el.dataset.t || TAB] = v; if (el.dataset.t) TAB = el.dataset.t; render(); break;
     case 'mlFilter': UI.mlFilter = v; UI.mlMore = 60; render(); break;
     case 'mlMore': UI.mlMore = (UI.mlMore || 60) + 100; render(); break;
     case 'mlType': UI.mlType = v; UI.mlFilter = ''; UI.mlMore = 0; render(); break;
@@ -4596,13 +4624,13 @@ document.addEventListener('click', async e => {
       const b = document.getElementById('q_box');
       if (b && String(b.value || '').trim()) {   /* first tap clears, second closes */
         UI.q = ''; UI.qMore = false; b.value = ''; renderSearch(); b.focus();
-      } else { SEARCH_ON = false; UI.q = ''; UI.qMore = false; render(); }
+      } else { closeSearch(); render(); }
       break;
     }
     case 'qMore': UI.qMore = true; renderSearchPanel(); break;
     case 'sOpen': {
       const k = el.dataset.k;
-      UI.q = ''; UI.qMore = false; SEARCH_ON = false;
+      closeSearch();
       renderSearch();
       if (k === 'e') expenseForm(s, s.expenseLog.find(x => x.id === v));
       else if (k === 'd') dieselForm(s, s.dieselLog.find(x => x.id === v));
@@ -4616,11 +4644,11 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'logoPick': pickLogo(); break;
-    case 'wmPick': pickWatermark(); break;
+    case 'wmPick': pickBillLogo(); break;
     case 'wmOff':
-      if (!confirm('Remove the bill watermark?')) break;
-      delete DB.watermark; delete DB.wmOpacity;
-      await save(); render(); toast('Watermark removed'); break;
+      if (!confirm('Remove the logo from bills?')) break;
+      delete DB.billLogo; delete DB.billLogoSize;
+      await save(); render(); toast('Bill logo removed'); break;
     case 'userSave': {
       DB.userName = val('us_nm').trim();
       await save(); render(); toast('Name saved'); break;
@@ -5073,7 +5101,7 @@ document.addEventListener('click', async e => {
 
 document.addEventListener('change', async e => {
   if (e.target && e.target.id === 'wm_op') {
-    DB.wmOpacity = num(e.target.value) || 7;
+    DB.billLogoSize = BILL_LOGO_PX[e.target.value] ? e.target.value : 'md';
     await save(); render(); return;
   }
 });
@@ -5211,7 +5239,7 @@ function ensureSearchBar() {
     box.setAttribute('autocorrect', 'off');
     box.setAttribute('spellcheck', 'false');
     box.addEventListener('input', e => { UI.q = e.target.value; UI.qMore = false; renderSearchPanel(); });
-    box.addEventListener('keydown', e => { if (e.key === 'Escape') { SEARCH_ON = false; UI.q = ''; render(); } });
+    box.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSearch(); render(); } });
   }
   const box = document.getElementById('q_box');
   if (box && document.activeElement !== box && box.value !== (UI.q || '')) box.value = UI.q || '';
@@ -5256,6 +5284,15 @@ function toggleSearch() {
     const b = document.getElementById('q_box');
     if (b) b.focus();
   }
+}
+
+/* called before any screen change — quiet if search was not open */
+function closeSearch() {
+  if (!SEARCH_ON) return false;
+  SEARCH_ON = false; UI.q = ''; UI.qMore = false;
+  const b = document.getElementById('q_box');
+  if (b) b.blur();
+  return true;
 }
 
 /* ---------- go ---------- */
@@ -5383,7 +5420,7 @@ function blSheet(s) {
       <div class="field"><label>Period from</label><input type="date" id="bl_f" value="${esc(BDRAFT.from || '')}"></div>
       <div class="field"><label>Period to</label><input type="date" id="bl_t" value="${esc(BDRAFT.to || '')}"></div>
     </div>
-    <div class="btnrow" style="margin:0 0 12px">
+    <div class="btnrow" style="margin:9px 0 12px">
       <button class="btn sec sm" style="flex:1" data-act="blFill">Fill from machine log</button>
       <button class="btn sec sm" style="flex:0 0 34%" data-act="blItAdd">+ Add line</button>
     </div>
@@ -5492,22 +5529,26 @@ function settingsView(s) {
     </div>
   </div></div>
 
-  <div class="card"><h3>Bill watermark<small>printed behind every PDF</small></h3><div class="pad">
-    ${DB.watermark
-      ? `<div style="text-align:center;margin-bottom:10px;border:1px solid var(--line);border-radius:9px;padding:14px;background:#fff">
-           <img src="${DB.watermark}" style="max-height:92px;max-width:70%;object-fit:contain;opacity:${(num(DB.wmOpacity) || 7) / 100}">
-           <div class="tiny" style="margin-top:6px">This is how it prints</div>
+  <div class="card"><h3>Bill logo<small>top right of every PDF</small></h3><div class="pad">
+    ${DB.billLogo
+      ? `<div style="margin-bottom:10px;border:1px solid var(--line);border-radius:9px;padding:12px;background:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:14px">
+           <div style="flex:1;min-width:0">
+             <div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;color:#1C1F22;line-height:1.1">Machine Report</div>
+             <div style="font-size:10px;color:#4C5243;margin-top:3px">${esc(s.name)}</div>
+           </div>
+           <img src="${DB.billLogo}" style="max-height:${billLogoPx()}px;max-width:36%;object-fit:contain">
          </div>
-         <div class="field"><label>How strong</label><select id="wm_op">
-           ${[['4', 'Very faint'], ['7', 'Faint (recommended)'], ['12', 'Medium'], ['18', 'Strong']]
-             .map(([v2, l]) => `<option value="${v2}"${String(num(DB.wmOpacity) || 7) === v2 ? ' selected' : ''}>${l}</option>`).join('')}
+         <div class="tiny" style="margin-bottom:10px">That is how the top of every bill will look.</div>
+         <div class="field"><label>Logo size</label><select id="wm_op">
+           ${[['sm', 'Small'], ['md', 'Medium'], ['lg', 'Large']]
+             .map(([v2, l]) => `<option value="${v2}"${(DB.billLogoSize || 'md') === v2 ? ' selected' : ''}>${l}</option>`).join('')}
          </select></div>`
-      : '<div class="tiny" style="margin-bottom:10px;line-height:1.7">Add a logo here and it prints faintly behind every bill and report &mdash; machine bills, vendor bills, owner bills, the dashboard PDF, all of them. It repeats on every page.</div>'}
+      : '<div class="tiny" style="margin-bottom:10px;line-height:1.7">Add a logo and it prints in the top right corner of every bill and report &mdash; machine bills, vendor bills, owner bills, the dashboard PDF, all of them. Printed in full colour, not faded.</div>'}
     <div class="btnrow">
-      <button class="btn sec sm" style="flex:1" data-act="wmPick">${DB.watermark ? 'Change watermark' : 'Add watermark'}</button>
-      ${DB.watermark ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="wmOff">Remove</button>' : ''}
+      <button class="btn sec sm" style="flex:1" data-act="wmPick">${DB.billLogo ? 'Change logo' : 'Add bill logo'}</button>
+      ${DB.billLogo ? '<button class="btn dgr sm" style="flex:0 0 35%" data-act="wmOff">Remove</button>' : ''}
     </div>
-    ${DB.watermark ? '<div class="tiny" style="margin-top:8px">A plain logo on a white or transparent background prints best.</div>' : ''}
+    ${DB.billLogo ? '<div class="tiny" style="margin-top:8px">A PNG with a transparent or white background prints best.</div>' : ''}
   </div></div>
 
   <div class="card"><h3>Payment reminders</h3><div class="pad">
