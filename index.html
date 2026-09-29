@@ -448,6 +448,14 @@ tbody tr[data-act]:active td{background:var(--surface-2)}
   font-size:13px;font-weight:600;line-height:1.1;
 }
 .rowbtn:active{background:var(--surface-3)}
+.row .rbtns{flex:1 0 100%;display:flex;flex-wrap:wrap;gap:7px}
+.row .rbtns .rowbtn{min-height:34px;padding:6px 12px;font-size:12.5px}
+@media (min-width:430px){ .row .rbtns{padding-left:52px} }
+/* a machine removed from site: kept, but faded */
+.off{opacity:.42}
+.chip.off{opacity:.45}
+.chip.off.on{opacity:.75}
+.pill.off{opacity:1}
 
 /* ---------- forms ---------- */
 .field{margin-bottom:12px;min-width:0}
@@ -640,15 +648,18 @@ textarea{background:var(--surface-2);color:var(--ink)}
 
 /* ===========================================================
    PRINTABLE BILL / PDF
-   Always black on white — it is a document, not app chrome.
-   A thin gold rule is the only colour; every band is also
-   separated by a line so it reads when printed in black.
+   A formal A4 document, always black on white:
+     letterhead (company, contact, logo) -> gold-kicked rule
+     document title + date -> labelled detail boxes
+     figures strip (the settling figure printed dark)
+     ledger tables with a dark header row -> totals + amount in words
+     signature lines -> a small computer-generated footer
    =========================================================== */
 .prt{
-  position:fixed;inset:0;z-index:100;background:#E7E9EE;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  position:fixed;inset:0;z-index:100;background:#E4E7EC;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:calc(14px + var(--safe-t)) 10px calc(100px + var(--safe-b));
 }
-.prt .bill{background:#FFFFFF;border-radius:14px;padding:22px 16px 26px;box-shadow:0 10px 30px rgba(14,17,22,.12)}
+.prt .bill{background:#FFFFFF;border-radius:6px;padding:26px 18px 22px;box-shadow:0 1px 2px rgba(14,17,22,.08),0 12px 36px rgba(14,17,22,.14)}
 .prtbar{
   position:fixed;left:0;right:0;bottom:0;z-index:101;display:flex;gap:10px;
   padding:12px calc(14px + var(--safe-r)) calc(12px + var(--safe-b)) calc(14px + var(--safe-l));
@@ -656,69 +667,104 @@ textarea{background:var(--surface-2);color:var(--ink)}
   border-top:1px solid var(--line);
 }
 .bill{
-  max-width:780px;margin:0 auto;color:#15181D;font-family:var(--font);
-  font-size:12.5px;line-height:1.5;
+  max-width:794px;margin:0 auto;color:#16191E;font-family:var(--font);
+  font-size:11.5px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-/* letterhead: title and details on the left, the logo top right */
-.bill .bhead{
-  position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
-  border-bottom:2px solid #15181D;padding-bottom:12px;margin-bottom:16px;
+.bill *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+/* letterhead */
+.bill .lh{
+  position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+  padding-bottom:13px;border-bottom:2px solid #16191E;
 }
-.bill .bhead::after{
-  content:"";position:absolute;left:0;bottom:-2px;width:84px;height:2px;background:#B8934F;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact;
-}
-.bill .bhead-txt{flex:1 1 auto;min-width:0}
-.bill .blogo{
-  flex:0 0 auto;max-width:36%;object-fit:contain;display:block;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact;
-}
-.bill h1{font-family:var(--font-d);font-size:22px;font-weight:700;margin:0 0 4px;color:#0E1116;letter-spacing:-.015em}
-.bill .meta{font-size:11.5px;color:#4A515C;line-height:1.65}
-.bill > .meta{border-bottom:2px solid #15181D;padding-bottom:10px;margin-bottom:14px}
-.bill .meta b{color:#0E1116}
-.bill table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:15px}
-.bill th{
-  background:#F1F3F6;border:1px solid #D3D8DF;padding:6px 7px;text-align:left;position:static;
-  font-size:9.5px;letter-spacing:.06em;color:#39404A;text-transform:uppercase;font-weight:700;
-}
-.bill td{border:1px solid #E0E3E8;padding:5px 7px;vertical-align:top;color:#15181D;background:#FFFFFF;position:static;box-shadow:none}
-.bill td.n,.bill th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.bill tbody tr:nth-child(even) td{background:#F8F9FB}
-.bill tfoot td{font-weight:700;background:#F1F3F6;border-top:1.5px solid #15181D;color:#0E1116}
+.bill .lh::after{content:"";position:absolute;left:0;bottom:-2px;width:96px;height:2px;background:#B8934F}
+.bill .lh-l{flex:1 1 auto;min-width:0}
+.bill .lh-co{font-family:var(--font-d);font-size:18px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#0E1116;line-height:1.2}
+.bill .lh-ad{font-size:10px;color:#5A626E;margin-top:3px;line-height:1.55}
+.bill .blogo{flex:0 0 auto;max-width:34%;object-fit:contain;display:block}
+/* document title */
+.bill .dt{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:18px 0 12px}
+.bill .dt-k{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#8A6A2F}
+.bill .dt-t{font-family:var(--font-d);font-size:22px;font-weight:800;letter-spacing:-.015em;color:#0E1116;line-height:1.15;margin-top:3px;word-break:break-word}
+.bill .dt-r{flex:0 0 auto;text-align:right;font-size:10px;color:#5A626E;line-height:1.7}
+.bill .dt-r b{color:#16191E;font-weight:700;margin-left:4px}
+/* labelled detail boxes */
+.bill .dm{display:grid;gap:1px;background:#DDE1E7;border:1px solid #DDE1E7;border-radius:7px;overflow:hidden;margin-bottom:16px}
+.bill .dm div{background:#FFFFFF;padding:7px 10px;min-width:0}
+.bill .dm span{display:block;font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#7A828E}
+.bill .dm b{display:block;font-size:11px;font-weight:600;color:#16191E;margin-top:1px;word-break:break-word}
+.bill .dm b b{font-weight:700}
+/* figures strip */
 .bill .kpi{
-  display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;
-  background:none;border:0;padding:0;box-shadow:none;border-radius:0;
+  display:flex;flex-wrap:wrap;gap:1px;margin-bottom:18px;padding:0;
+  background:#DDE1E7;border:1px solid #DDE1E7;border-radius:7px;overflow:hidden;box-shadow:none;
 }
-.bill .kpi div{
-  border:1px solid #DADEE4;border-left:3px solid #B8934F;border-radius:6px;
-  padding:7px 11px;min-width:104px;background:#FFFFFF;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact;
-}
-.bill .kpi b{display:block;font-family:var(--font-d);font-size:16px;font-weight:700;color:#0E1116;line-height:1.2;font-variant-numeric:tabular-nums}
-.bill .kpi span{font-size:9px;letter-spacing:.08em;color:#5A626E;text-transform:uppercase;font-weight:600}
+.bill .kpi div{flex:1 1 104px;min-width:0;background:#F6F7F9;padding:8px 11px 9px;border:0;border-radius:0}
+.bill .kpi span{display:block;font-size:8px;letter-spacing:.1em;color:#6A727E;text-transform:uppercase;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bill .kpi b{display:block;font-family:var(--font-d);font-size:14.5px;font-weight:800;color:#0E1116;line-height:1.25;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bill .kpi div.hl{background:#16191E}
+.bill .kpi div.hl span{color:#C9A461}
+.bill .kpi div.hl b{color:#FFFFFF}
+/* section titles */
 .bill h2{
-  font-family:var(--font-d);font-size:14px;font-weight:700;margin:20px 0 8px;
-  color:#0E1116;border-bottom:1px solid #B8934F;padding-bottom:4px;letter-spacing:0;
+  font-family:var(--font);font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:#16191E;margin:22px 0 8px;padding:1px 0 1px 9px;border-left:3px solid #B8934F;border-bottom:0;line-height:1.3;
+  break-after:avoid;page-break-after:avoid;
 }
-.bill .sign{
-  margin-top:34px;display:flex;justify-content:space-between;gap:16px;
-  font-size:11px;color:#4A515C;border-top:1px solid #D3D8DF;padding-top:12px;
+/* ledger tables */
+.bill table{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:14px}
+.bill th{
+  background:#16191E;color:#FFFFFF;border:0;padding:7px 8px;text-align:left;position:static;
+  font-size:8px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;white-space:nowrap;
+}
+.bill td{border:0;border-bottom:1px solid #E5E8ED;padding:6px 8px;vertical-align:top;color:#16191E;background:#FFFFFF;position:static;box-shadow:none}
+.bill td.n,.bill th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bill td.sr{color:#8A929F;width:6%}
+.bill tbody tr:nth-child(even) td{background:#F7F8FA}
+.bill tfoot td{font-weight:800;background:#EEF0F3;border-top:1.5px solid #16191E;border-bottom:1.5px solid #16191E;color:#0E1116}
+.bill tr{break-inside:avoid;page-break-inside:avoid}
+.bill thead{display:table-header-group}
+.bill tfoot{display:table-row-group}   /* the total prints once, at the end — not at every page break */
+/* totals and amount in words */
+.bill .tot{margin:4px 0 8px auto;width:min(100%,340px);border:1px solid #DDE1E7;border-radius:7px;overflow:hidden;break-inside:avoid}
+.bill .tot div{display:flex;justify-content:space-between;gap:14px;padding:7px 12px;border-bottom:1px solid #E5E8ED;font-size:11px}
+.bill .tot div span{color:#4A515C}
+.bill .tot div b{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.bill .tot div.grand{background:#16191E;border-bottom:0;font-size:12.5px}
+.bill .tot div.grand span{color:#C9A461;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:9.5px;align-self:center}
+.bill .tot div.grand b{color:#FFFFFF;font-weight:800}
+.bill .words{text-align:right;font-size:10px;color:#5A626E;margin:0 0 14px}
+.bill .words b{color:#16191E;font-weight:700}
+.bill .bnote{border:1px solid #E5E8ED;border-radius:7px;padding:9px 12px;margin:10px 0 0;font-size:10.5px;color:#2B3038;break-inside:avoid}
+.bill .bnote div+div{margin-top:5px}
+.bill .bnote span{display:inline-block;min-width:92px;font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7A828E}
+/* older markup kept working */
+.bill .bhead{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:2px solid #16191E;padding-bottom:12px;margin-bottom:16px}
+.bill .bhead-txt{flex:1 1 auto;min-width:0}
+.bill h1{font-family:var(--font-d);font-size:22px;font-weight:800;margin:0 0 4px;color:#0E1116;letter-spacing:-.015em}
+.bill .meta{font-size:11px;color:#4A515C;line-height:1.65}
+.bill .meta b{color:#0E1116}
+/* signatures and footer */
+.bill .sign{margin-top:40px;display:flex;justify-content:space-between;gap:30px;break-inside:avoid;page-break-inside:avoid}
+.bill .sign div{flex:0 1 230px;text-align:center;font-size:10px;color:#4A515C;font-weight:600;line-height:1.4}
+.bill .sign i{display:block;height:38px;border-bottom:1px solid #16191E;margin-bottom:6px}
+.bill .sign small{font-size:9px;color:#7A828E;font-weight:500}
+.bill .bfoot{
+  margin-top:28px;padding-top:9px;border-top:1px solid #E5E8ED;display:flex;justify-content:space-between;gap:12px;
+  font-size:8.5px;color:#8A929F;letter-spacing:.02em;break-inside:avoid;
 }
 @media print{
   html,body{background:#fff!important}
-  body{padding:0!important;color:#15181D!important}
+  body{padding:0!important;color:#16191E!important}
   body > *{display:none!important}
   body > #print{display:block!important}
   .prt{position:static;padding:0;overflow:visible;background:#fff}
-  .prt .bill{box-shadow:none;border-radius:0;padding:13mm 11mm}
+  /* the page margin lives on the bill; "clone" repeats it on every printed page where supported */
+  .prt .bill{box-shadow:none;border-radius:0;padding:12mm 12mm 11mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}
   .prtbar{display:none!important}
-  .bill{max-width:none;font-size:11px;background:transparent}
-  .bill tbody tr:nth-child(even) td{background:#F6F7F9}
+  .bill{max-width:none;font-size:10.5px;background:transparent}
   /* margin:0 stops the browser printing its own header and footer
-     (the site URL, the date, "Page 1 of 1"). The page margin comes back
-     as padding on the bill, so the layout is unchanged. */
-  @page{margin:0}
+     (the site URL, the date, "Page 1 of 1"). */
+  @page{size:A4;margin:0}
 }
 
 /* ---------- drag-to-arrange rows ---------- */
@@ -1198,7 +1244,9 @@ function normSite(s) {
   s.machines = s.machines.filter(m => m && m.no).map(m => ({
     id: m.id || uid(), no: String(m.no).trim(), type: String(m.type || '').trim(),
     owner: String(m.owner || '').trim(), operator: String(m.operator || '').trim(),
-    make: String(m.make || '').trim(), monthlyRate: has(m.monthlyRate) ? num(m.monthlyRate) : ''
+    make: String(m.make || '').trim(), monthlyRate: has(m.monthlyRate) ? num(m.monthlyRate) : '',
+    /* removed from site: stays in the lists and reports, but is not offered for new entries */
+    ...(m.removed ? { removed: true, removedOn: String(m.removedOn || '').slice(0, 10) } : {})
   })).filter(m => { if (seen[m.no.toLowerCase()]) return false; seen[m.no.toLowerCase()] = 1; return true; });
   /* add the machine's type to the Rate Master if it is missing */
   s.machines.forEach(m => {
@@ -1457,6 +1505,9 @@ function seedSite() {
 const sameNo = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 function machineOf(s, no) { return (s.machines || []).find(x => sameNo(x.no, no)) || null; }
 function machineType(s, no) { const m = machineOf(s, no); return m ? m.type : ''; }
+/* a machine taken off the site — kept for its history, hidden from new entries */
+function isRemoved(s, no) { const m = machineOf(s, no); return !!(m && m.removed); }
+const activeMachines = s => (s.machines || []).filter(m => !m.removed);
 
 /* hours = Out Reading - In Reading  (Machine Log column G) */
 function hoursOf(r) { return (has(r.inR) && has(r.outR)) ? num(r.outR) - num(r.inR) : 0; }
@@ -1689,8 +1740,11 @@ function totals(s) {
   const expTotal = s.expenseLog.reduce((a, e) => a + num(e.amount), 0);
   const expPaidDirect = s.expenseLog.filter(e => st(e) === 'Paid').reduce((a, e) => a + num(e.amount), 0);
   const expUnpaidRaw = s.expenseLog.filter(e => st(e) === 'Unpaid').reduce((a, e) => a + num(e.amount), 0);
-  const expPaidFinal = s.expenseLog.filter(e => fin[e.id] && fin[e.id].final === 'Paid').reduce((a, e) => a + num(e.amount), 0);
-  const expUnpaidFinal = expTotal - expPaidFinal;
+  /* pending = what is still owed once every vendor payment is allocated,
+     so a bill that is part-paid counts only its balance, not its full amount */
+  const owed = arr => arr.reduce((a, r) => a + (fin[r.id] ? num(fin[r.id].bal) : 0), 0);
+  const expUnpaidFinal = owed(s.expenseLog);
+  const expPaidFinal = expTotal - expUnpaidFinal;
   const dsTotal = s.dieselLog.reduce((a, d) => a + num(d.amount), 0);
   const dsPaid = s.dieselLog.filter(d => st(d) === 'Paid').reduce((a, d) => a + num(d.amount), 0);
   const dsUnpaid = s.dieselLog.filter(d => st(d) === 'Unpaid').reduce((a, d) => a + num(d.amount), 0);
@@ -1705,10 +1759,10 @@ function totals(s) {
   const vp = s.vendorPayments.reduce((a, p) => a + num(p.amount), 0);
   const rent = s.machines.reduce((a, m) => a + machineRent(s, m.no).rent, 0);
   /* the real position once payments are allocated (diesel and murum too) */
-  const dsPaidFinal = s.dieselLog.filter(d => fin[d.id] && fin[d.id].final === 'Paid').reduce((a, d) => a + num(d.amount), 0);
-  const dsUnpaidFinal = dsTotal - dsPaidFinal;
-  const muPaidFinal = mu.filter(m => fin[m.id] && fin[m.id].final === 'Paid').reduce((a, m) => a + mAmt(m), 0);
-  const muUnpaidFinal = muTotal - muPaidFinal;
+  const dsUnpaidFinal = owed(s.dieselLog);
+  const dsPaidFinal = dsTotal - dsUnpaidFinal;
+  const muUnpaidFinal = owed(mu);
+  const muPaidFinal = muTotal - muUnpaidFinal;
   return {
     fin, expTotal, expPaidDirect, expUnpaidRaw, expPaidFinal, expUnpaidFinal,
     dsPaidFinal, dsUnpaidFinal, muPaidFinal, muUnpaidFinal,
@@ -1874,9 +1928,9 @@ function isDieselVendor(s, v) { return (s.dieselVendors || []).includes(v); }
 /* --- category summary --- */
 function categoryStats(s, c, fin) {
   const rows = s.expenseLog.filter(e => e.category === c);
-  const paid = rows.filter(e => fin[e.id] && fin[e.id].final === 'Paid').reduce((a, e) => a + num(e.amount), 0);
   const total = rows.reduce((a, e) => a + num(e.amount), 0);
-  return { entries: rows.length, total, paid, unpaid: total - paid };
+  const unpaid = rows.reduce((a, e) => a + (fin[e.id] ? num(fin[e.id].bal) : 0), 0);
+  return { entries: rows.length, total, paid: total - unpaid, unpaid };
 }
 
 /* --- last 12 months --- */
@@ -1888,8 +1942,8 @@ function monthSeries(s, fin) {
     const rows = s.expenseLog.filter(e => monthKey(e.date) === k);
     const dsl = s.dieselLog.filter(x => monthKey(x.date) === k).reduce((a, x) => a + num(x.amount), 0);
     const total = rows.reduce((a, e) => a + num(e.amount), 0);
-    const paid = rows.filter(e => fin[e.id] && fin[e.id].final === 'Paid').reduce((a, e) => a + num(e.amount), 0);
-    out.push({ k, total, paid, unpaid: total - paid, diesel: dsl });
+    const unpaid = rows.reduce((a, e) => a + (fin[e.id] ? num(fin[e.id].bal) : 0), 0);
+    out.push({ k, total, paid: total - unpaid, unpaid, diesel: dsl });
   }
   return out;
 }
@@ -2095,7 +2149,10 @@ function pageHead(s) {
   const n = (k, one, many) => k + ' ' + (k === 1 ? one : many);
   let line = '';
   try {
-    if (TAB === 'machine') line = n(s.machines.length, 'machine', 'machines') + ' · ' + n(s.machineLog.length, 'log entry', 'log entries');
+    if (TAB === 'machine') {
+      const on = activeMachines(s).length, off = s.machines.length - on;
+      line = on + ' working' + (off ? ' · ' + off + ' removed' : '') + ' · ' + n(s.machineLog.length, 'log entry', 'log entries');
+    }
     else if (TAB === 'expense') line = n(s.expenseLog.length, 'entry', 'entries') + ' · this month ' + money(s.expenseLog.filter(e => monthKey(e.date) === monthKey(today())).reduce((a, e) => a + num(e.amount), 0));
     else if (TAB === 'diesel') line = n(s.dieselLog.length, 'bill', 'bills') + ' · ' + dec(s.dieselLog.reduce((a, d) => a + num(d.litres), 0)) + ' L purchased';
     else if (TAB === 'murum') line = n((s.murumLog || []).length, 'entry', 'entries');
@@ -2489,14 +2546,14 @@ function machineLogView(s) {
     <div class="chips">
       <button class="chip ${!f ? 'on' : ''}" data-act="mlFilter" data-v="">All${day ? ' (' + dayRows.length + ')' : ''}</button>
       ${noMachine ? `<button class="chip ${f === '__none' ? 'on' : ''}" data-act="mlFilter" data-v="__none">No machine (${noMachine})</button>` : ''}
-      ${chipList.map(m => `<button class="chip ${f === m.no ? 'on' : ''}" data-act="mlFilter" data-v="${esc(m.no)}">${esc(m.no)}${day ? ' (' + dayRows.filter(r => sameNo(r.machineNo, m.no)).length + ')' : ''}</button>`).join('')}
+      ${chipList.map(m => `<button class="chip ${f === m.no ? 'on' : ''}${m.removed ? ' off' : ''}" data-act="mlFilter" data-v="${esc(m.no)}"${m.removed ? ' title="Removed from site"' : ''}>${esc(m.no)}${day ? ' (' + dayRows.filter(r => sameNo(r.machineNo, m.no)).length + ')' : ''}</button>`).join('')}
     </div>
     ${shown.length ? byDay(shown, r => {
-      const h = hoursOf(r), ty = machineType(s, r.machineNo);
+      const h = hoursOf(r), ty = machineType(s, r.machineNo), gone = isRemoved(s, r.machineNo);
       return `<div class="row" data-act="mlEdit" data-v="${r.id}">
-        ${ava(ty || 'none', 'machine')}
+        <span class="${gone ? 'off' : ''}">${ava(ty || 'none', 'machine')}</span>
         <div class="main">
-          <div class="ttl">${r.machineNo ? esc(r.machineNo) + ' <span class="pill n">' + esc(ty || 'no type') + '</span>' : '<span class="pill u">machine number needed</span>'}</div>
+          <div class="ttl">${r.machineNo ? '<span class="' + (gone ? 'off' : '') + '">' + esc(r.machineNo) + '</span> <span class="pill n">' + esc(ty || 'no type') + '</span>' + (gone ? ' <span class="pill n off">removed</span>' : '') : '<span class="pill u">machine number needed</span>'}</div>
           <div class="sub">${has(r.inR) ? dec(r.inR, 1) : '—'} &rarr; ${has(r.outR) ? dec(r.outR, 1) : '—'}${r.diesel ? ' &middot; ' + dec(r.diesel) + ' L' : ''}${r.remark ? ' &middot; ' + esc(r.remark) : ''}${num(r.openDiesel) ? ' &middot; <b>opening ' + dec(r.openDiesel) + ' L</b>' : ''}</div>
         </div>
         <div class="amt">${dec(h)}<div class="tiny">hr</div></div>
@@ -2522,7 +2579,7 @@ function machineSumView(s) {
   const unassigned = s.machineLog.filter(r => !r.machineNo);
   return `
   <div class="kpis">
-    <div class="kpi"><div class="k">MACHINES</div><div class="v num">${s.machines.length}</div></div>
+    <div class="kpi"><div class="k">MACHINES WORKING</div><div class="v num">${activeMachines(s).length}${s.machines.length > activeMachines(s).length ? `<span class="tiny" style="font-weight:600"> / ${s.machines.length}</span>` : ''}</div></div>
     <div class="kpi"><div class="k">LOG ENTRIES</div><div class="v num">${tot.e}</div></div>
     <div class="kpi b"><div class="k">TOTAL HOURS</div><div class="v num">${dec(tot.h)}</div></div>
     <div class="kpi"><div class="k">DIESEL (L)</div><div class="v num">${dec(tot.d)}</div></div>
@@ -2538,7 +2595,7 @@ function machineSumView(s) {
     }).join('')}</tbody></table></div></div>
   <div class="card"><h3>Machine-wise</h3><div class="scroll"><table>
     <thead><tr><th>Machine</th><th class="n">Hours</th><th class="n">Diesel (L)</th><th class="n">L / hr</th><th class="n">Rent</th></tr></thead>
-    <tbody>${rows.filter(x => x.r.entries).sort((a, b) => b.r.hours - a.r.hours).map(x => `<tr><td class="nowrap"><b>${esc(x.m.no)}</b><div class="tiny">${esc(x.m.type)}${x.m.owner ? ' \u00b7 ' + esc(x.m.owner) : ''}</div></td><td class="n">${dec(x.r.hours)}<div class="tiny">${x.r.entries} entries</div></td><td class="n">${dec(x.r.diesel)}</td><td class="n"><b style="color:var(--rent)">${x.r.hours ? dec(x.r.diesel / x.r.hours, 2) : '—'}</b></td><td class="n">${money0(x.r.rent)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No log entries.</td></tr>'}</tbody>
+    <tbody>${rows.filter(x => x.r.entries).sort((a, b) => b.r.hours - a.r.hours).map(x => `<tr><td class="nowrap"><b class="${x.m.removed ? 'off' : ''}">${esc(x.m.no)}</b><div class="tiny">${esc(x.m.type)}${x.m.owner ? ' \u00b7 ' + esc(x.m.owner) : ''}${x.m.removed ? ' \u00b7 removed' : ''}</div></td><td class="n">${dec(x.r.hours)}<div class="tiny">${x.r.entries} entries</div></td><td class="n">${dec(x.r.diesel)}</td><td class="n"><b style="color:var(--rent)">${x.r.hours ? dec(x.r.diesel / x.r.hours, 2) : '—'}</b></td><td class="n">${money0(x.r.rent)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No log entries.</td></tr>'}</tbody>
   </table></div></div>`;
 }
 
@@ -2549,7 +2606,7 @@ function machineRentView(s) {
   const logs = no ? s.machineLog.filter(x => x.machineNo === no && inRange(x.date, from, to)).sort(byDateDesc) : [];
   return `
   <div class="card"><h3>Select machine and period</h3><div class="pad">
-    <div class="field"><label>Machine no</label><select data-act="rentMachine">${s.machines.map(x => `<option ${x.no === no ? 'selected' : ''}>${esc(x.no)}</option>`).join('')}</select></div>
+    <div class="field"><label>Machine no</label><select data-act="rentMachine">${s.machines.map(x => `<option value="${esc(x.no)}" ${x.no === no ? 'selected' : ''}>${esc(x.no)}${x.removed ? ' (removed)' : ''}</option>`).join('')}</select></div>
     <div class="f2">
       <div class="field"><label>From date</label><input type="date" value="${from}" data-act="rentFrom"></div>
       <div class="field"><label>To date</label><input type="date" value="${to}" data-act="rentTo"></div>
@@ -2613,17 +2670,31 @@ function machineMasterView(s) {
     <button class="btn sec sm" style="width:100%" data-act="rmAdd">${ICON.plus}Add machine type</button>
     <div class="tiny" style="margin-top:8px">Tap a type to change its rate. For a machine with its own rate, open that machine and set it there.</div>
   </div></div>
-  <div class="card"><h3>Machines<small>${s.machines.length}</small></h3>
-    ${s.machines.map(m => `<div class="row" data-act="mEdit" data-v="${m.id}">
-      ${ava(m.type || 'none', 'machine')}
-      <div class="main"><div class="ttl">${esc(m.no)} <span class="pill n">${esc(m.type)}</span></div>
+  ${(() => {
+    const mrow = m => `<div class="row" data-act="mEdit" data-v="${m.id}">
+      <span class="${m.removed ? 'off' : ''}">${ava(m.type || 'none', 'machine')}</span>
+      <div class="main"><div class="ttl"><span class="${m.removed ? 'off' : ''}">${esc(m.no)}</span> <span class="pill n">${esc(m.type)}</span>${m.removed ? ' <span class="pill n">removed' + (m.removedOn ? ' ' + fmtDate(m.removedOn) : '') + '</span>' : ''}</div>
       <div class="sub">${esc(m.owner || 'no owner')}${m.operator ? ' &middot; ' + esc(m.operator) : ''}${(() => { const q = machineRent(s, m.no); return q.hours ? ' &middot; <b>' + dec(q.diesel / q.hours, 2) + ' L/hr</b>' : ''; })()}</div></div>
       <div class="amt tiny" style="font-weight:600">${has(m.monthlyRate) && num(m.monthlyRate) ? money0(m.monthlyRate) : ''}</div>
-      <button class="rowbtn" data-act="mRename" data-v="${m.id}">Rename</button>
-      <button class="rowbtn" data-act="mBillAsk" data-v="${esc(m.no)}" style="color:var(--hivis-dk)">PDF</button>
-      <button class="rowbtn" data-act="mDelOne" data-v="${m.id}" style="color:var(--due)">Delete</button>
-    </div>`).join('') || '<div class="empty">No machines yet.</div>'}
-  </div>`;
+      <div class="rbtns">
+        ${m.removed
+          ? `<button class="rowbtn" data-act="mRestore" data-v="${m.id}" style="color:var(--paid)">Restore</button>`
+          : `<button class="rowbtn" data-act="mRename" data-v="${m.id}">Rename</button>`}
+        <button class="rowbtn" data-act="mBillAsk" data-v="${esc(m.no)}" style="color:var(--hivis-dk)">PDF</button>
+        ${m.removed ? '' : `<button class="rowbtn" data-act="mRemove" data-v="${m.id}">Remove</button>`}
+        <button class="rowbtn" data-act="mDelOne" data-v="${m.id}" style="color:var(--due)">Delete</button>
+      </div>
+    </div>`;
+    const on = s.machines.filter(m => !m.removed), off = s.machines.filter(m => m.removed);
+    return `<div class="card"><h3>Machines on site<small>${on.length}</small></h3>
+      ${on.map(mrow).join('') || '<div class="empty">No machines yet.</div>'}
+      <div class="pad tiny"><b>Remove</b> takes a machine off the site: it stays here and in every report, but is no longer offered when you add a machine entry. <b>Delete</b> erases it.</div>
+    </div>
+    ${off.length ? `<div class="card"><h3>Removed from site<small>${off.length}</small></h3>
+      ${off.map(mrow).join('')}
+      <div class="pad tiny">Their old log entries, hours and rent are kept. Tap <b>Restore</b> to bring a machine back.</div>
+    </div>` : ''}`;
+  })()}`;
 }
 
 /* ---------------- DIESEL ---------------- */
@@ -2654,17 +2725,21 @@ function dieselLogView(s) {
 function dieselSumView(s) {
   const t = totals(s);
   const avg = t.dsLitres ? t.dsTotal / t.dsLitres : 0;
+  const vs = s.dieselVendors.map(v => ({ v, x: dieselVendorStats(s, v) }));
+  const T = vs.reduce((a, o) => ({ l: a.l + o.x.litres, a: a.a + o.x.amount, d: a.d + o.x.direct, p: a.p + o.x.payments, r: a.r + o.x.remaining }), { l: 0, a: 0, d: 0, p: 0, r: 0 });
   return `
   <div class="kpis">
     <div class="kpi"><div class="k">TOTAL LITRES</div><div class="v num">${dec(t.dsLitres)}</div></div>
     <div class="kpi"><div class="k">TOTAL AMOUNT</div><div class="v num">${money0(t.dsTotal)}</div></div>
-    <div class="kpi"><div class="k">AVG RATE / L</div><div class="v num">${dec(avg, 2)}</div></div>
-    <div class="kpi r"><div class="k">UNPAID</div><div class="v num">${money0(t.dsUnpaid)}</div></div>
+    <div class="kpi g"><div class="k">PAID</div><div class="v num">${money0(t.dsPaidFinal)}</div></div>
+    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(t.dsUnpaidFinal)}</div></div>
   </div>
-  <div class="card"><h3>Vendor-wise</h3><div class="scroll"><table>
+  <div class="card"><h3>Vendor-wise<small>avg ${avg ? '&#8377;' + dec(avg, 2) : '—'} / L</small></h3><div class="scroll"><table>
     <thead><tr><th>Vendor</th><th class="n">Litres</th><th class="n">Amount</th><th class="n">Direct paid</th><th class="n">Payments</th><th class="n">Balance</th></tr></thead>
-    <tbody>${s.dieselVendors.map(v => { const x = dieselVendorStats(s, v); return `<tr data-act="vBill" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div></td><td class="n">${dec(x.litres)}</td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>`; }).join('') || '<tr><td colspan="6" class="muted">Add a diesel vendor.</td></tr>'}</tbody>
-  </table></div></div>
+    <tbody>${vs.map(({ v, x }) => `<tr data-act="vBill" data-v="${esc(v)}"><td class="nowrap">${esc(v)}<div class="tiny" style="color:var(--hivis-dk)">PDF</div></td><td class="n">${dec(x.litres)}</td><td class="n">${money0(x.amount)}</td><td class="n">${money0(x.direct)}</td><td class="n">${money0(x.payments)}</td><td class="n"><b style="color:${x.remaining > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(x.remaining)}</b></td></tr>`).join('') || '<tr><td colspan="6" class="muted">Add a diesel vendor.</td></tr>'}</tbody>
+    ${vs.length ? `<tfoot><tr><td>TOTAL</td><td class="n">${dec(T.l)}</td><td class="n">${money0(T.a)}</td><td class="n">${money0(T.d)}</td><td class="n">${money0(T.p)}</td><td class="n">${money0(T.r)}</td></tr></tfoot>` : ''}
+  </table></div>
+  <div class="pad tiny">Pending is what is still owed after direct payments and vendor payments &mdash; a payment clears that pump's oldest bills first. A bill marked Unpaid that a later payment has covered is not counted.</div></div>
   <div class="card"><h3>Machine-wise diesel</h3><div class="scroll"><table>
     <thead><tr><th>Machine</th><th class="n">Diesel (L)</th><th class="n">Hours</th><th class="n">L / hr</th></tr></thead>
     <tbody>${s.machines.map(m => ({ m, r: machineRent(s, m.no) })).filter(x => x.r.diesel > 0).sort((a, b) => b.r.diesel - a.r.diesel).map(x => `<tr><td class="nowrap"><b>${esc(x.m.no)}</b></td><td class="n">${dec(x.r.diesel)}</td><td class="n">${dec(x.r.hours)}</td><td class="n">${x.r.hours ? dec(x.r.diesel / x.r.hours, 2) : '—'}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Appears once diesel is filled in the machine log.</td></tr>'}</tbody>
@@ -2745,15 +2820,16 @@ function vendorPendView(s) {
   const pend = s.expenseLog.filter(e => fin[e.id].final === 'Unpaid').sort(byDateDesc);
   const byV = {}; pend.forEach(e => { const v = e.vendor || '(no vendor)'; (byV[v] = byV[v] || []).push(e); });
   const dieselPend = s.dieselLog.filter(d => fin[d.id] && fin[d.id].final === 'Unpaid');
-  const total = pend.reduce((a, e) => a + num(e.amount), 0);
+  const bal = r => (fin[r.id] ? num(fin[r.id].bal) : num(r.amount));
+  const total = pend.reduce((a, e) => a + bal(e), 0);
   return `
   <div class="kpis">
     <div class="kpi r"><div class="k">SITE PENDING</div><div class="v num">${money0(total)}</div></div>
-    <div class="kpi r"><div class="k">DIESEL PENDING</div><div class="v num">${money0(dieselPend.reduce((a, d) => a + num(d.amount), 0))}</div></div>
+    <div class="kpi r"><div class="k">DIESEL PENDING</div><div class="v num">${money0(dieselPend.reduce((a, d) => a + bal(d), 0))}</div></div>
   </div>
   ${Object.keys(byV).sort().map(v => {
     const list = byV[v]; const vs = v === '(no vendor)' ? null : vendorStats(s, v);
-    return `<div class="card"><h3>${esc(v)}<small>balance ${money(list.reduce((a, e) => a + num(e.amount), 0))}</small></h3>
+    return `<div class="card"><h3>${esc(v)}<small>balance ${money(list.reduce((a, e) => a + bal(e), 0))}</small></h3>
       ${list.map(e => `<div class="row" data-act="eEdit" data-v="${e.id}">${ava(e.category, catIcon(e.category))}<div class="main"><div class="ttl">${esc(e.desc || e.category)}</div><div class="sub">${fmtDate(e.date)} &middot; ${esc(e.category)}</div></div>
         <div class="amt">${money0(e.amount)}${(fin[e.id] && fin[e.id].paid > 0.5) ? `<div class="tiny" style="font-weight:700;color:var(--paid)">- ${money0(fin[e.id].paid)}</div><div class="tiny" style="font-weight:700;color:var(--due)">balance ${money0(fin[e.id].bal)}</div>` : ''}</div></div>`).join('')}
       ${vs ? `<div class="pad"><button class="btn sm" data-act="vpAdd" data-v="${esc(v)}">Make payment</button></div>` : ''}
@@ -2929,7 +3005,7 @@ VIEW.murum = s => {
     <div class="kpi"><div class="k">TOTAL ${esc((s.murumUnit || 'Brass').toUpperCase())}</div><div class="v num">${dec(t.muQty)}</div></div>
     <div class="kpi"><div class="k">TOTAL AMOUNT</div><div class="v num">${money0(t.muTotal)}</div></div>
     <div class="kpi"><div class="k">AVG RATE</div><div class="v num">${dec(avg, 0)}</div></div>
-    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(t.muUnpaid)}</div></div>
+    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(t.muUnpaidFinal)}</div></div>
   </div>
   <div class="card">${shown.length ? byDay(shown, r => `<div class="row" data-act="muEdit" data-v="${r.id}">
       ${ava('', 'murum', 'c4')}
@@ -3796,14 +3872,93 @@ function billLogoImg() {
     : '';
 }
 
-function billHead(title, sub) {
-  return `<div class="bhead">
-    <div class="bhead-txt"><h1>${esc(title)}</h1>
-      <div class="meta">${esc(bTag())}${sub ? '<br>' + sub : ''}</div></div>
+/* 29 Sep 2026 */
+function fmtLong(d) {
+  const p = String(d || '').split('-');
+  if (p.length !== 3) return fmtDate(d);
+  return (+p[2]) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+p[1] - 1] + ' ' + p[0];
+}
+
+/* Indian numbering in words: 2,45,300 -> "Two Lakh Forty Five Thousand Three Hundred" */
+function numWords(n) {
+  const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve',
+    'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const two = x => x < 20 ? a[x] : b[Math.floor(x / 10)] + (x % 10 ? ' ' + a[x % 10] : '');
+  const three = x => (x >= 100 ? a[Math.floor(x / 100)] + ' Hundred' + (x % 100 ? ' ' : '') : '') + (x % 100 ? two(x % 100) : '');
+  if (!n) return 'Zero';
+  const out = [];
+  const cr = Math.floor(n / 1e7); n %= 1e7;
+  if (cr) out.push(numWords(cr) + ' Crore');
+  const lk = Math.floor(n / 1e5); n %= 1e5;
+  if (lk) out.push(two(lk) + ' Lakh');
+  const th = Math.floor(n / 1e3); n %= 1e3;
+  if (th) out.push(two(th) + ' Thousand');
+  if (n) out.push(three(n));
+  return out.join(' ');
+}
+const inWords = v => { const n = Math.round(num(v)); return (n < 0 ? 'Minus ' : '') + 'Rupees ' + numWords(Math.abs(n)) + ' Only'; };
+
+/* the company block at the top of every printed page */
+function letterhead() {
+  const s = site(), co = s.co || {};
+  const name = co.name || s.name || 'Site Manager';
+  const addr = [co.line1, co.line2].filter(Boolean).map(esc).join(', ');
+  const contact = [co.mobile ? 'Mobile ' + esc(co.mobile) : '', co.email ? esc(co.email) : '', co.gstin ? 'GSTIN ' + esc(co.gstin) : ''].filter(Boolean).join('  &middot;  ');
+  return `<div class="lh">
+    <div class="lh-l"><div class="lh-co">${esc(name)}</div>
+      ${addr ? `<div class="lh-ad">${addr}</div>` : ''}${contact ? `<div class="lh-ad">${contact}</div>` : ''}</div>
     ${billLogoImg()}
   </div>`;
 }
-const kpi = list => `<div class="kpi">${list.filter(Boolean).map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join('')}</div>`;
+
+/* key / value boxes under the document title */
+function metaGrid(kv) {
+  const list = kv.filter(x => x && x[1] !== '' && x[1] != null);
+  if (!list.length) return '';
+  const cols = list.length >= 3 ? 3 : list.length;
+  while (list.length % cols) list.push(['', '']);
+  return `<div class="dm" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${list.map(([k, v]) => `<div><span>${k ? esc(k) : '&nbsp;'}</span><b>${v || '&nbsp;'}</b></div>`).join('')}</div>`;
+}
+
+/* "Machine Report  -  PC-01" with "Owner: X<br>Period: Y" underneath */
+function billHead(title, sub) {
+  const s = site(), co = s.co || {};
+  const tm = String(title).match(/^(.*?)\s+-\s+(.*)$/);   /* split on the first " - " only: "PC - 01" stays whole */
+  const doc = tm ? tm[1] : String(title), subj = tm ? tm[2] : '';
+  const kv = [], notes = [];
+  String(sub || '').split(/<br\s*\/?>/i).map(x => x.trim()).filter(Boolean).forEach(p => {
+    const m = p.match(/^([^:<]{1,40}):\s*(.*)$/);
+    if (m) kv.push([m[1].trim(), m[2]]); else notes.push(p);
+  });
+  if (co.name && co.name !== s.name) kv.unshift(['Site', esc(s.name)]);
+  return `${letterhead()}
+  <div class="dt">
+    <div><div class="dt-k">${esc(subj ? doc : 'Report')}</div><div class="dt-t">${esc(subj || doc)}</div></div>
+    <div class="dt-r">Date <b>${fmtLong(today())}</b>${notes.length ? '<br>' + notes.join('<br>') : ''}</div>
+  </div>
+  ${metaGrid(kv)}`;
+}
+
+/* the figures strip — the one that settles the account is printed dark */
+const KPI_HL = /NET PAYABLE|REMAINING DUE|NET PENDING|BALANCE DUE/i;
+const kpi = list => `<div class="kpi">${list.filter(Boolean).map(([k, v]) => `<div class="${KPI_HL.test(k) ? 'hl' : ''}"><span>${esc(k)}</span><b>${v}</b></div>`).join('')}</div>`;
+
+/* right-aligned totals with the last line as the grand figure, and the amount in words */
+function totalsBlock(rows, words) {
+  const list = rows.filter(Boolean);
+  return `<div class="tot">${list.map(([k, v], i) => `<div class="${i === list.length - 1 ? 'grand' : ''}"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+    ${words != null ? `<div class="words">Amount in words: <b>${esc(inWords(words))}</b></div>` : ''}`;
+}
+
+/* bottom line of every report */
+function billFoot() {
+  const s = site(), co = s.co || {};
+  const d = new Date(), h = d.getHours(), mi = String(d.getMinutes()).padStart(2, '0');
+  const time = ((h % 12) || 12) + ':' + mi + (h < 12 ? ' AM' : ' PM');
+  return `<div class="bfoot"><span>${esc(co.name || s.name || '')}${co.name && co.name !== s.name ? ' &middot; ' + esc(s.name) : ''}</span>
+    <span>Computer-generated &middot; printed ${fmtLong(today())}, ${time}</span></div>`;
+}
 
 /* ---------------- MACHINE BILL ---------------- */
 function machineBill(s, no, from, to) {
@@ -3817,7 +3972,8 @@ function machineBill(s, no, from, to) {
       'Machine type: ' + esc(m.type || '-') +
       '<br>Owner: ' + esc(m.owner || '-') +
       '<br>Driver / Operator: ' + esc(m.operator || '-') +
-      (m.make ? '<br>Make: ' + esc(m.make) : '') + '<br>Period: ' + periodTxt(from, to))}
+      (m.make ? '<br>Make: ' + esc(m.make) : '') + '<br>Period: ' + periodTxt(from, to) +
+      (m.removed ? '<br>Status: Removed from site' + (m.removedOn ? ' on ' + fmtDate(m.removedOn) : '') : ''))}
     ${kpi([
       ['TOTAL ENTRIES', r.entries],
       ['TOTAL HOURS', dec(r.hours)],
@@ -3840,7 +3996,7 @@ function machineBill(s, no, from, to) {
       }).join('') || '<tr><td colspan="8">No entries</td></tr>'}</tbody>
       <tfoot><tr><td colspan="4">TOTAL</td><td class="n">${dec(r.hours)}</td><td class="n">${dec(r.diesel)}</td><td class="n">${lph ? dec(lph, 2) : '-'}</td><td></td></tr></tfoot>
     </table>
-    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+    <div class="sign"><div><i></i>Prepared by</div><div><i></i>Checked by</div></div>
   </div>`;
 }
 
@@ -3874,21 +4030,21 @@ function vendorBill(s, v) {
 
   const row = it => `<tr><td>${fmtDate(it.date)}</td><td>${esc(it.kind)}</td><td>${esc(it.desc)}${it.qty ? ' <span style="color:#555C4C">(' + it.qty + ')</span>' : ''}</td>
     <td class="n">${money0(it.amount)}</td>
-    <td class="n">${it.f.alloc > 0.5 ? money0(it.f.alloc) : (it.f.final === 'Paid' ? money0(it.amount) : '-')}</td>
+    <td class="n">${it.f.paid > 0.5 ? money0(it.f.paid) : (it.f.final === 'Paid' ? money0(it.amount) : '-')}</td>
     <td class="n">${it.f.final === 'Paid' ? '0' : money0(it.f.bal != null ? it.f.bal : it.amount)}</td>
-    <td>${it.f.final === 'Paid' ? 'Paid' + (it.f.by ? ' (' + esc(it.f.by) + ')' : '') : (it.f.alloc > 0.5 ? 'Part paid' : 'Unpaid')}</td></tr>`;
+    <td>${it.f.final === 'Paid' ? 'Paid' + (it.f.by ? ' (' + esc(it.f.by) + ')' : '') : (it.f.paid > 0.5 ? 'Part paid' : 'Unpaid')}</td></tr>`;
 
   const paidItems = items.filter(it => it.f.final === 'Paid');
   const dueItems = items.filter(it => it.f.final !== 'Paid');
 
   return `<div class="bill">
-    ${billHead('Vendor Statement  -  ' + v, dv ? 'Diesel vendor' : 'Site vendor')}
+    ${billHead('Vendor Statement  -  ' + v, 'Vendor type: ' + (dv ? 'Diesel supplier' : 'Site vendor') + '<br>Period: All entries till ' + fmtDate(today()))}
     ${kpi([
-      ['TOTAL AMOUNT', money0(total)],
-      ['DIRECT PAID', money0(direct)],
-      ['PAYMENTS MADE', money0(payments)],
-      ['TOTAL PAID', money0(direct + payments)],
-      ['REMAINING DUE', money0(remaining)]
+      ['TOTAL AMOUNT', money(total)],
+      ['DIRECT PAID', money(direct)],
+      ['PAYMENTS MADE', money(payments)],
+      ['TOTAL PAID', money(direct + payments)],
+      ['REMAINING DUE', money(remaining)]
     ])}
 
     <h2>Payments made (date wise)</h2>
@@ -3905,7 +4061,7 @@ function vendorBill(s, v) {
       <tbody>${dueItems.map(row).join('') || '<tr><td colspan="7">Nothing pending</td></tr>'}</tbody>
       <tfoot><tr><td colspan="3">TOTAL PENDING</td>
         <td class="n">${money0(dueItems.reduce((a, i) => a + i.amount, 0))}</td>
-        <td class="n">${money0(dueItems.reduce((a, i) => a + (i.f.alloc || 0), 0))}</td>
+        <td class="n">${money0(dueItems.reduce((a, i) => a + (i.f.paid || 0), 0))}</td>
         <td class="n">${money0(dueItems.reduce((a, i) => a + (i.f.bal != null ? i.f.bal : i.amount), 0))}</td><td></td></tr></tfoot>
     </table>
 
@@ -3916,20 +4072,21 @@ function vendorBill(s, v) {
       <tfoot><tr><td colspan="3">TOTAL PAID</td><td class="n">${money0(paidItems.reduce((a, i) => a + i.amount, 0))}</td><td class="n"></td><td class="n">0</td><td></td></tr></tfoot>
     </table>
 
-    <table>
-      <tbody>
-        <tr><th>Total work / bills</th><td class="n">${money0(total)}</td></tr>
-        <tr><th>Total paid (direct + payments)</th><td class="n">${money0(direct + payments)}</td></tr>
-        <tr><th>REMAINING DUE</th><td class="n"><b>${money0(remaining)}</b></td></tr>
-      </tbody>
-    </table>
-    <div class="sign"><div>Vendor signature ______________</div><div>For ${esc(site().name)} ______________</div></div>
+    <h2>Account summary</h2>
+    ${totalsBlock([
+      ['Total work / bills', money(total)],
+      ['Paid directly', money(direct)],
+      ['Payments made', money(payments)],
+      ['Remaining due', money(remaining)]
+    ], remaining)}
+    <div class="sign"><div><i></i>Vendor signature</div><div><i></i>For ${esc(site().name)}</div></div>
   </div>`;
 }
 
 /* ---------------- print screen ---------------- */
 function openBill(html, name) {
   PRINT_NAME = name || 'report';
+  html = String(html).replace(/<\/div>\s*$/, billFoot() + '</div>');
   $('#print').innerHTML = `<div class="prt">${html}</div>
     <div class="prtbar">
       <button class="btn" style="flex:1" data-act="prtGo">${ICON.print}Print / Save as PDF</button>
@@ -3959,7 +4116,7 @@ function dayBill(s, date, type) {
   const types = [...new Set(rows.map(r => machineType(s, r.machineNo) || '-'))];
 
   return `<div class="bill">
-    ${billHead('Daily Machine Report  -  ' + fmtDate(date), type ? 'Machine type: ' + esc(type) : 'All machine types')}
+    ${billHead('Daily Machine Report  -  ' + fmtLong(date), 'Machine type: ' + (type ? esc(type) : 'All types') + '<br>Work date: ' + fmtDate(date))}
     ${kpi([
       ['MACHINES WORKED', machines],
       ['TOTAL HOURS', dec(hrs)],
@@ -4005,7 +4162,7 @@ function dayBill(s, date, type) {
       <tfoot><tr><td colspan="2">TOTAL</td><td class="n">${dec(recL)}</td><td class="n">${money0(bills.reduce((a, d) => a + num(d.amount), 0))}</td><td></td></tr></tfoot>
     </table>` : ''}
 
-    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+    <div class="sign"><div><i></i>Prepared by</div><div><i></i>Checked by</div></div>
   </div>`;
 }
 
@@ -4019,14 +4176,14 @@ function ownerBill(s, owner, from, to, detail) {
   const dsl = b.lines.reduce((a, x) => a + x.r.diesel, 0);
 
   return `<div class="bill">
-    ${billHead('Machine Rent Bill', 'Owner: <b>' + esc(owner) + '</b><br>Period: ' + period)}
+    ${billHead('Machine Rent Bill  -  ' + owner, 'Period: ' + period + '<br>Machines: ' + b.lines.length)}
     ${kpi([
       ['MACHINES', b.lines.length],
       ['TOTAL HOURS', dec(hrs)],
-      ['RENT THIS PERIOD', money0(b.rent)],
-      b.opening ? ['PREVIOUS BALANCE', money0(b.opening)] : null,
-      ['PAID', money0(b.paid)],
-      ['NET PAYABLE', money0(b.payable)]
+      ['RENT THIS PERIOD', money(b.rent)],
+      b.opening ? ['PREVIOUS BALANCE', money(b.opening)] : null,
+      ['PAID', money(b.paid)],
+      ['NET PAYABLE', money(b.payable)]
     ])}
 
     <h2>Machine-wise rent</h2>
@@ -4045,14 +4202,12 @@ function ownerBill(s, owner, from, to, detail) {
     </table>
 
     <h2>Account</h2>
-    <table>
-      <tbody>
-        ${b.opening ? `<tr><td>Previous balance</td><td class="n">${money0(b.opening)}</td></tr>` : ''}
-        <tr><td>Rent for this period</td><td class="n">${money0(b.rent)}</td></tr>
-        <tr><td>Less: payments made</td><td class="n">- ${money0(b.paid)}</td></tr>
-      </tbody>
-      <tfoot><tr><td>NET PAYABLE</td><td class="n">${money0(b.payable)}</td></tr></tfoot>
-    </table>
+    ${totalsBlock([
+      b.opening ? ['Previous balance', money(b.opening)] : null,
+      ['Rent for this period', money(b.rent)],
+      ['Less: payments made', '- ' + money(b.paid)],
+      ['Net payable', money(b.payable)]
+    ], b.payable)}
 
     ${b.pays.length ? `<h2>Payments in this period</h2>
     <table>
@@ -4079,7 +4234,7 @@ function ownerBill(s, owner, from, to, detail) {
       </table>`;
     }).join('') : ''}
 
-    <div class="sign"><div>Prepared by ______________</div><div>Owner signature ______________</div></div>
+    <div class="sign"><div><i></i>Prepared by</div><div><i></i>Owner signature</div></div>
   </div>`;
 }
 
@@ -4101,55 +4256,47 @@ function billInvoice(s, b) {
   const hrs = (b.items || []).reduce((a, i) => a + num(i.hours), 0);
   const co = s.co || {};
   return `<div class="bill">
-    <div class="bhead">
-      <div class="bhead-txt"><h1>${esc(co.name || s.name || 'MACHINE RENT BILL')}</h1>
-        <div class="meta">
-          ${[co.line1, co.line2].filter(Boolean).map(esc).join('<br>')}${(co.line1 || co.line2) ? '<br>' : ''}
-          ${co.mobile ? 'Mobile: ' + esc(co.mobile) : ''}${co.email ? (co.mobile ? '  |  ' : '') + 'Email: ' + esc(co.email) : ''}
-          ${co.gstin ? '<br>GSTIN: ' + esc(co.gstin) : ''}
-        </div></div>
-      ${billLogoImg()}
+    ${letterhead()}
+    <div class="dt">
+      <div><div class="dt-k">Machine rent</div><div class="dt-t">Invoice</div></div>
+      <div class="dt-r">Bill no <b>${esc(b.no || '-')}</b><br>Date <b>${fmtLong(b.date)}</b></div>
     </div>
-
-    <h2 style="text-align:center;letter-spacing:.06em">INVOICE / BILL</h2>
+    ${metaGrid([
+      ['Machine owner', '<b>' + esc(b.owner || '-') + '</b>'],
+      ['Owner mobile', esc(b.mobile || '')],
+      ['Site / work place', esc(b.site || s.name || '-')],
+      (b.from || b.to) ? ['Work period', fmtDate(b.from) + ' to ' + fmtDate(b.to)] : null,
+      hrs ? ['Total hours', dec(hrs) + ' hrs'] : null,
+      ['Machines', String((b.items || []).length)]
+    ])}
 
     <table>
-      <tbody>
-        <tr><td style="width:36%">Bill No</td><td><b>${esc(b.no || '-')}</b></td></tr>
-        <tr><td>Date</td><td>${fmtDate(b.date)}</td></tr>
-        <tr><td>Machine owner</td><td><b>${esc(b.owner || '-')}</b></td></tr>
-        ${b.mobile ? `<tr><td>Owner mobile</td><td>${esc(b.mobile)}</td></tr>` : ''}
-        <tr><td>Site / work place</td><td>${esc(b.site || s.name || '-')}</td></tr>
-        ${(b.from || b.to) ? `<tr><td>Work period</td><td>${fmtDate(b.from)} to ${fmtDate(b.to)}</td></tr>` : ''}
-      </tbody>
-    </table>
-
-    <table style="margin-top:12px">
       <thead><tr>
-        <th style="width:8%">Sr. No.</th>
-        <th>Machine Type / Description</th>
-        <th class="n">Rate (Per Hour)</th>
-        <th class="n">Total Hours</th>
-        <th class="n">Amount (Rs.)</th>
+        <th style="width:7%">Sr</th>
+        <th>Machine / description</th>
+        <th class="n">Hours</th>
+        <th class="n">Rate / hr</th>
+        <th class="n">Amount (&#8377;)</th>
       </tr></thead>
       <tbody>${(b.items || []).map((i, k) => `<tr>
-        <td class="n">${k + 1}.</td>
-        <td>${esc(i.desc || '')}</td>
+        <td class="sr">${k + 1}</td>
+        <td><b>${esc(i.desc || '')}</b></td>
+        <td class="n">${num(i.hours) ? dec(i.hours) : 'Lumpsum'}</td>
         <td class="n">${num(i.rate) ? money0(i.rate) : 'Fixed'}</td>
-        <td class="n">${num(i.hours) ? dec(i.hours) + ' Hrs' : 'Lumpsum'}</td>
-        <td class="n">${money0(i.amount)}/-</td></tr>`).join('') || '<tr><td colspan="5">No items</td></tr>'}</tbody>
-      <tfoot>
-        <tr><td colspan="3">Total</td><td class="n">${hrs ? dec(hrs) + ' Hrs' : ''}</td><td class="n">${money0(tot)}/-</td></tr>
-        <tr><td colspan="4"><b>Grand Total</b></td><td class="n"><b>${money0(tot)}/-</b></td></tr>
-        ${rec ? `<tr><td colspan="4">Received</td><td class="n">- ${money0(rec)}/-</td></tr>
-          <tr><td colspan="4"><b>Balance Due</b></td><td class="n"><b>${money0(due)}/-</b></td></tr>` : ''}
-      </tfoot>
+        <td class="n">${money0(i.amount)}</td></tr>`).join('') || '<tr><td colspan="5">No items</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="2">Total</td><td class="n">${hrs ? dec(hrs) : ''}</td><td></td><td class="n">${money0(tot)}</td></tr></tfoot>
     </table>
 
-    ${b.note ? `<div class="meta" style="margin-top:10px">Note: ${esc(b.note)}</div>` : ''}
-    ${co.bank ? `<div class="meta" style="margin-top:6px">Bank: ${esc(co.bank)}</div>` : ''}
-    ${co.terms ? `<div class="meta" style="margin-top:6px">${esc(co.terms)}</div>` : ''}
-    <div class="sign"><div>Owner signature ______________</div><div>For ${esc(co.name || s.name || '')} ______________</div></div>
+    ${totalsBlock(rec
+      ? [['Grand total', money(tot)], ['Less: received', '- ' + money(rec)], ['Balance due', money(due)]]
+      : [['Sub total', money(tot)], ['Grand total', money(tot)]], rec ? due : tot)}
+
+    ${(b.note || co.bank || co.terms) ? `<div class="bnote">
+      ${b.note ? `<div><span>Note</span>${esc(b.note)}</div>` : ''}
+      ${co.bank ? `<div><span>Bank details</span>${esc(co.bank)}</div>` : ''}
+      ${co.terms ? `<div><span>Terms</span>${esc(co.terms)}</div>` : ''}
+    </div>` : ''}
+    <div class="sign"><div><i></i>Machine owner signature</div><div><i></i>For ${esc(co.name || s.name || '')}<br><small>Authorised signatory</small></div></div>
   </div>`;
 }
 
@@ -4229,13 +4376,15 @@ const segVal = id => { const e = document.querySelector('#' + id + ' button.on')
 
 /* ---------- machine log ---------- */
 function machineForm(s, rec) {
-  const r = rec || { date: today(), machineNo: (s.machines[0] || {}).no || '', inR: '', outR: '', diesel: '', remark: '' };
+  const r = rec || { date: today(), machineNo: (activeMachines(s)[0] || {}).no || '', inR: '', outR: '', diesel: '', remark: '' };
+  const hidden = s.machines.length - activeMachines(s).length;
   openSheet(rec ? 'Edit machine entry' : 'New machine entry', `
     <div class="card"><div class="pad">
       <div class="f2">
         <div class="field"><label>Date</label><input type="date" id="f_date" value="${r.date || ''}"></div>
-        <div class="field"><label>Machine no</label><select id="f_no">${selOpts(s.machines.map(m => m.no), r.machineNo)}</select></div>
+        <div class="field"><label>Machine no</label><select id="f_no">${selOpts(activeMachines(s).map(m => m.no), r.machineNo)}</select></div>
       </div>
+      ${(!rec && hidden) ? `<div class="tiny" style="margin:-6px 0 8px">${hidden} removed machine${hidden === 1 ? ' is' : 's are'} not listed.</div>` : ''}
       <div class="tiny" id="f_type" style="margin:-4px 0 10px"></div>
       <div class="f3">
         <div class="field"><label>In reading</label><input type="number" inputmode="decimal" step="0.1" id="f_in" value="${has(r.inR) ? r.inR : ''}"></div>
@@ -4390,11 +4539,19 @@ function machineMasterForm(s, rec) {
         <div class="field"><label>Rate for this machine</label><input type="number" inputmode="decimal" id="f_rate" value="${has(r.monthlyRate) ? r.monthlyRate : ''}" placeholder="from Rate Master"></div>
       </div>
       <div class="tiny">Leave this empty to use the Rate Master rate for the type. Fill it only if this machine has its own rate.</div>
+      ${rec ? `<div style="margin-top:14px">${segField('Status on site', 'f_mst', ['Working', 'Removed'], rec.removed ? 'Removed' : 'Working')}</div>
+      <div class="tiny" style="margin-top:-4px">Removed machines stay in reports but are not offered in new machine entries.</div>` : ''}
     </div></div>`,
     () => {
       const no = val('f_no'); if (!no) return toast('Enter the machine number');
       const o = { no, type: val('f_type'), owner: val('f_own'), operator: val('f_op'), make: val('f_make'), monthlyRate: numVal('f_rate') };
-      if (rec) { const old = rec.no; Object.assign(rec, o); if (old !== no) s.machineLog.forEach(l => { if (l.machineNo === old) l.machineNo = no; }); }
+      if (rec) {
+        const old = rec.no; Object.assign(rec, o);
+        if (old !== no) s.machineLog.forEach(l => { if (l.machineNo === old) l.machineNo = no; });
+        const gone = segVal('f_mst') === 'Removed';
+        if (gone && !rec.removed) { rec.removed = true; rec.removedOn = today(); }
+        if (!gone) { delete rec.removed; delete rec.removedOn; }
+      }
       else s.machines.push({ id: uid(), ...o });
       return true;
     },
@@ -5757,8 +5914,24 @@ document.addEventListener('click', async e => {
       if (!v) break;
       openBill(vendorBill(s, v), 'vendor-' + v);
       render(); break;
-    case 'prtGo': try { window.print(); } catch (e) { toast('Print failed'); } break;
+    case 'prtGo': {
+      /* the page title becomes the PDF's file name */
+      const was = document.title;
+      document.title = ((site().name || 'Site') + ' - ' + PRINT_NAME + ' - ' + fmtDate(today()).replace(/\//g, '-')).replace(/[\\/:*?"<>|]+/g, ' ');
+      try { window.print(); } catch (e) { toast('Print failed'); }
+      setTimeout(() => { document.title = was; }, 1500);
+      break;
+    }
     case 'prtClose': closeBill(); render(); break;
+    case 'mRemove': case 'mRestore': {
+      const m = s.machines.find(x => x.id === v);
+      if (!m) break;
+      if (a === 'mRemove') { m.removed = true; m.removedOn = today(); }
+      else { delete m.removed; delete m.removedOn; }
+      await save(); render();
+      toast(a === 'mRemove' ? m.no + ' removed from site — its entries are kept' : m.no + ' is back on site');
+      break;
+    }
     case 'mDelOne': {
       const m = s.machines.find(x => x.id === v);
       if (!m) break;
@@ -6369,14 +6542,14 @@ function dashBill(s) {
   const ppl = s.people.map(p => ({ p, x: personStats(s, p) })).filter(o => o.x.total);
   const vend = allVendors(s).map(v => ({ v, x: remVendorStats(s, v) })).filter(o => o.x.remaining > 0.5).sort((a, b) => b.x.remaining - a.x.remaining);
   return `<div class="bill">
-    ${billHead('Site Account Summary', 'As on ' + fmtDate(today()))}
+    ${billHead('Site Account Summary', 'As on: ' + fmtDate(today()))}
     ${kpi([
-      ['TOTAL EXPENSE', money0(t.grand)],
-      ['SITE EXPENSE', money0(t.expTotal)],
-      s.mods.murum ? ['MURUM', money0(t.muTotal)] : null,
-      s.mods.diesel !== false ? ['DIESEL', money0(t.dsTotal)] : null,
-      s.mods.machine !== false ? ['MACHINE RENT', money0(t.rent)] : null,
-      ['NET PENDING', money0(t.netPending)]
+      ['TOTAL EXPENSE', money(t.grand)],
+      ['SITE EXPENSE', money(t.expTotal)],
+      s.mods.murum ? ['MURUM', money(t.muTotal)] : null,
+      s.mods.diesel !== false ? ['DIESEL', money(t.dsTotal)] : null,
+      s.mods.machine !== false ? ['MACHINE RENT', money(t.rent)] : null,
+      ['NET PENDING', money(t.netPending)]
     ])}
 
     <h2>Head-wise</h2>
@@ -6423,7 +6596,7 @@ function dashBill(s) {
         <td class="n">${money0(o.x.vp + o.x.op)}</td><td class="n">${money0(o.x.total)}</td></tr>`).join('')}</tbody>
     </table>` : ''}
 
-    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+    <div class="sign"><div><i></i>Prepared by</div><div><i></i>Checked by</div></div>
   </div>`;
 }
 
@@ -6433,14 +6606,14 @@ function expenseBill(s, from, to, cat) {
   if (cat) rows = rows.filter(e => e.category === cat);
   rows = rows.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
   const tot = rows.reduce((a, e) => a + num(e.amount), 0);
-  const paid = rows.filter(e => fin[e.id] && fin[e.id].final === 'Paid').reduce((a, e) => a + num(e.amount), 0);
+  const paid = tot - rows.reduce((a, e) => a + (fin[e.id] ? num(fin[e.id].bal) : 0), 0);
   const cats = [...new Set(rows.map(e => e.category || '-'))].map(c => {
     const list = rows.filter(e => (e.category || '-') === c);
     return { c, n: list.length, amt: list.reduce((a, e) => a + num(e.amount), 0) };
   }).sort((a, b) => b.amt - a.amt);
   return `<div class="bill">
-    ${billHead('Expense Report', periodTxt(from, to) + (cat ? '<br>Category: <b>' + esc(cat) + '</b>' : ''))}
-    ${kpi([['ENTRIES', rows.length], ['TOTAL', money0(tot)], ['PAID', money0(paid)], ['PENDING', money0(tot - paid)]])}
+    ${billHead('Expense Report', 'Period: ' + periodTxt(from, to) + '<br>Category: ' + (cat ? esc(cat) : 'All categories'))}
+    ${kpi([['ENTRIES', rows.length], ['TOTAL', money(tot)], ['PAID', money(paid)], ['PENDING', money(tot - paid)]])}
     <h2>Entries</h2>
     <table>
       <thead><tr><th>Sr</th><th>Date</th><th>Particular</th><th>Category</th><th>Vendor</th><th>Paid by</th><th>Mode</th><th class="n">Amount</th><th>Status</th></tr></thead>
@@ -6456,7 +6629,7 @@ function expenseBill(s, from, to, cat) {
       <tbody>${cats.map(o => `<tr><td>${esc(o.c)}</td><td class="n">${o.n}</td><td class="n">${money0(o.amt)}</td></tr>`).join('')}</tbody>
       <tfoot><tr><td>TOTAL</td><td class="n">${rows.length}</td><td class="n">${money0(tot)}</td></tr></tfoot>
     </table>` : ''}
-    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+    <div class="sign"><div><i></i>Prepared by</div><div><i></i>Checked by</div></div>
   </div>`;
 }
 
@@ -6467,16 +6640,16 @@ function dieselReport(s, from, to, vendor) {
   rows = rows.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
   const lit = rows.reduce((a, d) => a + num(d.litres), 0);
   const amt = rows.reduce((a, d) => a + num(d.amount), 0);
-  const paid = rows.filter(d => fin[d.id] && fin[d.id].final === 'Paid').reduce((a, d) => a + num(d.amount), 0);
+  const paid = amt - rows.reduce((a, d) => a + (fin[d.id] ? num(fin[d.id].bal) : 0), 0);
   const vend = [...new Set(rows.map(d => d.vendor || '-'))].map(v => {
     const list = rows.filter(d => (d.vendor || '-') === v);
     return { v, n: list.length, lit: list.reduce((a, d) => a + num(d.litres), 0), amt: list.reduce((a, d) => a + num(d.amount), 0) };
   }).sort((a, b) => b.amt - a.amt);
   const filled = s.machineLog.filter(r => inRange(r.date, from, to)).reduce((a, r) => a + num(r.diesel), 0);
   return `<div class="bill">
-    ${billHead('Diesel Report', periodTxt(from, to) + (vendor ? '<br>Supplier: <b>' + esc(vendor) + '</b>' : ''))}
-    ${kpi([['BILLS', rows.length], ['LITRES', dec(lit)], ['AMOUNT', money0(amt)],
-      ['AVG RATE', lit ? dec(amt / lit, 2) : '-'], ['PENDING', money0(amt - paid)],
+    ${billHead('Diesel Report', 'Period: ' + periodTxt(from, to) + '<br>Supplier: ' + (vendor ? esc(vendor) : 'All suppliers'))}
+    ${kpi([['BILLS', rows.length], ['LITRES', dec(lit)], ['AMOUNT', money(amt)],
+      ['AVG RATE', lit ? dec(amt / lit, 2) : '-'], ['PENDING', money(amt - paid)],
       filled ? ['FILLED IN MACHINES', dec(filled) + ' L'] : null])}
     <h2>Diesel bills</h2>
     <table>
@@ -6494,7 +6667,7 @@ function dieselReport(s, from, to, vendor) {
       <tbody>${vend.map(o => `<tr><td>${esc(o.v)}</td><td class="n">${o.n}</td><td class="n">${dec(o.lit)}</td><td class="n">${money0(o.amt)}</td></tr>`).join('')}</tbody>
       <tfoot><tr><td>TOTAL</td><td class="n">${rows.length}</td><td class="n">${dec(lit)}</td><td class="n">${money0(amt)}</td></tr></tfoot>
     </table>` : ''}
-    <div class="sign"><div>Prepared by ______________</div><div>Checked by ______________</div></div>
+    <div class="sign"><div><i></i>Prepared by</div><div><i></i>Checked by</div></div>
   </div>`;
 }
 
