@@ -1813,7 +1813,7 @@ function totals(s) {
     dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent, rentBilled, rentPaid, rentDue, rentComm, rentIn, rentUnpaid,
     muTotal, muPaid, muUnpaid, muQty, funds, ownerPaid,
     grand: expTotal + dsTotal + rentBilled + muTotal,      /* rent bills in full = Machine rent + Unpaid machine bills */
-    netPending: expUnpaidFinal + dsUnpaidFinal + muUnpaidFinal
+    netPending: expUnpaidFinal + dsUnpaidFinal + muUnpaidFinal + rentUnpaid    /* unpaid machine bills count as pending too */
   };
 }
 
@@ -2492,10 +2492,11 @@ VIEW.dash = s => {
         <tr><td>Site expense</td><td class="n">${money0(t.expTotal)}</td><td class="n">${money0(t.expPaidFinal)}</td><td class="n">${money0(t.expUnpaidFinal)}</td></tr>
         ${s.mods.murum ? `<tr><td>Murum <span class="tiny">(${dec(t.muQty)} ${esc(s.murumUnit)})</span></td><td class="n">${money0(t.muTotal)}</td><td class="n">${money0(t.muPaidFinal)}</td><td class="n">${money0(t.muUnpaidFinal)}</td></tr>` : ''}
         ${s.mods.diesel !== false ? `<tr><td>Diesel purchase</td><td class="n">${money0(t.dsTotal)}</td><td class="n">${money0(t.dsPaidFinal)}</td><td class="n">${money0(t.dsUnpaidFinal)}</td></tr>` : ''}
+        ${s.mods.machine !== false || t.rentBilled ? `<tr data-act="sub" data-t="machine" data-v="bill"><td>Machine bills</td><td class="n">${money0(t.rentBilled)}</td><td class="n">${money0(t.rentIn)}</td><td class="n">${money0(t.rentUnpaid)}</td></tr>` : ''}
       </tbody>
-      <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
+      <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal + t.rentBilled)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal + t.rentIn)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table></div>
-    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Rent bills ' + money(t.rentBilled) + ' are in the total at the top: Machine rent ' + money(t.rentIn) + ' (paid bills) and Unpaid machine bills ' + money(t.rentUnpaid) + '.' + (t.rentComm > 0.5 ? ' Commission ' + money(t.rentComm) + ' is in the ' + esc(pendingParty(s)) + ' account.' : '') : ''}</div>
+    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine bills: paid bills are in Machine rent, unpaid bills are in Net pending.' + (t.rentComm > 0.5 ? ' Commission ' + money(t.rentComm) + ' is in the ' + esc(pendingParty(s)) + ' account.' : '') : ''}</div>
   </div>
 
   ${s.mods.machine !== false ? commCard(s, true) : ''}
@@ -2901,6 +2902,7 @@ function vendorPendView(s) {
     <div class="kpi r"><div class="k">SITE PENDING</div><div class="v num">${money0(total)}</div></div>
     <div class="kpi r"><div class="k">DIESEL PENDING</div><div class="v num">${money0(dieselPend.reduce((a, d) => a + bal(d), 0))}</div></div>
   </div>
+  ${s.mods.machine !== false ? unpaidBillsCard(s) : ''}
   ${Object.keys(byV).sort().map(v => {
     const list = byV[v]; const vs = v === '(no vendor)' ? null : vendorStats(s, v);
     return `<div class="card"><h3>${esc(v)}<small>balance ${money(list.reduce((a, e) => a + bal(e), 0))}</small></h3>
@@ -6840,9 +6842,10 @@ function dashBill(s) {
         <tr><td>Site expense</td><td class="n">${money0(t.expTotal)}</td><td class="n">${money0(t.expPaidFinal)}</td><td class="n">${money0(t.expUnpaidFinal)}</td></tr>
         ${s.mods.murum ? `<tr><td>Murum</td><td class="n">${money0(t.muTotal)}</td><td class="n">${money0(t.muPaidFinal)}</td><td class="n">${money0(t.muUnpaidFinal)}</td></tr>` : ''}
         ${s.mods.diesel !== false ? `<tr><td>Diesel purchase</td><td class="n">${money0(t.dsTotal)}</td><td class="n">${money0(t.dsPaidFinal)}</td><td class="n">${money0(t.dsUnpaidFinal)}</td></tr>` : ''}
+        ${s.mods.machine !== false || t.rentBilled ? `<tr><td>Machine bills</td><td class="n">${money0(t.rentBilled)}</td><td class="n">${money0(t.rentIn)}</td><td class="n">${money0(t.rentUnpaid)}</td></tr>` : ''}
       </tbody>
-      <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td>
-        <td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
+      <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal + t.rentBilled)}</td>
+        <td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal + t.rentIn)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table>
 
     ${ms.rows.length ? `<h2>Payment mode-wise</h2>
