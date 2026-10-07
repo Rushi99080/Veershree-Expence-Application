@@ -1806,7 +1806,7 @@ function totals(s) {
     dsPaidFinal, dsUnpaidFinal, muPaidFinal, muUnpaidFinal,
     dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent, rentBilled, rentPaid, rentDue, rentComm,
     muTotal, muPaid, muUnpaid, muQty, funds, ownerPaid,
-    grand: expTotal + dsTotal + rentPaid + muTotal,
+    grand: expTotal + dsTotal + rentBilled + muTotal,      /* machine rent = total of rent bills */
     netPending: expUnpaidFinal + dsUnpaidFinal + muUnpaidFinal
   };
 }
@@ -2347,7 +2347,7 @@ VIEW.dash = s => {
     ['Site expense', t.expTotal, '#E7C98E'],
     (s.mods.murum || t.muTotal) ? ['Murum', t.muTotal, '#F29E6D'] : null,
     (s.mods.diesel !== false || t.dsTotal) ? ['Diesel', t.dsTotal, '#7FA8FF'] : null,
-    (s.mods.machine !== false || t.rentPaid) ? ['Machine rent', t.rentPaid, '#6FD3A5'] : null
+    (s.mods.machine !== false || t.rentBilled) ? ['Machine rent', t.rentBilled, '#6FD3A5'] : null
   ].filter(Boolean);
   const segTot = segs.reduce((a, x) => a + x[1], 0);
   const pct = v => segTot ? Math.round(v / segTot * 100) : 0;
@@ -2465,7 +2465,7 @@ VIEW.dash = s => {
       </tbody>
       <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table></div>
-    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rentPaid) + ' (payments made to machine owners) is added to the total at the top.' + (t.rentComm > 0.5 ? ' Commission ' + money(t.rentComm) + ' is kept separately in the ' + esc(pendingParty(s)) + ' account.' : '') : ''}</div>
+    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rentBilled) + ' (total of all rent bills) is added to the total at the top' + (t.rentBilled ? ' &mdash; paid to owners ' + money(t.rentPaid) + ', owner pending ' + money(t.rentDue) + (t.rentComm > 0.5 ? ', commission ' + money(t.rentComm) + ' (' + esc(pendingParty(s)) + ')' : '') : '') + '.' : ''}</div>
   </div>
 
   ${s.mods.machine !== false ? commCard(s, true) : ''}
@@ -2488,7 +2488,7 @@ VIEW.dash = s => {
     </table></div>` : '<div class="empty">Rent appears here once machine log entries are added.</div>'}
     ${t.rent === 0 && s.machineLog.length ? '<div class="pad tiny">Rent shows 0 because no rates are filled in the Rate Master. Add them under <b>Machine &rarr; Machines</b>.</div>' : ''}
     ${(s.bills || []).length ? `<div class="pad">
-      <div class="tiny" style="margin-bottom:8px;line-height:1.7">Rent bills: billed <b>${money(t.rentBilled)}</b> &middot; commission <b>${money(t.rentComm)}</b> (${esc(pendingParty(s))}) &middot; paid to owners <b style="color:var(--paid)">${money(t.rentPaid)}</b> &middot; owner pending <b style="color:${t.rentDue > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(t.rentDue)}</b><br>Only the amount paid to owners is counted in <b>Machine rent</b> at the top.</div>
+      <div class="tiny" style="margin-bottom:8px;line-height:1.7">Rent bills: billed <b>${money(t.rentBilled)}</b> &middot; commission <b>${money(t.rentComm)}</b> (${esc(pendingParty(s))}) &middot; paid to owners <b style="color:var(--paid)">${money(t.rentPaid)}</b> &middot; owner pending <b style="color:${t.rentDue > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(t.rentDue)}</b><br><b>Machine rent</b> at the top shows the total billed amount.</div>
       <button class="btn sec sm" style="width:100%" data-act="sub" data-t="machine" data-v="bill">Open rent bills</button>
     </div>` : ''}
   </div>` : ''}
@@ -3317,7 +3317,7 @@ function billingView(s) {
     <div class="kpi g"><div class="k">PAID TO OWNERS</div><div class="v num">${money0(paid)}</div></div>
     <div class="kpi r"><div class="k">OWNER PENDING</div><div class="v num">${money0(due)}</div></div>
   </div>
-  <div class="tiny" style="margin:2px 4px 0;line-height:1.7"><b>Commission</b> goes to the <b>${party}</b> account. <b>Paid to owners</b> goes into <b>Machine rent</b> on the Dashboard.</div>
+  <div class="tiny" style="margin:2px 4px 0;line-height:1.7"><b>Total billed</b> shows as <b>Machine rent</b> on the Dashboard. <b>Commission</b> goes to the <b>${party}</b> account.</div>
 
   ${commCard(s)}
 
@@ -3343,7 +3343,7 @@ function billingView(s) {
     <b>2.</b> Tap <b>Fill from machine log</b> and set the <b>rate</b> on each machine &mdash; or add lines yourself.<br>
     <b>3.</b> Put the <b>commission</b> as a % or an amount. Example: bill 2,00,000 with 20% &rarr; 40,000 goes to <b>${party}</b>, 1,60,000 is the owner's share.<br>
     <b>4.</b> Each time you pay the owner, open the bill and tap <b>Add payment</b>. Part payments are fine.<br>
-    <b>5.</b> Payments to owners go into <b>Machine rent</b> on the Dashboard. Commission is kept in the <b>${party}</b> account.
+    <b>5.</b> The full bill amount shows as <b>Machine rent</b> on the Dashboard as soon as the bill is saved. Commission is kept in the <b>${party}</b> account.
   </div></div>`;
 }
 
@@ -5206,7 +5206,8 @@ function shareText() {
   L.push('Total plot expense: ' + money(t.grand));
   L.push('  Site expense: ' + money(t.expTotal));
   L.push('  Diesel: ' + money(t.dsTotal));
-  L.push('  Machine rent (paid bills): ' + money(t.rentPaid));
+  L.push('  Machine rent (billed): ' + money(t.rentBilled));
+  if (t.rentBilled) L.push('    paid to owners: ' + money(t.rentPaid));
   if (t.rentDue > 0.5) L.push('  Owner pending (rent bills): ' + money(t.rentDue));
   if (t.rentComm > 0.5) L.push(pendingParty(s) + ' commission: ' + money(t.rentComm));
   L.push('');
@@ -6509,7 +6510,7 @@ function blSheet(s) {
       </div>
     </div>
     <div class="field"><label>Note on bill</label><input id="bl_nt" value="${esc(BDRAFT.note || '')}"></div>
-    <div class="tiny">Payments to the owner go into <b>Machine rent</b> on the Dashboard. The commission goes to the <b>${esc(pendingParty(s))}</b> account.</div>`,
+    <div class="tiny">The bill total shows as <b>Machine rent</b> on the Dashboard. The commission goes to the <b>${esc(pendingParty(s))}</b> account.</div>`,
     () => {
       blGrab();
       if (!BDRAFT.owner) return toast('Enter the machine owner name');
@@ -6628,7 +6629,7 @@ function payForm(s, bill, idx, draft) {
         <div class="field"><label>Payment mode</label><select id="bp_md">${selOpts(MODES, p.mode, '— mode —')}</select></div>
         <div class="field"><label>Remark</label><input id="bp_rm" value="${esc(p.remark || '')}" placeholder="cheque no, UTR..."></div>
       </div>
-      <div class="tiny">This amount goes into <b>Machine rent</b> on the Dashboard. The commission is not paid from here &mdash; it stays in the <b>${esc(pendingParty(s))}</b> account.</div>
+      <div class="tiny">Payments to the owner are tracked against the owner's share. The commission is not paid from here &mdash; it stays in the <b>${esc(pendingParty(s))}</b> account.</div>
     </div></div>`,
     () => {
       const a = num(numVal('bp_am'));
@@ -6795,7 +6796,7 @@ function dashBill(s) {
       ['SITE EXPENSE', money(t.expTotal)],
       s.mods.murum ? ['MURUM', money(t.muTotal)] : null,
       s.mods.diesel !== false ? ['DIESEL', money(t.dsTotal)] : null,
-      s.mods.machine !== false ? ['MACHINE RENT (PAID)', money(t.rentPaid)] : null,
+      s.mods.machine !== false ? ['MACHINE RENT (BILLED)', money(t.rentBilled)] : null,
       s.mods.machine !== false && t.rentComm > 0.5 ? ['COMMISSION (' + pendingParty(s).toUpperCase() + ')', money(t.rentComm)] : null,
       ['NET PENDING', money(t.netPending)]
     ])}
