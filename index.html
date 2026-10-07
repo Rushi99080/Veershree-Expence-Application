@@ -1619,6 +1619,10 @@ const billPaid = b => (b.payments || []).reduce((a, p) => a + num(p.amount), 0);
 const billDue = b => Math.max(0, billOwner(b) - billPaid(b));
 const billStatus = b => { const t = billOwner(b), p = billPaid(b); return p > 0 && p >= t - 0.5 ? 'Paid' : p > 0 ? 'Part paid' : 'Unpaid'; };
 const pctOf = (part, whole) => whole ? Math.round(part / whole * 10000) / 100 : 0;
+/* Dashboard: a fully paid bill shows its whole amount as Machine rent;
+   until then only what was paid shows there and the rest is an Unpaid machine bill */
+const billRent = b => billStatus(b) === 'Paid' ? billTotal(b) : Math.min(billTotal(b), billPaid(b));
+const billUnpaid = b => Math.max(0, billTotal(b) - billRent(b));
 const billPill = b => { const k = billStatus(b);
   return k === 'Paid' ? '<span class="pill p">paid</span>'
     : k === 'Part paid' ? '<span class="pill u">part paid &middot; pending ' + money0(billDue(b)) + '</span>'
@@ -1796,6 +1800,8 @@ function totals(s) {
   const rentPaid = bills.reduce((a, b) => a + billPaid(b), 0);
   const rentDue = bills.reduce((a, b) => a + billDue(b), 0);          /* still to pay the owners */
   const rentComm = bills.reduce((a, b) => a + billComm(b), 0);       /* Mangalmurti Developers commission */
+  const rentIn = bills.reduce((a, b) => a + billRent(b), 0);         /* Dashboard: Machine rent */
+  const rentUnpaid = bills.reduce((a, b) => a + billUnpaid(b), 0);   /* Dashboard: Unpaid machine bills */
   /* the real position once payments are allocated (diesel and murum too) */
   const dsUnpaidFinal = owed(s.dieselLog);
   const dsPaidFinal = dsTotal - dsUnpaidFinal;
@@ -1804,9 +1810,9 @@ function totals(s) {
   return {
     fin, expTotal, expPaidDirect, expUnpaidRaw, expPaidFinal, expUnpaidFinal,
     dsPaidFinal, dsUnpaidFinal, muPaidFinal, muUnpaidFinal,
-    dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent, rentBilled, rentPaid, rentDue, rentComm,
+    dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent, rentBilled, rentPaid, rentDue, rentComm, rentIn, rentUnpaid,
     muTotal, muPaid, muUnpaid, muQty, funds, ownerPaid,
-    grand: expTotal + dsTotal + rentBilled + muTotal,      /* machine rent = total of rent bills */
+    grand: expTotal + dsTotal + rentBilled + muTotal,      /* rent bills in full = Machine rent + Unpaid machine bills */
     netPending: expUnpaidFinal + dsUnpaidFinal + muUnpaidFinal
   };
 }
@@ -2336,6 +2342,28 @@ function menuSheet(s) {
 const VIEW = {};
 
 /* ---------------- DASHBOARD ---------------- */
+/* rent bills not yet fully paid — their unpaid part, oldest first */
+function unpaidBillsCard(s) {
+  const rows = (s.bills || []).filter(b => billUnpaid(b) > 0.5)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  if (!rows.length) return '';
+  const total = rows.reduce((a, b) => a + billUnpaid(b), 0);
+  return `<div class="card" style="border-color:var(--due)">
+    <h3>Unpaid machine bills<small>${money0(total)}</small></h3>
+    ${rows.slice(0, 6).map(b => `<div class="row" data-act="blOpen" data-v="${b.id}">
+      ${ava('', 'bill', 'c4')}
+      <div class="main"><div class="ttl">${esc(b.owner || '—')} <span class="pill u">${billStatus(b) === 'Part paid' ? 'part paid' : 'unpaid'}</span></div>
+      <div class="sub">${esc(b.no || '')} &middot; ${fmtDate(b.date)} &middot; bill ${money0(billTotal(b))}${billPaid(b) ? ' &middot; paid ' + money0(billPaid(b)) : ''}</div>
+      ${billComm(b) ? `<div class="sub">owner ${money0(billDue(b))} + commission ${money0(billComm(b))}</div>` : ''}</div>
+      <div class="amt" style="color:var(--due)">${money0(billUnpaid(b))}</div></div>`).join('')}
+    ${rows.length > 6 ? `<div class="pad tiny">and ${rows.length - 6} more&hellip;</div>` : ''}
+    <div class="pad">
+      <div class="tiny" style="margin-bottom:8px;line-height:1.7">${rows.length} bill${rows.length === 1 ? '' : 's'} not fully paid. Once the owner is fully paid, the whole bill moves to <b>Machine rent</b>.</div>
+      <button class="btn sm" style="width:100%" data-act="sub" data-t="machine" data-v="bill">Open rent bills</button>
+    </div>
+  </div>`;
+}
+
 VIEW.dash = s => {
   const t = totals(s);
   const fin = t.fin;
@@ -2347,7 +2375,8 @@ VIEW.dash = s => {
     ['Site expense', t.expTotal, '#E7C98E'],
     (s.mods.murum || t.muTotal) ? ['Murum', t.muTotal, '#F29E6D'] : null,
     (s.mods.diesel !== false || t.dsTotal) ? ['Diesel', t.dsTotal, '#7FA8FF'] : null,
-    (s.mods.machine !== false || t.rentBilled) ? ['Machine rent', t.rentBilled, '#6FD3A5'] : null
+    (s.mods.machine !== false || t.rentIn) ? ['Machine rent', t.rentIn, '#6FD3A5'] : null,
+    t.rentUnpaid > 0.5 ? ['Unpaid machine bills', t.rentUnpaid, '#F28B82'] : null
   ].filter(Boolean);
   const segTot = segs.reduce((a, x) => a + x[1], 0);
   const pct = v => segTot ? Math.round(v / segTot * 100) : 0;
@@ -2450,6 +2479,7 @@ VIEW.dash = s => {
   ${hero}
   ${quick}
   ${dueCard}
+  ${s.mods.machine !== false ? unpaidBillsCard(s) : ''}
   <div class="dgrid">
   ${recentCard}
   ${chartCard}
@@ -2465,7 +2495,7 @@ VIEW.dash = s => {
       </tbody>
       <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table></div>
-    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rentBilled) + ' (total of all rent bills) is added to the total at the top' + (t.rentBilled ? ' &mdash; paid to owners ' + money(t.rentPaid) + ', owner pending ' + money(t.rentDue) + (t.rentComm > 0.5 ? ', commission ' + money(t.rentComm) + ' (' + esc(pendingParty(s)) + ')' : '') : '') + '.' : ''}</div>
+    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Rent bills ' + money(t.rentBilled) + ' are in the total at the top: Machine rent ' + money(t.rentIn) + ' (paid bills) and Unpaid machine bills ' + money(t.rentUnpaid) + '.' + (t.rentComm > 0.5 ? ' Commission ' + money(t.rentComm) + ' is in the ' + esc(pendingParty(s)) + ' account.' : '') : ''}</div>
   </div>
 
   ${s.mods.machine !== false ? commCard(s, true) : ''}
@@ -2488,7 +2518,7 @@ VIEW.dash = s => {
     </table></div>` : '<div class="empty">Rent appears here once machine log entries are added.</div>'}
     ${t.rent === 0 && s.machineLog.length ? '<div class="pad tiny">Rent shows 0 because no rates are filled in the Rate Master. Add them under <b>Machine &rarr; Machines</b>.</div>' : ''}
     ${(s.bills || []).length ? `<div class="pad">
-      <div class="tiny" style="margin-bottom:8px;line-height:1.7">Rent bills: billed <b>${money(t.rentBilled)}</b> &middot; commission <b>${money(t.rentComm)}</b> (${esc(pendingParty(s))}) &middot; paid to owners <b style="color:var(--paid)">${money(t.rentPaid)}</b> &middot; owner pending <b style="color:${t.rentDue > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(t.rentDue)}</b><br><b>Machine rent</b> at the top shows the total billed amount.</div>
+      <div class="tiny" style="margin-bottom:8px;line-height:1.7">Rent bills: billed <b>${money(t.rentBilled)}</b> &middot; machine rent (paid) <b style="color:var(--paid)">${money(t.rentIn)}</b> &middot; unpaid <b style="color:${t.rentUnpaid > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(t.rentUnpaid)}</b><br>Paid to owners ${money(t.rentPaid)} &middot; still to pay owners ${money(t.rentDue)} &middot; commission ${money(t.rentComm)} (${esc(pendingParty(s))})</div>
       <button class="btn sec sm" style="width:100%" data-act="sub" data-t="machine" data-v="bill">Open rent bills</button>
     </div>` : ''}
   </div>` : ''}
@@ -3307,6 +3337,7 @@ function billingView(s) {
   const comm = rows.reduce((a, b) => a + billComm(b), 0);
   const paid = rows.reduce((a, b) => a + billPaid(b), 0);
   const due = rows.reduce((a, b) => a + billDue(b), 0);
+  const rentIn = rows.reduce((a, b) => a + billRent(b), 0), unpaid = rows.reduce((a, b) => a + billUnpaid(b), 0);
   const party = esc(pendingParty(s));
   return `
   <button class="btn" data-act="blAdd">${ICON.plus}New bill</button>
@@ -3314,10 +3345,10 @@ function billingView(s) {
   <div class="kpis mt">
     <div class="kpi b"><div class="k">TOTAL BILLED</div><div class="v num">${money0(billed)}</div></div>
     <div class="kpi"><div class="k">COMMISSION</div><div class="v num">${money0(comm)}</div></div>
-    <div class="kpi g"><div class="k">PAID TO OWNERS</div><div class="v num">${money0(paid)}</div></div>
-    <div class="kpi r"><div class="k">OWNER PENDING</div><div class="v num">${money0(due)}</div></div>
+    <div class="kpi g"><div class="k">PAID BILLS</div><div class="v num">${money0(rentIn)}</div></div>
+    <div class="kpi r"><div class="k">UNPAID BILLS</div><div class="v num">${money0(unpaid)}</div></div>
   </div>
-  <div class="tiny" style="margin:2px 4px 0;line-height:1.7"><b>Total billed</b> shows as <b>Machine rent</b> on the Dashboard. <b>Commission</b> goes to the <b>${party}</b> account.</div>
+  <div class="tiny" style="margin:2px 4px 0;line-height:1.7">Paid to owners <b>${money(paid)}</b> &middot; still to pay owners <b>${money(due)}</b>.<br>On the Dashboard, <b>paid bills</b> show as <b>Machine rent</b> and <b>unpaid bills</b> as <b>Unpaid machine bills</b>. <b>Commission</b> goes to the <b>${party}</b> account.</div>
 
   ${commCard(s)}
 
@@ -3343,7 +3374,7 @@ function billingView(s) {
     <b>2.</b> Tap <b>Fill from machine log</b> and set the <b>rate</b> on each machine &mdash; or add lines yourself.<br>
     <b>3.</b> Put the <b>commission</b> as a % or an amount. Example: bill 2,00,000 with 20% &rarr; 40,000 goes to <b>${party}</b>, 1,60,000 is the owner's share.<br>
     <b>4.</b> Each time you pay the owner, open the bill and tap <b>Add payment</b>. Part payments are fine.<br>
-    <b>5.</b> The full bill amount shows as <b>Machine rent</b> on the Dashboard as soon as the bill is saved. Commission is kept in the <b>${party}</b> account.
+    <b>5.</b> A new bill shows under <b>Unpaid machine bills</b> on the Dashboard. Once the owner is fully paid, the whole bill moves to <b>Machine rent</b> (a part payment moves just that part). Commission is kept in the <b>${party}</b> account.
   </div></div>`;
 }
 
@@ -5206,9 +5237,8 @@ function shareText() {
   L.push('Total plot expense: ' + money(t.grand));
   L.push('  Site expense: ' + money(t.expTotal));
   L.push('  Diesel: ' + money(t.dsTotal));
-  L.push('  Machine rent (billed): ' + money(t.rentBilled));
-  if (t.rentBilled) L.push('    paid to owners: ' + money(t.rentPaid));
-  if (t.rentDue > 0.5) L.push('  Owner pending (rent bills): ' + money(t.rentDue));
+  L.push('  Machine rent (paid bills): ' + money(t.rentIn));
+  if (t.rentUnpaid > 0.5) L.push('  Unpaid machine bills: ' + money(t.rentUnpaid));
   if (t.rentComm > 0.5) L.push(pendingParty(s) + ' commission: ' + money(t.rentComm));
   L.push('');
   L.push('Paid: ' + money(t.expPaidDirect + t.dsPaid + t.vendorPaid + t.rentPaid));
@@ -6510,7 +6540,7 @@ function blSheet(s) {
       </div>
     </div>
     <div class="field"><label>Note on bill</label><input id="bl_nt" value="${esc(BDRAFT.note || '')}"></div>
-    <div class="tiny">The bill total shows as <b>Machine rent</b> on the Dashboard. The commission goes to the <b>${esc(pendingParty(s))}</b> account.</div>`,
+    <div class="tiny">Until the owner is fully paid, the unpaid part shows under <b>Unpaid machine bills</b> on the Dashboard; once paid, the whole bill shows as <b>Machine rent</b>. The commission goes to the <b>${esc(pendingParty(s))}</b> account.</div>`,
     () => {
       blGrab();
       if (!BDRAFT.owner) return toast('Enter the machine owner name');
@@ -6576,6 +6606,7 @@ function blOpenSheet(s, b) {
       <tr><td class="muted">Paid to owner</td><td class="right n"><b style="color:var(--paid)">${money(paid)}</b></td></tr>
       <tr><td class="muted"><b>OWNER PENDING</b></td><td class="right n"><b style="color:${due > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(due)}</b></td></tr>
       <tr><td class="muted">Status</td><td class="right">${billPill(b)}</td></tr>
+      <tr><td class="muted">On Dashboard</td><td class="right tiny">Machine rent <b>${money0(billRent(b))}</b>${billUnpaid(b) > 0.5 ? '<br>Unpaid machine bills <b style="color:var(--due)">' + money0(billUnpaid(b)) + '</b>' : ''}</td></tr>
     </tbody></table></div></div>
     <div class="card"><h3>Payments to owner<small>${pays.length}</small></h3>
       ${pays.length ? pays.map(({ p, i }) => `<div class="row" data-act="bpEdit" data-v="${b.id}|${i}">
@@ -6796,7 +6827,8 @@ function dashBill(s) {
       ['SITE EXPENSE', money(t.expTotal)],
       s.mods.murum ? ['MURUM', money(t.muTotal)] : null,
       s.mods.diesel !== false ? ['DIESEL', money(t.dsTotal)] : null,
-      s.mods.machine !== false ? ['MACHINE RENT (BILLED)', money(t.rentBilled)] : null,
+      s.mods.machine !== false ? ['MACHINE RENT', money(t.rentIn)] : null,
+      s.mods.machine !== false && t.rentUnpaid > 0.5 ? ['UNPAID MACHINE BILLS', money(t.rentUnpaid)] : null,
       s.mods.machine !== false && t.rentComm > 0.5 ? ['COMMISSION (' + pendingParty(s).toUpperCase() + ')', money(t.rentComm)] : null,
       ['NET PENDING', money(t.netPending)]
     ])}
