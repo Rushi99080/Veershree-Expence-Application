@@ -1286,11 +1286,18 @@ function normSite(s) {
     amount: N(r.amount), from: S(r.from), mode: S(r.mode), remark: S(r.remark) }));
   s.ownerPayments = s.ownerPayments.filter(Boolean).map(r => ({ id: r.id || uid(), date: D(r.date), owner: S(r.owner),
     amount: N(r.amount), paidBy: S(r.paidBy), mode: S(r.mode), remark: S(r.remark) }));
-  s.bills = s.bills.filter(b => b && (b.owner || (b.items || []).length)).map(b => ({
-    id: b.id || uid(), no: S(b.no), date: D(b.date), owner: S(b.owner), mobile: S(b.mobile), site: S(b.site),
-    from: D(b.from), to: D(b.to), received: N(b.received), note: S(b.note),
-    items: (b.items || []).filter(Boolean).map(i => ({ desc: S(i.desc), hours: N(i.hours), rate: N(i.rate), amount: N(i.amount) }))
-  }));
+  s.bills = s.bills.filter(b => b && (b.owner || (b.items || []).length)).map(b => {
+    const items = (b.items || []).filter(Boolean).map(i => ({ desc: S(i.desc), hours: N(i.hours), rate: N(i.rate), amount: N(i.amount) }));
+    /* older bills have no status: treat one whose "received" covers the total as Paid */
+    const tot = items.reduce((a, i) => a + num(i.amount), 0);
+    const status = b.status ? ST(b) : (num(b.received) > 0 && tot - num(b.received) <= 0.5 ? 'Paid' : 'Unpaid');
+    return {
+      id: b.id || uid(), no: S(b.no), date: D(b.date), owner: S(b.owner), mobile: S(b.mobile), site: S(b.site),
+      from: D(b.from), to: D(b.to), received: N(b.received), note: S(b.note),
+      status, paidOn: status === 'Paid' ? D(b.paidOn) : '', mode: status === 'Paid' ? S(b.mode) : '',
+      items
+    };
+  });
   s.co = Object.assign({ name: '', line1: '', line2: '', mobile: '', email: '', gstin: '', bank: '', terms: '' }, s.co || {});
   s.billPrefix = s.billPrefix == null ? 'RB-' : String(s.billPrefix);
   s.billNext = num(s.billNext) || 1;
@@ -1593,7 +1600,9 @@ function stockDay(s, d) {
 
 /* ---------- BILLING (manual rate, machine rent bill) ---------- */
 const billTotal = b => (b.items || []).reduce((a, i) => a + num(i.amount), 0);
-const billDue = b => billTotal(b) - num(b.received);
+/* Paid bill = whole amount paid. Unpaid bill = only what was already given (Received) */
+const billPaid = b => st(b) === 'Paid' ? billTotal(b) : Math.max(0, Math.min(billTotal(b), num(b.received)));
+const billDue = b => st(b) === 'Paid' ? 0 : billTotal(b) - num(b.received);
 function nextBillNo(s) {
   const pre = s.billPrefix == null ? 'RB-' : s.billPrefix;
   return String(pre) + String(num(s.billNext) || 1);
@@ -1731,6 +1740,7 @@ function modeStats(s) {
   s.dieselLog.forEach(d => { if (st(d) === 'Paid') add(d.mode, d.amount); });
   (s.vendorPayments || []).forEach(p => add(p.mode, p.amount));
   (s.ownerPayments || []).forEach(p => add(p.mode, p.amount));
+  (s.bills || []).forEach(b => { const p = billPaid(b); if (p) add(st(b) === 'Paid' ? b.mode : '', p); });
   const rows = Object.keys(o).map(k => ({ mode: k, amount: o[k] })).sort((a, b) => b.amount - a.amount);
   return { rows, total: rows.reduce((a, r) => a + r.amount, 0) };
 }
@@ -1757,7 +1767,12 @@ function totals(s) {
   const funds = (s.funds || []).reduce((a, r) => a + num(r.amount), 0);
   const ownerPaid = (s.ownerPayments || []).reduce((a, r) => a + num(r.amount), 0);
   const vp = s.vendorPayments.reduce((a, p) => a + num(p.amount), 0);
-  const rent = s.machines.reduce((a, m) => a + machineRent(s, m.no).rent, 0);
+  const rent = s.machines.reduce((a, m) => a + machineRent(s, m.no).rent, 0);   /* estimate from log hours x rate */
+  /* rent bills: what has actually been paid goes into Machine rent on the dashboard */
+  const bills = s.bills || [];
+  const rentBilled = bills.reduce((a, b) => a + billTotal(b), 0);
+  const rentPaid = bills.reduce((a, b) => a + billPaid(b), 0);
+  const rentDue = bills.reduce((a, b) => a + Math.max(0, billDue(b)), 0);
   /* the real position once payments are allocated (diesel and murum too) */
   const dsUnpaidFinal = owed(s.dieselLog);
   const dsPaidFinal = dsTotal - dsUnpaidFinal;
@@ -1766,9 +1781,9 @@ function totals(s) {
   return {
     fin, expTotal, expPaidDirect, expUnpaidRaw, expPaidFinal, expUnpaidFinal,
     dsPaidFinal, dsUnpaidFinal, muPaidFinal, muUnpaidFinal,
-    dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent,
+    dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent, rentBilled, rentPaid, rentDue,
     muTotal, muPaid, muUnpaid, muQty, funds, ownerPaid,
-    grand: expTotal + dsTotal + rent + muTotal,
+    grand: expTotal + dsTotal + rentPaid + muTotal,
     netPending: expUnpaidFinal + dsUnpaidFinal + muUnpaidFinal
   };
 }
@@ -2309,7 +2324,7 @@ VIEW.dash = s => {
     ['Site expense', t.expTotal, '#E7C98E'],
     (s.mods.murum || t.muTotal) ? ['Murum', t.muTotal, '#F29E6D'] : null,
     (s.mods.diesel !== false || t.dsTotal) ? ['Diesel', t.dsTotal, '#7FA8FF'] : null,
-    (s.mods.machine !== false || t.rent) ? ['Machine rent', t.rent, '#6FD3A5'] : null
+    (s.mods.machine !== false || t.rentPaid) ? ['Machine rent', t.rentPaid, '#6FD3A5'] : null
   ].filter(Boolean);
   const segTot = segs.reduce((a, x) => a + x[1], 0);
   const pct = v => segTot ? Math.round(v / segTot * 100) : 0;
@@ -2427,7 +2442,7 @@ VIEW.dash = s => {
       </tbody>
       <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table></div>
-    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rent) + ' is kept separate &mdash; see the Machine tab.' : ''}</div>
+    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rentPaid) + ' (paid rent bills) is added to the total at the top' + (t.rentDue > 0.5 ? ' &mdash; ' + money(t.rentDue) + ' is still unpaid on rent bills' : '') + '.' : ''}</div>
   </div>
 
   <div class="card">
@@ -2440,13 +2455,17 @@ VIEW.dash = s => {
   </div>
 
   ${s.mods.machine !== false ? `<div class="card">
-    <h3>Machine-wise rent<small>from machine log hours</small></h3>
+    <h3>Machine-wise rent<small>estimate from log hours</small></h3>
     ${rentRows.length ? `<div class="scroll"><table>
       <thead><tr><th>Machine</th><th>Basis</th><th class="n">Rate</th><th class="n">Hr / days</th><th class="n">Rent</th></tr></thead>
       <tbody>${rentRows.map(x => `<tr><td class="nowrap"><b>${esc(x.m.no)}</b><div class="tiny">${esc(x.m.type)}</div></td><td class="tiny">${esc(x.r.basis)}</td><td class="n">${x.r.unit ? dec(x.r.unit, 0) : '<span class="tiny">no rate</span>'}</td><td class="n">${dec(x.r.qty)}</td><td class="n"><b>${money0(x.r.rent)}</b></td></tr>`).join('')}</tbody>
       <tfoot><tr><td colspan="4">TOTAL RENT</td><td class="n">${money0(t.rent)}</td></tr></tfoot>
     </table></div>` : '<div class="empty">Rent appears here once machine log entries are added.</div>'}
     ${t.rent === 0 && s.machineLog.length ? '<div class="pad tiny">Rent shows 0 because no rates are filled in the Rate Master. Add them under <b>Machine &rarr; Machines</b>.</div>' : ''}
+    ${(s.bills || []).length ? `<div class="pad">
+      <div class="tiny" style="margin-bottom:8px;line-height:1.7">Rent bills: billed <b>${money(t.rentBilled)}</b> &middot; paid <b style="color:var(--paid)">${money(t.rentPaid)}</b> &middot; unpaid <b style="color:${t.rentDue > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(t.rentDue)}</b><br>Only the paid amount is counted in <b>Machine rent</b> at the top.</div>
+      <button class="btn sec sm" style="width:100%" data-act="sub" data-t="machine" data-v="bill">Open rent bills</button>
+    </div>` : ''}
   </div>` : ''}
 
   ${(() => {
@@ -2459,7 +2478,7 @@ VIEW.dash = s => {
           <td class="n">${ms.total ? Math.round(r.amount / ms.total * 100) : 0}%</td></tr>`).join('')}</tbody>
         <tfoot><tr><td>TOTAL PAID</td><td class="n">${money0(ms.total)}</td><td></td></tr></tfoot>
       </table></div>
-      <div class="pad tiny">Cash, UPI, RTGS and cheque totals across site expense, murum, diesel, vendor and owner payments.</div>
+      <div class="pad tiny">Cash, UPI, RTGS and cheque totals across site expense, murum, diesel, vendor and owner payments, and paid rent bills.</div>
     </div>`;
   })()}
 
@@ -3260,15 +3279,17 @@ function mgrDetailSheet(id) {
 function billingView(s) {
   const rows = (s.bills || []).slice().sort(byDateDesc);
   const billed = rows.reduce((a, b) => a + billTotal(b), 0);
+  const paid = rows.reduce((a, b) => a + billPaid(b), 0);
   const due = rows.reduce((a, b) => a + Math.max(0, billDue(b)), 0);
   return `
   <button class="btn" data-act="blAdd">${ICON.plus}New bill</button>
 
   <div class="kpis k3 mt">
-    <div class="kpi"><div class="k">BILLS</div><div class="v num">${rows.length}</div></div>
     <div class="kpi b"><div class="k">BILLED</div><div class="v num">${money0(billed)}</div></div>
-    <div class="kpi r"><div class="k">BALANCE</div><div class="v num">${money0(due)}</div></div>
+    <div class="kpi"><div class="k">PAID</div><div class="v num" style="color:var(--paid)">${money0(paid)}</div></div>
+    <div class="kpi r"><div class="k">UNPAID</div><div class="v num">${money0(due)}</div></div>
   </div>
+  <div class="tiny" style="margin:8px 4px 0">The <b>paid</b> amount goes into <b>Machine rent</b> on the Dashboard.</div>
 
   <div class="card mt"><h3>Bills<small>${rows.length}</small></h3>
     ${rows.length ? rows.map(b => {
@@ -3277,7 +3298,8 @@ function billingView(s) {
       return `<div class="row" data-act="blOpen" data-v="${b.id}">
         ${ava('', 'bill', 'c5')}
         <div class="main"><div class="ttl">${esc(b.owner || '—')}
-          ${num(b.received) ? (d > 0.5 ? '<span class="pill u">balance ' + money0(d) + '</span>' : '<span class="pill p">paid</span>') : ''}</div>
+          ${st(b) === 'Paid' || d <= 0.5 ? '<span class="pill p">paid' + (b.paidOn ? ' ' + fmtDate(b.paidOn) : '') + '</span>'
+            : num(b.received) ? '<span class="pill u">unpaid &middot; balance ' + money0(d) + '</span>' : '<span class="pill u">unpaid</span>'}</div>
         <div class="sub">${esc(b.no || '')} &middot; ${fmtDate(b.date)}${b.from ? ' &middot; ' + fmtDate(b.from) + ' to ' + fmtDate(b.to) : ''} &middot; ${(b.items || []).length} machines${hrs ? ' &middot; ' + dec(hrs) + ' hrs' : ''}</div></div>
         <div class="amt">${money0(t)}</div></div>`;
     }).join('') : '<div class="empty">No bills yet. Tap "+ New bill".</div>'}
@@ -3292,7 +3314,8 @@ function billingView(s) {
     <b>1.</b> Tap <b>+ New bill</b>, put the machine owner name and the period.<br>
     <b>2.</b> Tap <b>Fill from machine log</b> &mdash; every machine that worked in that period comes in with its total hours.<br>
     <b>3.</b> Put the <b>rate</b> against each machine yourself &mdash; the amount is worked out for you. Transport or shift charges: leave hours and rate empty and just put the amount.<br>
-    <b>4.</b> Save, then <b>Print / PDF</b> or send on <b>WhatsApp</b>.
+    <b>4.</b> Save, then <b>Print / PDF</b> or send on <b>WhatsApp</b>.<br>
+    <b>5.</b> Once you pay the owner, open the bill and tap <b>Mark as paid</b> &mdash; the amount is then added to <b>Machine rent</b> on the Dashboard.
   </div></div>`;
 }
 
@@ -4287,9 +4310,11 @@ function billInvoice(s, b) {
       <tfoot><tr><td colspan="2">Total</td><td class="n">${hrs ? dec(hrs) : ''}</td><td></td><td class="n">${money0(tot)}</td></tr></tfoot>
     </table>
 
-    ${totalsBlock(rec
-      ? [['Grand total', money(tot)], ['Less: received', '- ' + money(rec)], ['Balance due', money(due)]]
-      : [['Sub total', money(tot)], ['Grand total', money(tot)]], rec ? due : tot)}
+    ${st(b) === 'Paid'
+      ? totalsBlock([['Grand total', money(tot)], ['Paid' + (b.paidOn ? ' on ' + fmtDate(b.paidOn) : '') + (b.mode ? ' (' + esc(b.mode) + ')' : ''), '- ' + money(tot)], ['Balance due', money(0)]], tot)
+      : totalsBlock(rec
+        ? [['Grand total', money(tot)], ['Less: received', '- ' + money(rec)], ['Balance due', money(due)]]
+        : [['Sub total', money(tot)], ['Grand total', money(tot)]], rec ? due : tot)}
 
     ${(b.note || co.bank || co.terms) ? `<div class="bnote">
       ${b.note ? `<div><span>Note</span>${esc(b.note)}</div>` : ''}
@@ -4310,9 +4335,11 @@ function billInvoiceText(s, b) {
     .filter(x => x !== '')
     .concat((b.items || []).map(i => i.desc + '  ' + (num(i.hours) ? dec(i.hours) + ' hrs' : 'lumpsum') +
       (num(i.rate) ? ' × ' + money(i.rate) : '') + '  =  ' + money(i.amount)))
-    .concat(['', '*Grand total: ' + money(tot) + '*',
-      rec ? 'Received: ' + money(rec) : '',
-      rec ? '*Balance due: ' + money(tot - rec) + '*' : ''].filter(Boolean)).join('\n');
+    .concat(st(b) === 'Paid'
+      ? ['', '*Grand total: ' + money(tot) + '*', '*PAID*' + (b.paidOn ? ' on ' + fmtDate(b.paidOn) : '') + (b.mode ? ' (' + b.mode + ')' : '')]
+      : ['', '*Grand total: ' + money(tot) + '*',
+        rec ? 'Received: ' + money(rec) : '',
+        rec ? '*Balance due: ' + money(tot - rec) + '*' : ''].filter(Boolean)).join('\n');
 }
 
 /* ============================================================
@@ -5085,9 +5112,9 @@ function shareText() {
   L.push('Total plot expense: ' + money(t.grand));
   L.push('  Site expense: ' + money(t.expTotal));
   L.push('  Diesel: ' + money(t.dsTotal));
-  L.push('  Machine rent: ' + money(t.rent));
+  L.push('  Machine rent (paid bills): ' + money(t.rentPaid));
   L.push('');
-  L.push('Paid: ' + money(t.expPaidDirect + t.dsPaid + t.vendorPaid));
+  L.push('Paid: ' + money(t.expPaidDirect + t.dsPaid + t.vendorPaid + t.rentPaid));
   L.push('*Net pending: ' + money(t.netPending) + '*');
   L.push('');
   L.push('Manager-wise:');
@@ -5834,9 +5861,16 @@ document.addEventListener('click', async e => {
           <tr><td class="muted">Date</td><td class="right">${fmtDate(b.date)}</td></tr>
           ${(b.from || b.to) ? `<tr><td class="muted">Period</td><td class="right">${fmtDate(b.from)} to ${fmtDate(b.to)}</td></tr>` : ''}
           <tr><td class="muted"><b>GRAND TOTAL</b></td><td class="right n"><b>${money(tot)}</b></td></tr>
-          ${num(b.received) ? `<tr><td class="muted">Received</td><td class="right n">${money(b.received)}</td></tr>
+          <tr><td class="muted">Status</td><td class="right">${st(b) === 'Paid'
+            ? '<span class="pill p">Paid</span>' + (b.paidOn ? ' <span class="tiny">' + fmtDate(b.paidOn) + '</span>' : '') + (b.mode ? ' <span class="tiny">&middot; ' + esc(b.mode) + '</span>' : '')
+            : '<span class="pill u">Unpaid</span>'}</td></tr>
+          ${st(b) !== 'Paid' && num(b.received) ? `<tr><td class="muted">Received</td><td class="right n">${money(b.received)}</td></tr>
             <tr><td class="muted"><b>BALANCE DUE</b></td><td class="right n"><b style="color:${due > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(due)}</b></td></tr>` : ''}
         </tbody></table></div></div>
+        ${st(b) !== 'Paid' ? `<div class="card"><div class="pad">
+          <button class="btn" style="width:100%" data-act="blPaid" data-v="${b.id}">Mark as paid</button>
+          <div class="tiny" style="margin-top:8px">Once paid, ${money(tot)} is added to <b>Machine rent</b> on the Dashboard.</div>
+        </div></div>` : ''}
         <div class="card"><h3>Machines<small>${(b.items || []).length}</small></h3>
           ${(b.items || []).map(i => `<div class="row"><div class="main"><div class="ttl">${esc(i.desc || '')}</div>
             <div class="sub">${num(i.hours) ? dec(i.hours) + ' hours' : 'lumpsum'}${num(i.rate) ? ' &times; ' + money(i.rate) : ''}</div></div>
@@ -5852,6 +5886,27 @@ document.addEventListener('click', async e => {
             <button class="btn dgr sm" style="flex:1" data-act="blDel" data-v="${b.id}">Delete bill</button>
           </div>
         </div></div>`, null, null);
+      break;
+    }
+    case 'blPaid': {
+      const b = (s.bills || []).find(x => x.id === v);
+      if (!b) break;
+      closeSheet();
+      openSheet('Mark bill ' + esc(b.no || '') + ' paid', `
+        <div class="card"><div class="pad">
+          <div class="tiny" style="margin-bottom:10px">${esc(b.owner || '')} &middot; <b>${money(billTotal(b))}</b></div>
+          <div class="f2">
+            <div class="field"><label>Paid on</label><input type="date" id="bp_dt" value="${today()}"></div>
+            <div class="field"><label>Payment mode</label><select id="bp_md">${selOpts(MODES, b.mode, '— mode —')}</select></div>
+          </div>
+          <div class="tiny">The full bill amount will be added to <b>Machine rent</b> on the Dashboard.</div>
+        </div></div>`,
+        () => {
+          b.status = 'Paid';
+          b.paidOn = val('bp_dt') || today();
+          b.mode = val('bp_md');
+          return true;
+        }, null);
       break;
     }
     case 'blDel': {
@@ -6372,15 +6427,26 @@ function blSheet(s) {
       ${tot ? `<div class="pad"><div class="tiny" style="text-align:right">Total <b style="font-size:15px">${money(tot)}</b></div></div>` : ''}
     </div>
 
+    ${segField('Payment Status', 'bl_st', ['Paid', 'Unpaid'], st(BDRAFT), 'pu')}
+    <div id="bl_paidbox" style="${st(BDRAFT) === 'Paid' ? '' : 'display:none'}">
+      <div class="f2">
+        <div class="field"><label>Paid on</label><input type="date" id="bl_pd" value="${esc(BDRAFT.paidOn || today())}"></div>
+        <div class="field"><label>Payment mode</label><select id="bl_md">${selOpts(MODES, BDRAFT.mode, '— mode —')}</select></div>
+      </div>
+    </div>
     <div class="f2">
-      <div class="field"><label>Received (optional)</label><input type="number" inputmode="decimal" id="bl_rc" value="${has(BDRAFT.received) && num(BDRAFT.received) ? BDRAFT.received : ''}"></div>
+      <div class="field" id="bl_rcbox" style="${st(BDRAFT) === 'Paid' ? 'display:none' : ''}"><label>Received (optional)</label><input type="number" inputmode="decimal" id="bl_rc" value="${has(BDRAFT.received) && num(BDRAFT.received) ? BDRAFT.received : ''}"></div>
       <div class="field"><label>Note on bill</label><input id="bl_nt" value="${esc(BDRAFT.note || '')}"></div>
-    </div>`,
+    </div>
+    <div class="tiny" id="bl_sthint">${st(BDRAFT) === 'Paid'
+      ? 'Paid: the full bill amount is added to <b>Machine rent</b> on the Dashboard.'
+      : 'Unpaid: not counted in Machine rent yet (only the Received amount, if any). Mark it Paid once you pay the owner.'}</div>`,
     () => {
       blGrab();
       if (!BDRAFT.owner) return toast('Enter the machine owner name');
       if (!BDRAFT.items.length) return toast('Add at least one machine');
       if (BDRAFT.items.every(i => !num(i.amount))) return toast('Set the rate on at least one line');
+      if (BDRAFT.status === 'Paid' && !BDRAFT.paidOn) BDRAFT.paidOn = today();
       if (BDRAFT.id) Object.assign((s.bills || []).find(x => x.id === BDRAFT.id), BDRAFT);
       else {
         BDRAFT.id = uid();
@@ -6391,6 +6457,17 @@ function blSheet(s) {
       return true;
     },
     BDRAFT.id ? () => { s.bills = s.bills.filter(b => b.id !== BDRAFT.id); } : null);
+  /* show the paid date + mode only for Paid, the Received box only for Unpaid */
+  const seg = document.getElementById('bl_st');
+  if (seg) seg.addEventListener('click', e => {
+    const b = e.target.closest('button[data-v]'); if (!b) return;
+    const paid = b.dataset.v === 'Paid';
+    document.getElementById('bl_paidbox').style.display = paid ? '' : 'none';
+    document.getElementById('bl_rcbox').style.display = paid ? 'none' : '';
+    document.getElementById('bl_sthint').innerHTML = paid
+      ? 'Paid: the full bill amount is added to <b>Machine rent</b> on the Dashboard.'
+      : 'Unpaid: not counted in Machine rent yet (only the Received amount, if any). Mark it Paid once you pay the owner.';
+  });
 }
 
 function blGrab() {
@@ -6398,6 +6475,9 @@ function blGrab() {
   BDRAFT.mobile = val('bl_mo'); BDRAFT.site = val('bl_sl');
   BDRAFT.from = val('bl_f'); BDRAFT.to = val('bl_t');
   BDRAFT.received = numVal('bl_rc'); BDRAFT.note = val('bl_nt');
+  BDRAFT.status = segVal('bl_st') === 'Paid' ? 'Paid' : 'Unpaid';
+  BDRAFT.paidOn = BDRAFT.status === 'Paid' ? val('bl_pd') : '';
+  BDRAFT.mode = BDRAFT.status === 'Paid' ? val('bl_md') : '';
 }
 
 function blItemSheet(s, idx) {
@@ -6548,7 +6628,7 @@ function dashBill(s) {
       ['SITE EXPENSE', money(t.expTotal)],
       s.mods.murum ? ['MURUM', money(t.muTotal)] : null,
       s.mods.diesel !== false ? ['DIESEL', money(t.dsTotal)] : null,
-      s.mods.machine !== false ? ['MACHINE RENT', money(t.rent)] : null,
+      s.mods.machine !== false ? ['MACHINE RENT (PAID)', money(t.rentPaid)] : null,
       ['NET PENDING', money(t.netPending)]
     ])}
 
