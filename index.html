@@ -1303,10 +1303,12 @@ function normSite(s) {
     }
     return {
       id: b.id || uid(), no: S(b.no), date: D(b.date), owner: S(b.owner), mobile: S(b.mobile), site: S(b.site),
-      from: D(b.from), to: D(b.to), note: S(b.note), items, payments
+      from: D(b.from), to: D(b.to), note: S(b.note), items, payments,
+      commPct: N(b.commPct), commission: Math.max(0, Math.min(tot, num(b.commission)))   /* Mangalmurti Developers share */
     };
   });
   s.pendingParty = S(s.pendingParty) || 'Mangalmurti Developers';
+  s.commPctDefault = N(s.commPctDefault);
   s.co = Object.assign({ name: '', line1: '', line2: '', mobile: '', email: '', gstin: '', bank: '', terms: '' }, s.co || {});
   s.billPrefix = s.billPrefix == null ? 'RB-' : String(s.billPrefix);
   s.billNext = num(s.billNext) || 1;
@@ -1609,15 +1611,19 @@ function stockDay(s, d) {
 
 /* ---------- BILLING (manual rate, machine rent bill) ---------- */
 const billTotal = b => (b.items || []).reduce((a, i) => a + num(i.amount), 0);
-/* every payment made against a bill; what is left is pending */
+/* a bill is split: commission goes to Mangalmurti Developers, the rest is the owner's share.
+   payments are made to the owner; what is left of the owner's share is pending */
+const billComm = b => Math.max(0, Math.min(billTotal(b), num(b.commission)));
+const billOwner = b => billTotal(b) - billComm(b);
 const billPaid = b => (b.payments || []).reduce((a, p) => a + num(p.amount), 0);
-const billDue = b => Math.max(0, billTotal(b) - billPaid(b));
-const billStatus = b => { const t = billTotal(b), p = billPaid(b); return p > 0 && p >= t - 0.5 ? 'Paid' : p > 0 ? 'Part paid' : 'Unpaid'; };
+const billDue = b => Math.max(0, billOwner(b) - billPaid(b));
+const billStatus = b => { const t = billOwner(b), p = billPaid(b); return p > 0 && p >= t - 0.5 ? 'Paid' : p > 0 ? 'Part paid' : 'Unpaid'; };
+const pctOf = (part, whole) => whole ? Math.round(part / whole * 10000) / 100 : 0;
 const billPill = b => { const k = billStatus(b);
   return k === 'Paid' ? '<span class="pill p">paid</span>'
     : k === 'Part paid' ? '<span class="pill u">part paid &middot; pending ' + money0(billDue(b)) + '</span>'
     : '<span class="pill u">unpaid</span>'; };
-/* the pending balance of rent bills is kept under this name, apart from other pending */
+/* the commission account that takes its share of every rent bill */
 const pendingParty = s => (s && s.pendingParty) || 'Mangalmurti Developers';
 function nextBillNo(s) {
   const pre = s.billPrefix == null ? 'RB-' : s.billPrefix;
@@ -1788,7 +1794,8 @@ function totals(s) {
   const bills = s.bills || [];
   const rentBilled = bills.reduce((a, b) => a + billTotal(b), 0);
   const rentPaid = bills.reduce((a, b) => a + billPaid(b), 0);
-  const rentDue = bills.reduce((a, b) => a + Math.max(0, billDue(b)), 0);
+  const rentDue = bills.reduce((a, b) => a + billDue(b), 0);          /* still to pay the owners */
+  const rentComm = bills.reduce((a, b) => a + billComm(b), 0);       /* Mangalmurti Developers commission */
   /* the real position once payments are allocated (diesel and murum too) */
   const dsUnpaidFinal = owed(s.dieselLog);
   const dsPaidFinal = dsTotal - dsUnpaidFinal;
@@ -1797,7 +1804,7 @@ function totals(s) {
   return {
     fin, expTotal, expPaidDirect, expUnpaidRaw, expPaidFinal, expUnpaidFinal,
     dsPaidFinal, dsUnpaidFinal, muPaidFinal, muUnpaidFinal,
-    dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent, rentBilled, rentPaid, rentDue,
+    dsTotal, dsPaid, dsUnpaid, dsLitres, vendorPaid: vp, rent, rentBilled, rentPaid, rentDue, rentComm,
     muTotal, muPaid, muUnpaid, muQty, funds, ownerPaid,
     grand: expTotal + dsTotal + rentPaid + muTotal,
     netPending: expUnpaidFinal + dsUnpaidFinal + muUnpaidFinal
@@ -2458,10 +2465,10 @@ VIEW.dash = s => {
       </tbody>
       <tfoot><tr><td>NET</td><td class="n">${money0(t.expTotal + t.muTotal + t.dsTotal)}</td><td class="n">${money0(t.expPaidFinal + t.muPaidFinal + t.dsPaidFinal)}</td><td class="n">${money0(t.netPending)}</td></tr></tfoot>
     </table></div>
-    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rentPaid) + ' (payments made on rent bills) is added to the total at the top' + (t.rentDue > 0.5 ? ' &mdash; the pending ' + money(t.rentDue) + ' is kept separately under ' + esc(pendingParty(s)) : '') + '.' : ''}</div>
+    <div class="pad tiny">Vendor payments (${money(t.vendorPaid)}) are already counted inside each head above.${s.mods.machine !== false ? ' Machine rent ' + money(t.rentPaid) + ' (payments made to machine owners) is added to the total at the top.' + (t.rentComm > 0.5 ? ' Commission ' + money(t.rentComm) + ' is kept separately in the ' + esc(pendingParty(s)) + ' account.' : '') : ''}</div>
   </div>
 
-  ${s.mods.machine !== false ? pendingPartyCard(s, true) : ''}
+  ${s.mods.machine !== false ? commCard(s, true) : ''}
 
   <div class="card">
     <h3>Manager-wise spending</h3>
@@ -2481,7 +2488,7 @@ VIEW.dash = s => {
     </table></div>` : '<div class="empty">Rent appears here once machine log entries are added.</div>'}
     ${t.rent === 0 && s.machineLog.length ? '<div class="pad tiny">Rent shows 0 because no rates are filled in the Rate Master. Add them under <b>Machine &rarr; Machines</b>.</div>' : ''}
     ${(s.bills || []).length ? `<div class="pad">
-      <div class="tiny" style="margin-bottom:8px;line-height:1.7">Rent bills: billed <b>${money(t.rentBilled)}</b> &middot; paid <b style="color:var(--paid)">${money(t.rentPaid)}</b> &middot; pending <b style="color:${t.rentDue > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(t.rentDue)}</b> (${esc(pendingParty(s))})<br>Only the paid amount is counted in <b>Machine rent</b> at the top.</div>
+      <div class="tiny" style="margin-bottom:8px;line-height:1.7">Rent bills: billed <b>${money(t.rentBilled)}</b> &middot; commission <b>${money(t.rentComm)}</b> (${esc(pendingParty(s))}) &middot; paid to owners <b style="color:var(--paid)">${money(t.rentPaid)}</b> &middot; owner pending <b style="color:${t.rentDue > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(t.rentDue)}</b><br>Only the amount paid to owners is counted in <b>Machine rent</b> at the top.</div>
       <button class="btn sec sm" style="width:100%" data-act="sub" data-t="machine" data-v="bill">Open rent bills</button>
     </div>` : ''}
   </div>` : ''}
@@ -3297,101 +3304,103 @@ function mgrDetailSheet(id) {
 function billingView(s) {
   const rows = (s.bills || []).slice().sort(byDateDesc);
   const billed = rows.reduce((a, b) => a + billTotal(b), 0);
+  const comm = rows.reduce((a, b) => a + billComm(b), 0);
   const paid = rows.reduce((a, b) => a + billPaid(b), 0);
   const due = rows.reduce((a, b) => a + billDue(b), 0);
+  const party = esc(pendingParty(s));
   return `
   <button class="btn" data-act="blAdd">${ICON.plus}New bill</button>
 
-  <div class="kpis k3 mt">
-    <div class="kpi b"><div class="k">BILLED</div><div class="v num">${money0(billed)}</div></div>
-    <div class="kpi"><div class="k">PAID</div><div class="v num" style="color:var(--paid)">${money0(paid)}</div></div>
-    <div class="kpi r"><div class="k">PENDING</div><div class="v num">${money0(due)}</div></div>
+  <div class="kpis mt">
+    <div class="kpi b"><div class="k">TOTAL BILLED</div><div class="v num">${money0(billed)}</div></div>
+    <div class="kpi"><div class="k">COMMISSION</div><div class="v num">${money0(comm)}</div></div>
+    <div class="kpi g"><div class="k">PAID TO OWNERS</div><div class="v num">${money0(paid)}</div></div>
+    <div class="kpi r"><div class="k">OWNER PENDING</div><div class="v num">${money0(due)}</div></div>
   </div>
-  <div class="tiny" style="margin:8px 4px 0;line-height:1.7">The <b>paid</b> amount goes into <b>Machine rent</b> on the Dashboard. The <b>pending</b> amount is kept separately under <b>${esc(pendingParty(s))}</b>.</div>
+  <div class="tiny" style="margin:2px 4px 0;line-height:1.7"><b>Commission</b> goes to the <b>${party}</b> account. <b>Paid to owners</b> goes into <b>Machine rent</b> on the Dashboard.</div>
 
-  ${pendingPartyCard(s)}
+  ${commCard(s)}
 
   <div class="card mt"><h3>Bills<small>${rows.length}</small></h3>
     ${rows.length ? rows.map(b => {
-      const t = billTotal(b), pd = billPaid(b);
-      const hrs = (b.items || []).reduce((a, i) => a + num(i.hours), 0);
+      const t = billTotal(b), c = billComm(b), pd = billPaid(b);
       return `<div class="row" data-act="blOpen" data-v="${b.id}">
         ${ava('', 'bill', 'c5')}
         <div class="main"><div class="ttl">${esc(b.owner || '—')} ${billPill(b)}</div>
-        <div class="sub">${esc(b.no || '')} &middot; ${fmtDate(b.date)}${b.from ? ' &middot; ' + fmtDate(b.from) + ' to ' + fmtDate(b.to) : ''} &middot; ${(b.items || []).length} machines${hrs ? ' &middot; ' + dec(hrs) + ' hrs' : ''}${pd ? ' &middot; paid ' + money0(pd) : ''}</div></div>
+        <div class="sub">${esc(b.no || '')} &middot; ${fmtDate(b.date)}${b.from ? ' &middot; ' + fmtDate(b.from) + ' to ' + fmtDate(b.to) : ''}</div>
+        <div class="sub">${c ? 'Commission ' + money0(c) + ' &middot; owner ' + money0(t - c) : 'No commission'}${pd ? ' &middot; paid ' + money0(pd) : ''}</div></div>
         <div class="amt">${money0(t)}</div></div>`;
     }).join('') : '<div class="empty">No bills yet. Tap "+ New bill".</div>'}
   </div>
 
   <div class="card"><div class="pad tiny" style="line-height:1.8">
-    Your company name, address, mobile, the bill number series and the pending account name are set in <b>More &rarr; Settings</b>.
+    Your company name, address, mobile, the bill number series, the commission account name and the default commission % are set in <b>More &rarr; Settings</b>.
     Next bill will be <b>${esc(nextBillNo(s))}</b>.
   </div></div>
 
   <div class="card"><h3>How this works</h3><div class="pad tiny" style="line-height:1.9">
     <b>1.</b> Tap <b>+ New bill</b>, put the machine owner name and the period.<br>
-    <b>2.</b> Tap <b>Fill from machine log</b> &mdash; every machine that worked in that period comes in with its total hours.<br>
-    <b>3.</b> Put the <b>rate</b> against each machine yourself &mdash; the amount is worked out for you. Transport or shift charges: leave hours and rate empty and just put the amount.<br>
-    <b>4.</b> Save, then <b>Print / PDF</b> or send on <b>WhatsApp</b>.<br>
-    <b>5.</b> Each time you pay the owner, open the bill and tap <b>Add payment</b>. Part payments are fine &mdash; add as many as you make.<br>
-    <b>6.</b> Paid amounts go into <b>Machine rent</b> on the Dashboard. Whatever is still unpaid shows under <b>${esc(pendingParty(s))}</b>.
+    <b>2.</b> Tap <b>Fill from machine log</b> and set the <b>rate</b> on each machine &mdash; or add lines yourself.<br>
+    <b>3.</b> Put the <b>commission</b> as a % or an amount. Example: bill 2,00,000 with 20% &rarr; 40,000 goes to <b>${party}</b>, 1,60,000 is the owner's share.<br>
+    <b>4.</b> Each time you pay the owner, open the bill and tap <b>Add payment</b>. Part payments are fine.<br>
+    <b>5.</b> Payments to owners go into <b>Machine rent</b> on the Dashboard. Commission is kept in the <b>${party}</b> account.
   </div></div>`;
 }
 
-/* the pending balance of every rent bill, kept apart under one name (Mangalmurti Developers) */
-function pendingRows(s) {
-  return (s.bills || []).filter(b => billDue(b) > 0.5).slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+/* the commission of every rent bill, kept in one account (Mangalmurti Developers) */
+function commRows(s) {
+  return (s.bills || []).filter(b => billComm(b) > 0).slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
 }
-function pendingPartyCard(s, compact) {
-  const rows = pendingRows(s);
+function commCard(s, compact) {
   if (!(s.bills || []).length) return '';
-  const total = rows.reduce((a, b) => a + billDue(b), 0);
+  const rows = commRows(s);
+  const total = rows.reduce((a, b) => a + billComm(b), 0);
   const name = pendingParty(s);
   if (compact) {
-    return `<div class="card" style="border-color:${total > 0.5 ? 'var(--hivis)' : 'var(--line)'}">
-      <h3>${esc(name)}<small>pending rent bills</small></h3>
+    return `<div class="card">
+      <h3>${esc(name)}<small>commission account</small></h3>
       <div class="row" data-act="sub" data-t="machine" data-v="bill">${ava('', 'bill', 'c5')}
-        <div class="main"><div class="ttl">${total > 0.5 ? 'Pending' : 'Nothing pending'}</div>
-        <div class="sub">${rows.length} bill${rows.length === 1 ? '' : 's'} not fully paid</div></div>
-        <div class="amt" style="color:${total > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money0(total)}</div></div>
+        <div class="main"><div class="ttl">Commission on rent bills</div>
+        <div class="sub">${rows.length} bill${rows.length === 1 ? '' : 's'}</div></div>
+        <div class="amt">${money0(total)}</div></div>
     </div>`;
   }
-  return `<div class="card mt" style="border-color:${total > 0.5 ? 'var(--hivis)' : 'var(--line)'}">
-    <h3>${esc(name)}<small>pending ${money0(total)}</small></h3>
+  return `<div class="card mt" style="border-color:var(--hivis)">
+    <h3>${esc(name)}<small>commission ${money0(total)}</small></h3>
     ${rows.length ? `<div class="scroll"><table>
-      <thead><tr><th>Bill</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Pending</th></tr></thead>
+      <thead><tr><th>Bill</th><th class="n">Bill total</th><th class="n">%</th><th class="n">Commission</th></tr></thead>
       <tbody>${rows.map(b => `<tr data-act="blOpen" data-v="${b.id}"><td class="nowrap"><b>${esc(b.owner || '—')}</b><div class="tiny">${esc(b.no || '')} &middot; ${fmtDate(b.date)}</div></td>
-        <td class="n">${money0(billTotal(b))}</td><td class="n">${money0(billPaid(b))}</td><td class="n"><b style="color:var(--due)">${money0(billDue(b))}</b></td></tr>`).join('')}</tbody>
-      <tfoot><tr><td>TOTAL</td><td class="n">${money0(rows.reduce((a, b) => a + billTotal(b), 0))}</td><td class="n">${money0(rows.reduce((a, b) => a + billPaid(b), 0))}</td><td class="n">${money0(total)}</td></tr></tfoot>
+        <td class="n">${money0(billTotal(b))}</td><td class="n tiny">${dec(pctOf(billComm(b), billTotal(b)), 2)}</td><td class="n"><b>${money0(billComm(b))}</b></td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>TOTAL</td><td class="n">${money0(rows.reduce((a, b) => a + billTotal(b), 0))}</td><td></td><td class="n">${money0(total)}</td></tr></tfoot>
     </table></div>
     <div class="pad"><div class="btnrow">
       <button class="btn sec sm" style="flex:1" data-act="ppPrint">${ICON.print}Statement PDF</button>
       <button class="btn sec sm" style="flex:1" data-act="ppWa">${ICON.share}WhatsApp</button>
-    </div></div>` : '<div class="empty">Every bill is fully paid.</div>'}
+    </div></div>` : '<div class="empty">No commission on any bill yet. Open a bill &rarr; Edit bill to set it.</div>'}
   </div>`;
 }
-function pendingStatement(s) {
-  const rows = pendingRows(s);
-  const tot = rows.reduce((a, b) => a + billTotal(b), 0), pd = rows.reduce((a, b) => a + billPaid(b), 0), due = tot - pd;
+function commStatement(s) {
+  const rows = commRows(s);
+  const tot = rows.reduce((a, b) => a + billTotal(b), 0), comm = rows.reduce((a, b) => a + billComm(b), 0);
   return `<div class="bill">
-    ${billHead('Pending Rent Bills  -  ' + pendingParty(s), 'As on: ' + fmtDate(today()) + '<br>Site: ' + esc(s.name || ''))}
-    ${kpi([['BILLS', rows.length], ['BILLED', money(tot)], ['PAID', money(pd)], ['BALANCE DUE', money(due)]])}
-    <h2>Bill-wise pending</h2>
+    ${billHead('Commission Statement  -  ' + pendingParty(s), 'As on: ' + fmtDate(today()) + '<br>Site: ' + esc(s.name || ''))}
+    ${kpi([['BILLS', rows.length], ['TOTAL BILLED', money(tot)], ['TOTAL COMMISSION', money(comm)]])}
+    <h2>Bill-wise commission</h2>
     <table>
-      <thead><tr><th>Bill</th><th>Machine owner</th><th class="n">Total</th><th class="n">Paid</th><th class="n">Pending</th></tr></thead>
+      <thead><tr><th>Bill</th><th>Machine owner</th><th class="n">Bill total</th><th class="n">%</th><th class="n">Commission</th></tr></thead>
       <tbody>${rows.map(b => `<tr><td>${esc(b.no || '-')}<br><small>${fmtDate(b.date)}</small></td><td><b>${esc(b.owner || '-')}</b></td>
-        <td class="n">${money0(billTotal(b))}</td><td class="n">${money0(billPaid(b))}</td><td class="n"><b>${money0(billDue(b))}</b></td></tr>`).join('') || '<tr><td colspan="5">Nothing pending</td></tr>'}</tbody>
-      <tfoot><tr><td colspan="2">TOTAL</td><td class="n">${money0(tot)}</td><td class="n">${money0(pd)}</td><td class="n">${money0(due)}</td></tr></tfoot>
+        <td class="n">${money0(billTotal(b))}</td><td class="n">${dec(pctOf(billComm(b), billTotal(b)), 2)}</td><td class="n"><b>${money0(billComm(b))}</b></td></tr>`).join('') || '<tr><td colspan="5">No commission yet</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="2">TOTAL</td><td class="n">${money0(tot)}</td><td></td><td class="n">${money0(comm)}</td></tr></tfoot>
     </table>
-    ${totalsBlock([['Total billed', money(tot)], ['Less: paid', '- ' + money(pd)], ['Balance due', money(due)]], due)}
+    ${totalsBlock([['Total billed', money(tot)], ['Owners’ share', money(tot - comm)], ['Commission to ' + esc(pendingParty(s)), money(comm)]], comm)}
   </div>`;
 }
-function pendingStatementText(s) {
-  const rows = pendingRows(s);
-  const due = rows.reduce((a, b) => a + billDue(b), 0);
-  return ['*' + pendingParty(s) + ' - pending rent bills*', (s.name || '') + '  ·  ' + fmtDate(today()), '']
-    .concat(rows.map(b => (b.no || '') + '  ' + (b.owner || '') + '  ·  total ' + money(billTotal(b)) + ', paid ' + money(billPaid(b)) + '  =  pending ' + money(billDue(b))))
-    .concat(['', '*Total pending: ' + money(due) + '*']).join('\n');
+function commStatementText(s) {
+  const rows = commRows(s);
+  const comm = rows.reduce((a, b) => a + billComm(b), 0);
+  return ['*' + pendingParty(s) + ' - commission on rent bills*', (s.name || '') + '  ·  ' + fmtDate(today()), '']
+    .concat(rows.map(b => (b.no || '') + '  ' + (b.owner || '') + '  ·  bill ' + money(billTotal(b)) + '  =  commission ' + money(billComm(b))))
+    .concat(['', '*Total commission: ' + money(comm) + '*']).join('\n');
 }
 
 /* ============================================================
@@ -4039,7 +4048,7 @@ function billHead(title, sub) {
 }
 
 /* the figures strip — the one that settles the account is printed dark */
-const KPI_HL = /NET PAYABLE|REMAINING DUE|NET PENDING|BALANCE DUE/i;
+const KPI_HL = /NET PAYABLE|REMAINING DUE|NET PENDING|BALANCE DUE|TOTAL COMMISSION/i;
 const kpi = list => `<div class="kpi">${list.filter(Boolean).map(([k, v]) => `<div class="${KPI_HL.test(k) ? 'hl' : ''}"><span>${esc(k)}</span><b>${v}</b></div>`).join('')}</div>`;
 
 /* right-aligned totals with the last line as the grand figure, and the amount in words */
@@ -4350,7 +4359,7 @@ function ownerBillText(s, owner, from, to) {
 
 /* ---------------- INVOICE / BILL (manual rate) ---------------- */
 function billInvoice(s, b) {
-  const tot = billTotal(b), rec = billPaid(b), due = billDue(b);
+  const tot = billTotal(b), comm = billComm(b), own = billOwner(b), rec = billPaid(b), due = billDue(b);
   const pays = (b.payments || []).slice().sort((x, y) => String(x.date).localeCompare(String(y.date)));
   const hrs = (b.items || []).reduce((a, i) => a + num(i.hours), 0);
   const co = s.co || {};
@@ -4393,9 +4402,13 @@ function billInvoice(s, b) {
       <tfoot><tr><td colspan="4">Total paid</td><td class="n">${money0(rec)}</td></tr></tfoot>
     </table>` : ''}
 
-    ${totalsBlock(rec
-      ? [['Grand total', money(tot)], ['Less: paid', '- ' + money(rec)], ['Balance due', money(due)]]
-      : [['Sub total', money(tot)], ['Grand total', money(tot)]], rec ? due : tot)}
+    ${totalsBlock([
+      ['Bill total', money(tot)],
+      comm ? ['Less: commission &mdash; ' + esc(pendingParty(s)) + ' (' + dec(pctOf(comm, tot), 2) + '%)', '- ' + money(comm)] : null,
+      comm ? ['Owner\u2019s share', money(own)] : null,
+      rec ? ['Less: paid to owner', '- ' + money(rec)] : null,
+      (comm || rec) ? ['Balance due to owner', money(due)] : ['Grand total', money(tot)]
+    ], (comm || rec) ? due : tot)}
 
     ${(b.note || co.bank || co.terms) ? `<div class="bnote">
       ${b.note ? `<div><span>Note</span>${esc(b.note)}</div>` : ''}
@@ -4407,7 +4420,7 @@ function billInvoice(s, b) {
 }
 
 function billInvoiceText(s, b) {
-  const tot = billTotal(b), rec = billPaid(b);
+  const tot = billTotal(b), rec = billPaid(b), comm = billComm(b);
   const pays = (b.payments || []).slice().sort((x, y) => String(x.date).localeCompare(String(y.date)));
   return ['*' + ((s.co && s.co.name) || s.name || 'Machine rent bill') + '*',
     'Bill ' + (b.no || '') + '  ·  ' + fmtDate(b.date),
@@ -4417,9 +4430,10 @@ function billInvoiceText(s, b) {
     .filter(x => x !== '')
     .concat((b.items || []).map(i => i.desc + '  ' + (num(i.hours) ? dec(i.hours) + ' hrs' : 'lumpsum') +
       (num(i.rate) ? ' × ' + money(i.rate) : '') + '  =  ' + money(i.amount)))
-    .concat(['', '*Grand total: ' + money(tot) + '*'])
+    .concat(['', '*Bill total: ' + money(tot) + '*'])
+    .concat(comm ? ['Less commission (' + pendingParty(s) + ', ' + dec(pctOf(comm, tot), 2) + '%):  ' + money(comm), '*Owner\u2019s share: ' + money(tot - comm) + '*'] : [])
     .concat(pays.map(p => 'Paid ' + fmtDate(p.date) + (p.mode ? ' (' + p.mode + ')' : '') + ':  ' + money(p.amount)))
-    .concat(rec ? [billDue(b) > 0.5 ? '*Balance due: ' + money(billDue(b)) + '*' : '*FULLY PAID*'] : []).join('\n');
+    .concat(rec || comm ? [billDue(b) > 0.5 ? '*Balance due to owner: ' + money(billDue(b)) + '*' : '*FULLY PAID*'] : []).join('\n');
 }
 
 /* ============================================================
@@ -5193,7 +5207,8 @@ function shareText() {
   L.push('  Site expense: ' + money(t.expTotal));
   L.push('  Diesel: ' + money(t.dsTotal));
   L.push('  Machine rent (paid bills): ' + money(t.rentPaid));
-  if (t.rentDue > 0.5) L.push(pendingParty(s) + ' pending (rent bills): ' + money(t.rentDue));
+  if (t.rentDue > 0.5) L.push('  Owner pending (rent bills): ' + money(t.rentDue));
+  if (t.rentComm > 0.5) L.push(pendingParty(s) + ' commission: ' + money(t.rentComm));
   L.push('');
   L.push('Paid: ' + money(t.expPaidDirect + t.dsPaid + t.vendorPaid + t.rentPaid));
   L.push('*Net pending: ' + money(t.netPending) + '*');
@@ -5907,7 +5922,8 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'blAdd':
-      BDRAFT = { no: nextBillNo(s), date: today(), owner: '', mobile: '', site: s.name || '', from: '', to: '', items: [], payments: [], note: '' };
+      BDRAFT = { no: nextBillNo(s), date: today(), owner: '', mobile: '', site: s.name || '', from: '', to: '', items: [], payments: [], note: '',
+        commPct: has(s.commPctDefault) && num(s.commPctDefault) ? s.commPctDefault : '', commission: 0 };
       blSheet(s); break;
     case 'blOw': {
       blGrab(); BDRAFT.owner = v;
@@ -5950,8 +5966,8 @@ document.addEventListener('click', async e => {
     }
     case 'blPayAdd': blGrab(); closeSheet(); payForm(s, BDRAFT, null, true); break;     /* payment inside the bill form */
     case 'blPayEdit': blGrab(); closeSheet(); payForm(s, BDRAFT, +v, true); break;
-    case 'ppPrint': openBill(pendingStatement(s), 'pending-' + pendingParty(s).replace(/\s+/g, '-')); render(); break;
-    case 'ppWa': window.open('https://wa.me/?text=' + encodeURIComponent(pendingStatementText(s)), '_blank'); break;
+    case 'ppPrint': openBill(commStatement(s), 'commission-' + pendingParty(s).replace(/\s+/g, '-')); render(); break;
+    case 'ppWa': window.open('https://wa.me/?text=' + encodeURIComponent(commStatementText(s)), '_blank'); break;
     case 'blDel': {
       const b = (s.bills || []).find(x => x.id === v);
       if (!b) break;
@@ -5975,6 +5991,7 @@ document.addEventListener('click', async e => {
     case 'blSet':
       s.billPrefix = val('bl_pre'); s.billNext = numVal('bl_nx') || 1;
       s.pendingParty = val('bl_pp') || 'Mangalmurti Developers';
+      s.commPctDefault = numVal('bl_dcp');
       await save(); render(); toast('Saved'); break;
     case 'dashBill': openBill(dashBill(s), 'dashboard'); render(); break;
     case 'expBill': reportForm(s, 'exp'); break;
@@ -6442,6 +6459,7 @@ function blSheet(s) {
     BDRAFT = { no: nextBillNo(s), date: today(), owner: '', mobile: '', site: s.name || '', from: '', to: '', items: [], payments: [], note: '' };
   }
   const tot = BDRAFT.items.reduce((a, i) => a + num(i.amount), 0);
+  if (has(BDRAFT.commPct)) BDRAFT.commission = Math.round(tot * num(BDRAFT.commPct) / 100);
   const past = [...new Set(ownerList(s).concat((s.bills || []).map(b => b.owner)).filter(Boolean))]
     .filter(o => o !== BDRAFT.owner).slice(0, 8);
   openSheet(BDRAFT.id ? 'Bill ' + esc(BDRAFT.no) : 'New bill', `
@@ -6471,24 +6489,33 @@ function blSheet(s) {
       ${tot ? `<div class="pad"><div class="tiny" style="text-align:right">Total <b style="font-size:15px">${money(tot)}</b></div></div>` : ''}
     </div>
 
-    <div class="card" style="margin:6px 0"><h3>Payments made<small>${(BDRAFT.payments || []).length}</small></h3>
+    <div class="card" style="margin:6px 0"><h3>Commission<small>${esc(pendingParty(s))}</small></h3><div class="pad">
+      <div class="f2">
+        <div class="field"><label>Commission %</label><input type="number" inputmode="decimal" id="bl_cp" value="${has(BDRAFT.commPct) ? BDRAFT.commPct : ''}" placeholder="e.g. 20"></div>
+        <div class="field"><label>or Amount (Rs)</label><input type="number" inputmode="decimal" id="bl_ca" value="${num(BDRAFT.commission) ? BDRAFT.commission : ''}" placeholder="e.g. 40000"></div>
+      </div>
+      <div id="bl_split">${splitHtml(s, tot, num(BDRAFT.commission))}</div>
+    </div></div>
+
+    <div class="card" style="margin:6px 0"><h3>Payments to owner<small>${(BDRAFT.payments || []).length}</small></h3>
       ${(BDRAFT.payments || []).length ? BDRAFT.payments.map((p, i) => `<div class="row">
         <div class="main"><div class="ttl">${fmtDate(p.date)}${p.mode ? ' <span class="pill n">' + esc(p.mode) + '</span>' : ''}</div>
         <div class="sub">${esc(p.remark || 'payment')}</div></div>
         <div class="amt" style="color:var(--paid)">${money0(p.amount)}</div>
         <button class="rowbtn" data-act="blPayEdit" data-v="${i}">Edit</button></div>`).join('') : '<div class="empty">No payment yet.</div>'}
       <div class="pad">
-        ${tot ? `<div class="tiny" style="text-align:right;line-height:1.8">Paid <b style="color:var(--paid)">${money(billPaid(BDRAFT))}</b> &middot; Pending <b style="color:${billDue(BDRAFT) > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(billDue(BDRAFT))}</b></div>` : ''}
-        <button class="btn sec sm" style="width:100%;margin-top:8px" data-act="blPayAdd">${ICON.plus}Add payment</button>
+        ${tot ? `<div class="tiny" style="text-align:right;line-height:1.8">Paid <b style="color:var(--paid)">${money(billPaid(BDRAFT))}</b> &middot; Owner pending <b style="color:${billDue(BDRAFT) > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(billDue(BDRAFT))}</b></div>` : ''}
+        <button class="btn sec sm" style="width:100%;margin-top:8px" data-act="blPayAdd">${ICON.plus}Add payment to owner</button>
       </div>
     </div>
     <div class="field"><label>Note on bill</label><input id="bl_nt" value="${esc(BDRAFT.note || '')}"></div>
-    <div class="tiny">Paid amounts go into <b>Machine rent</b> on the Dashboard. What is still unpaid is kept under <b>${esc(pendingParty(s))}</b>.</div>`,
+    <div class="tiny">Payments to the owner go into <b>Machine rent</b> on the Dashboard. The commission goes to the <b>${esc(pendingParty(s))}</b> account.</div>`,
     () => {
       blGrab();
       if (!BDRAFT.owner) return toast('Enter the machine owner name');
       if (!BDRAFT.items.length) return toast('Add at least one machine');
       if (BDRAFT.items.every(i => !num(i.amount))) return toast('Set the rate on at least one line');
+      if (num(BDRAFT.commission) > billTotal(BDRAFT) + 0.5) return toast('Commission is more than the bill total');
       if (BDRAFT.id) Object.assign((s.bills || []).find(x => x.id === BDRAFT.id), BDRAFT);
       else {
         BDRAFT.id = uid();
@@ -6499,6 +6526,25 @@ function blSheet(s) {
       return true;
     },
     BDRAFT.id ? () => { s.bills = s.bills.filter(b => b.id !== BDRAFT.id); } : null);
+  /* % fills the amount; typing an amount clears the % (a fixed amount) */
+  const cp = document.getElementById('bl_cp'), ca = document.getElementById('bl_ca'), sp = document.getElementById('bl_split');
+  if (cp && ca && sp) {
+    const upd = () => { sp.innerHTML = splitHtml(s, tot, num(ca.value)); };
+    cp.addEventListener('input', () => { ca.value = cp.value.trim() === '' ? '' : String(Math.round(tot * num(cp.value) / 100)); upd(); });
+    ca.addEventListener('input', () => { cp.value = ''; upd(); });
+  }
+}
+
+/* bill total -> commission -> owner's share, shown under the commission boxes */
+function splitHtml(s, tot, comm) {
+  const c = Math.max(0, num(comm));
+  if (!tot) return '<div class="tiny">Add the machines first &mdash; the split shows here.</div>';
+  const over = c > tot + 0.5;
+  return `<div class="scroll"><table><tbody>
+    <tr><td class="muted">Bill total</td><td class="right n"><b>${money(tot)}</b></td></tr>
+    <tr><td class="muted">Commission &rarr; ${esc(pendingParty(s))}${c ? ' <span class="tiny">(' + dec(pctOf(c, tot), 2) + '%)</span>' : ''}</td><td class="right n"><b>${c ? '- ' + money(c) : money(0)}</b></td></tr>
+    <tr><td class="muted"><b>Owner's share</b></td><td class="right n"><b style="color:${over ? 'var(--due)' : 'var(--paid)'}">${money(tot - c)}</b></td></tr>
+  </tbody></table></div>${over ? '<div class="tiny" style="color:var(--due)">Commission is more than the bill total.</div>' : ''}`;
 }
 
 function blGrab() {
@@ -6507,31 +6553,38 @@ function blGrab() {
   BDRAFT.from = val('bl_f'); BDRAFT.to = val('bl_t');
   BDRAFT.note = val('bl_nt');
   if (!Array.isArray(BDRAFT.payments)) BDRAFT.payments = [];
+  if (document.getElementById('bl_cp')) {
+    const pct = numVal('bl_cp');
+    if (pct !== '') { BDRAFT.commPct = pct; BDRAFT.commission = Math.round(billTotal(BDRAFT) * num(pct) / 100); }
+    else { BDRAFT.commPct = ''; BDRAFT.commission = Math.max(0, num(numVal('bl_ca'))); }
+  }
 }
 
 /* one saved bill: totals, payments made, what is pending */
 function blOpenSheet(s, b) {
-  const tot = billTotal(b), paid = billPaid(b), due = billDue(b);
+  const tot = billTotal(b), comm = billComm(b), own = billOwner(b), paid = billPaid(b), due = billDue(b);
   const pays = (b.payments || []).map((p, i) => ({ p, i })).sort((x, y) => String(y.p.date).localeCompare(String(x.p.date)));
   openSheet('Bill ' + esc(b.no || ''), `
     <div class="card"><div class="scroll"><table><tbody>
       <tr><td class="muted">Owner</td><td class="right"><b>${esc(b.owner)}</b></td></tr>
       <tr><td class="muted">Date</td><td class="right">${fmtDate(b.date)}</td></tr>
       ${(b.from || b.to) ? `<tr><td class="muted">Period</td><td class="right">${fmtDate(b.from)} to ${fmtDate(b.to)}</td></tr>` : ''}
-      <tr><td class="muted"><b>GRAND TOTAL</b></td><td class="right n"><b>${money(tot)}</b></td></tr>
-      <tr><td class="muted">Paid</td><td class="right n"><b style="color:var(--paid)">${money(paid)}</b></td></tr>
-      <tr><td class="muted"><b>PENDING</b><div class="tiny">${esc(pendingParty(s))}</div></td><td class="right n"><b style="color:${due > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(due)}</b></td></tr>
+      <tr><td class="muted"><b>BILL TOTAL</b></td><td class="right n"><b>${money(tot)}</b></td></tr>
+      <tr><td class="muted">Commission &rarr; ${esc(pendingParty(s))}${comm ? ' <span class="tiny">(' + dec(pctOf(comm, tot), 2) + '%)</span>' : ''}</td><td class="right n">${comm ? '- ' + money(comm) : money(0)}</td></tr>
+      <tr><td class="muted"><b>OWNER'S SHARE</b></td><td class="right n"><b>${money(own)}</b></td></tr>
+      <tr><td class="muted">Paid to owner</td><td class="right n"><b style="color:var(--paid)">${money(paid)}</b></td></tr>
+      <tr><td class="muted"><b>OWNER PENDING</b></td><td class="right n"><b style="color:${due > 0.5 ? 'var(--due)' : 'var(--paid)'}">${money(due)}</b></td></tr>
       <tr><td class="muted">Status</td><td class="right">${billPill(b)}</td></tr>
     </tbody></table></div></div>
-    <div class="card"><h3>Payments made<small>${pays.length}</small></h3>
+    <div class="card"><h3>Payments to owner<small>${pays.length}</small></h3>
       ${pays.length ? pays.map(({ p, i }) => `<div class="row" data-act="bpEdit" data-v="${b.id}|${i}">
         ${ava('', 'pay', 'c3')}
         <div class="main"><div class="ttl">${fmtDate(p.date)}${p.mode ? ' <span class="pill n">' + esc(p.mode) + '</span>' : ''}</div>
         <div class="sub">${esc(p.remark || 'payment')}</div></div>
         <div class="amt" style="color:var(--paid)">${money0(p.amount)}</div></div>`).join('') : '<div class="empty">No payment made yet.</div>'}
       <div class="pad">
-        <button class="btn" style="width:100%" data-act="bpAdd" data-v="${b.id}">${ICON.plus}Add payment</button>
-        <div class="tiny" style="margin-top:8px">${due > 0.5 ? 'Pending ' + money(due) + ' is kept under <b>' + esc(pendingParty(s)) + '</b>. ' : 'This bill is fully paid. '}Tap a payment to change or delete it.</div>
+        <button class="btn" style="width:100%" data-act="bpAdd" data-v="${b.id}">${ICON.plus}Add payment to owner</button>
+        <div class="tiny" style="margin-top:8px">${due > 0.5 ? money(due) + ' still to pay the owner. ' : 'The owner is fully paid. '}${comm ? 'Commission ' + money(comm) + ' is in the <b>' + esc(pendingParty(s)) + '</b> account. ' : 'No commission on this bill &mdash; set it with Edit bill. '}Tap a payment to change or delete it.</div>
       </div>
     </div>
     <div class="card"><h3>Machines<small>${(b.items || []).length}</small></h3>
@@ -6556,30 +6609,31 @@ function payForm(s, bill, idx, draft) {
   if (!Array.isArray(bill.payments)) bill.payments = [];
   const list = bill.payments;
   const p = idx == null ? { date: today(), amount: '', mode: '', remark: '' } : list[idx];
-  const left = Math.max(0, billTotal(bill) - billPaid(bill) + (idx == null ? 0 : num(p.amount)));
+  const left = Math.max(0, billOwner(bill) - billPaid(bill) + (idx == null ? 0 : num(p.amount)));
   const back = () => {
     closeSheet();
     if (draft) { blSheet(s); return; }
     render(); blOpenSheet(s, bill); save();
   };
-  openSheet(idx == null ? 'Add payment' : 'Edit payment', `
+  openSheet(idx == null ? 'Payment to owner' : 'Edit payment', `
     <div class="card"><div class="pad">
       <div class="tiny" style="margin-bottom:10px;line-height:1.7">${esc(bill.owner || 'Bill')}${bill.no ? ' &middot; ' + esc(bill.no) : ''}<br>
-        Bill total <b>${money(billTotal(bill))}</b> &middot; pending <b style="color:var(--due)">${money(left)}</b></div>
+        Bill ${money(billTotal(bill))}${billComm(bill) ? ' &minus; commission ' + money(billComm(bill)) : ''} &rarr; owner's share <b>${money(billOwner(bill))}</b><br>
+        Still to pay the owner <b style="color:var(--due)">${money(left)}</b></div>
       <div class="f2">
         <div class="field"><label>Date</label><input type="date" id="bp_dt" value="${esc(p.date || today())}"></div>
-        <div class="field"><label>Amount paid (Rs)</label><input type="number" inputmode="decimal" id="bp_am" value="${idx == null ? (left > 0.5 ? left : '') : p.amount}"></div>
+        <div class="field"><label>Paid to owner (Rs)</label><input type="number" inputmode="decimal" id="bp_am" value="${idx == null ? (left > 0.5 ? left : '') : p.amount}"></div>
       </div>
       <div class="f2">
         <div class="field"><label>Payment mode</label><select id="bp_md">${selOpts(MODES, p.mode, '— mode —')}</select></div>
         <div class="field"><label>Remark</label><input id="bp_rm" value="${esc(p.remark || '')}" placeholder="cheque no, UTR..."></div>
       </div>
-      <div class="tiny">This amount goes into <b>Machine rent</b> on the Dashboard. Whatever is left stays pending under <b>${esc(pendingParty(s))}</b>.</div>
+      <div class="tiny">This amount goes into <b>Machine rent</b> on the Dashboard. The commission is not paid from here &mdash; it stays in the <b>${esc(pendingParty(s))}</b> account.</div>
     </div></div>`,
     () => {
       const a = num(numVal('bp_am'));
       if (!(a > 0)) return toast('Enter the amount paid');
-      if (a > left + 0.5 && !confirm('This is ' + money(a - left) + ' more than the pending ' + money(left) + '. Save anyway?')) return false;
+      if (a > left + 0.5 && !confirm('This is ' + money(a - left) + ' more than what is left to pay the owner (' + money(left) + '). Save anyway?')) return false;
       const o = { id: p.id || uid(), date: val('bp_dt') || today(), amount: a, mode: val('bp_md'), remark: val('bp_rm') };
       if (idx == null) list.push(o); else list[idx] = o;
       back(); toast('Payment saved');
@@ -6648,8 +6702,11 @@ function settingsView(s) {
       <div class="field"><label>Next number</label><input type="number" inputmode="numeric" id="bl_nx" value="${s.billNext}"></div>
     </div>
     <div class="tiny" style="margin-bottom:10px">Next bill will be <b>${esc(nextBillNo(s))}</b>.</div>
-    <div class="field"><label>Pending account name</label><input id="bl_pp" value="${esc(pendingParty(s))}" placeholder="Mangalmurti Developers"></div>
-    <div class="tiny" style="margin-bottom:10px">The unpaid balance of rent bills is kept under this name.</div>
+    <div class="f2">
+      <div class="field"><label>Commission account</label><input id="bl_pp" value="${esc(pendingParty(s))}" placeholder="Mangalmurti Developers"></div>
+      <div class="field"><label>Default commission %</label><input type="number" inputmode="decimal" id="bl_dcp" value="${has(s.commPctDefault) && num(s.commPctDefault) ? s.commPctDefault : ''}" placeholder="e.g. 20"></div>
+    </div>
+    <div class="tiny" style="margin-bottom:10px">The commission of every rent bill goes to this account. A new bill starts with the default % (you can change it on each bill).</div>
     <button class="btn sec sm" style="width:100%" data-act="blSet">Save</button>
   </div></div>
 
@@ -6739,7 +6796,7 @@ function dashBill(s) {
       s.mods.murum ? ['MURUM', money(t.muTotal)] : null,
       s.mods.diesel !== false ? ['DIESEL', money(t.dsTotal)] : null,
       s.mods.machine !== false ? ['MACHINE RENT (PAID)', money(t.rentPaid)] : null,
-      s.mods.machine !== false && t.rentDue > 0.5 ? [pendingParty(s).toUpperCase() + ' PENDING', money(t.rentDue)] : null,
+      s.mods.machine !== false && t.rentComm > 0.5 ? ['COMMISSION (' + pendingParty(s).toUpperCase() + ')', money(t.rentComm)] : null,
       ['NET PENDING', money(t.netPending)]
     ])}
 
